@@ -8,7 +8,12 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
-			<version>5.0.2.Final</version>
+			<version>4.3.11.Final<!--5.0.2.Final--></version>
+		</dependency>
+		<dependency>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>3.8.11.2</version>
 		</dependency>
 		<!--<dependency> <groupId>com.zenjava</groupId> <artifactId>javafx-maven-plugin</artifactId> 
 			<version>8.1.4</version> </dependency> -->
@@ -18,7 +23,4 @@
 		<mainClass></mainClass> </configuration> <executions> <execution> <id>create-jfxjar</id> 
 		<phase>package</phase> <goals> <goal>build-jar</goal> </goals> </execution> 
 		</executions> </plugin> </plugins> </pluginManagement> </build> -->
-
-
-
 </project>

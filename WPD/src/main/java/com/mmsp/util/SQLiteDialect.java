@@ -226,11 +226,11 @@ public class SQLiteDialect extends Dialect {
       return extractUsingTemplate( "constraint ", " failed", sqle.getMessage() );
     }
 
-    // Это одно и то же?
+    /*// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅ?
 	@Override
 	protected String doExtractConstraintName(SQLException sqle) throws NumberFormatException {
 		return extractUsingTemplate( "constraint ", " failed", sqle.getMessage());
-	}
+	}*/
   };
 
   @Override
