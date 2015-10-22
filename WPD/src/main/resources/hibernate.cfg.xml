@@ -11,7 +11,6 @@
     <property name="connection.password"/>
     <property name="hibernate.hbm2ddl.auto">create</property>
     
-    <mapping class="com.mmsp.model.Teacher"/>
     <mapping class="com.mmsp.model.Subject"/>
     <mapping class="com.mmsp.model.WPDVersion"/>
     <mapping class="com.mmsp.model.ThematicPlan"/>

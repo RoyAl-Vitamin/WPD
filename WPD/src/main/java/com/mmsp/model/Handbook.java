@@ -17,10 +17,6 @@ import javax.persistence.Table;
 @Table(name = "HANDBOOK")
 public class Handbook implements Serializable {
     
-    /*
-        под каждый справочник должен быть свой класс?
-    */
-    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "HANDBOOK_ID")

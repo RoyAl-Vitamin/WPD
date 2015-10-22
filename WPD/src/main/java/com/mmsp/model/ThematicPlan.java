@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 /**
@@ -17,8 +18,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "THEMATIC_PLAN")
 public class ThematicPlan implements Serializable {
-    
-    @Id
+	private static final long serialVersionUID = 1L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "THEMATIC_PLAN_ID")
     private Long id;
@@ -32,7 +34,8 @@ public class ThematicPlan implements Serializable {
     @Column(name = "THEMATIC_PLAN_LABORIOUSNESS")
     private Integer laboriousness; // трудоемкость темы по всем видам нагрузки; Вроде как измеряется в ЗЕ (зачётных единицах)
     
-    @OneToOne(mappedBy = "thematicPlan")
+    @OneToOne
+    @PrimaryKeyJoinColumn
     private Subject subject; // связь с дисциплиной, к которой это тематический план принаделжит
     
     @Column(name = "THEMATIC_PLAN_NUMBER")
