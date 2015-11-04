@@ -1,9 +1,7 @@
 package com.mmsp.model;
 
 import java.io.Serializable;
-import java.util.Set;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,8 +15,10 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "POCM")
 public class PoCM implements Serializable { // Plan of Control Measures
-    
-    @Id
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "POCM_ID")
     private Long id;
@@ -26,27 +26,14 @@ public class PoCM implements Serializable { // Plan of Control Measures
     @Column(name = "POCM_LABORIOUSNESS")
     private Integer laboriousness;// трудоемкость
     
-    /*@ElementCollection
-    @Column(name = "POCM_TYPE")
-    private Set<String> type; // тип контрольного мероприятия
-    /*
-        Экзамен
-        Зачёт
-        Курсовой проект
-        Курсовая работа
-    */
-    
-    @Column(name = "POCM_TYPE")
-    private Integer type; // тип контрольного мероприятия
+    @Column(name = "POCM_NUMBER_OF_SEMESTER")
+    private Integer number; // номер семместра
     /*
         Будут формироваться как степень 2-ки
     */
-    
-    /*
-    вот это не описано, наверно, стоит задать это как множество?
-        привязка к учебным неделям и семестрам;
-    */
-    
+    @Column(name = "POCM_TYPE")
+    private Integer type; // тип контрольного мероприятия
+
     public PoCM() {
     }
 

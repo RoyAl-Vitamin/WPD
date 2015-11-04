@@ -15,6 +15,10 @@
     <mapping class="com.mmsp.model.WPDVersion"/>
     <mapping class="com.mmsp.model.ThematicPlan"/>
     <mapping class="com.mmsp.model.PoCM"/>
-    <mapping class="com.mmsp.model.Handbook"/>
+    <mapping class="com.mmsp.model.HandbookAcademicPlan"/>
+    <mapping class="com.mmsp.model.HandbookCompetency"/>
+    <mapping class="com.mmsp.model.HandbookDiscipline"/>
+    <mapping class="com.mmsp.model.HandbookTypeOfControl"/>
+    <mapping class="com.mmsp.model.HandbookTypeOfLoad"/>
   </session-factory>
 </hibernate-configuration>

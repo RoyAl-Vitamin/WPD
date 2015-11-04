@@ -9,36 +9,49 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * Класс справочника
+ * Класс справочника дисциплины
  * @author Алексей
  */
 
 @Entity
-@Table(name = "HANDBOOK")
-public class Handbook implements Serializable {
-    
-    @Id
+@Table(name = "HANDBOOK_DISCIPLINE")
+public class HandbookDiscipline implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "HANDBOOK_ID")
+    @Column(name = "HANDBOOK_DISCIPLINE_ID")
     private Long id;
     
-    @Column(name = "HANDBOOK_VALUE")
+	@Column(name = "HANDBOOK_DISCIPLINE_CODE")
+	private Integer code;
+	
+    @Column(name = "HANDBOOK_DISCIPLINE_VALUE")
     private String value;
 
-    public Handbook() {
+    public HandbookDiscipline() {
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getValue() {
+    public Integer getCode() {
+		return code;
+	}
+
+	public String getValue() {
         return value;
     }
 
     public void setId(Long id) {
         this.id = id;
     }
+    
+	public void setCode(Integer code) {
+		this.code = code;
+	}
 
     public void setValue(String value) {
         this.value = value;
