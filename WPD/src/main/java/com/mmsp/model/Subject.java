@@ -18,9 +18,11 @@ import javax.persistence.Table;
  * Класс в котором содержится название предмета
  * @author Алексей
  */
+
 @Entity
 @Table(name = "SUBJECT")
 public class Subject implements Serializable {
+	
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -37,7 +39,7 @@ public class Subject implements Serializable {
     @Column(name = "SUBJECT_MIDDLE_NAME")
     private String middleName; // Отчество
         
-    @Column(name = "SUBJECT_NAME", length = 64)
+    @Column(name = "SUBJECT_NAME", length = 128)
     private String name; // название предмета
     
     @OneToMany(mappedBy = "subject")

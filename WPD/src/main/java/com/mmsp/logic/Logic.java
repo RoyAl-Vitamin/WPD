@@ -19,9 +19,19 @@ public class Logic {
      * Подгрузка конфигурационного файла
      * Создание сессии
      */
-    public void initialization() {
+    /*public void initialization() {
         sessionFactory =  com.mmsp.util.HibernateUtil.getSessionFactory();
-    }
-    
-    
+    }*/
+
+	public static SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+	
+	public Logic() {
+		setSessionFactory(); // инициализируем SessionFactory
+	}
+
+	private static void setSessionFactory() {
+		Logic.sessionFactory = com.mmsp.util.HibernateUtil.getSessionFactory();
+	}
 }
