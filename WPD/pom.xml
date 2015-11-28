@@ -4,6 +4,7 @@
 	<groupId>com.mmsp.wpd</groupId>
 	<artifactId>WPD</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -15,12 +16,5 @@
 			<artifactId>sqlite-jdbc</artifactId>
 			<version>3.8.11.2</version>
 		</dependency>
-		<!--<dependency> <groupId>com.zenjava</groupId> <artifactId>javafx-maven-plugin</artifactId> 
-			<version>8.1.4</version> </dependency> -->
 	</dependencies>
-	<!--<build> <pluginManagement> <plugins> <plugin> <groupId>com.zenjava</groupId> 
-		<artifactId>javafx-maven-plugin</artifactId> <version>8.1.4</version> <configuration> 
-		<mainClass></mainClass> </configuration> <executions> <execution> <id>create-jfxjar</id> 
-		<phase>package</phase> <goals> <goal>build-jar</goal> </goals> </execution> 
-		</executions> </plugin> </plugins> </pluginManagement> </build> -->
 </project>

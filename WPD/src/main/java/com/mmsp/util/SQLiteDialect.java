@@ -202,7 +202,10 @@ public class SQLiteDialect extends Dialect {
   @Override
   public SQLExceptionConverter buildSQLExceptionConverter() {
     return new SQLExceptionConverter() {
-      //@Override
+
+		private static final long serialVersionUID = 1L;
+
+	//@Override
       public JDBCException convert(SQLException sqlException, String message, String sql) {
         final int errorCode = JdbcExceptionHelper.extractErrorCode(sqlException);
         if (errorCode == SQLITE_CONSTRAINT) {
