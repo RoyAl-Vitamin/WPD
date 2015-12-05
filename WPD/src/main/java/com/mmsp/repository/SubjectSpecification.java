@@ -2,7 +2,7 @@ package com.mmsp.repository;
 
 import com.mmsp.model.Subject;
 /**
- * @author Алексей
+ * @author Alex
  *
  */
 public interface SubjectSpecification {

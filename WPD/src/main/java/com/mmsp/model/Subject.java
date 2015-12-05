@@ -67,4 +67,37 @@ public class Subject implements Serializable {
     public void setTeacher(Set<WPDVersion> versions) {
         this.versions = versions;
     }
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getMiddleName() {
+		return middleName;
+	}
+
+	public void setMiddleName(String middleName) {
+		this.middleName = middleName;
+	}
+
+	public Set<WPDVersion> getVersions() {
+		return versions;
+	}
+
+	public void setVersions(Set<WPDVersion> versions) {
+		this.versions = versions;
+	}
+    
 }

@@ -224,13 +224,13 @@ public class SQLiteDialect extends Dialect {
   }
 
   public static final ViolatedConstraintNameExtracter EXTRACTER = new TemplatedViolatedConstraintNameExtracter() {
-    @Override
+    //@Override
     public String extractConstraintName(SQLException sqle) {
       return extractUsingTemplate( "constraint ", " failed", sqle.getMessage() );
     }
 
-    /*// ��� ���� � �� ��?
-	@Override
+    // ��� ���� � �� ��?
+	/*@Override
 	protected String doExtractConstraintName(SQLException sqle) throws NumberFormatException {
 		return extractUsingTemplate( "constraint ", " failed", sqle.getMessage());
 	}*/

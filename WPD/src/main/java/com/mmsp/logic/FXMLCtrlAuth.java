@@ -10,7 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
 /**
- * @author Алексей
+ * @author Alex
  *
  */
 
@@ -38,13 +38,13 @@ public class FXMLCtrlAuth extends VBox {
 	public FXMLCtrlAuth(Stage stage) throws IOException {
 		this.stage = stage;
     	
-    	FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("Auth.fxml")); // подгрузка формы
+    	FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("Auth.fxml")); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         
-        loader.setController(this); // связь контроллера, т.к. контроллер я не указал в Scene Builder'е
+        loader.setController(this); // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ.пїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Scene Builder'пїЅ
         
-        loader.setRoot(this); // установка корня
+        loader.setRoot(this); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         
-        loader.load(); // загрузка
+        loader.load(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	}
 
 }
