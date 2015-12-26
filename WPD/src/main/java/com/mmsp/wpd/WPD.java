@@ -34,7 +34,7 @@ public class WPD extends Application {
 	    primaryStage.show();
 	    
         // TODO Проверить на сущесвование пользователя, если его нет - вызвать код ниже
-	    com.mmsp.repository.impl.SubjectRepositoryImpl S1 = new com.mmsp.repository.impl.SubjectRepositoryImpl();
+	    com.mmsp.dao.impl.SubjectDAOImpl S1 = new com.mmsp.dao.impl.SubjectDAOImpl();
 	    
 	    // Start Test
 		    com.mmsp.model.Subject Su1 = new com.mmsp.model.Subject();

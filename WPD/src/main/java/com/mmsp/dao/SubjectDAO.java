@@ -1,4 +1,4 @@
-package com.mmsp.repository;
+package com.mmsp.dao;
 
 import java.util.List;
 import com.mmsp.model.Subject;
@@ -8,7 +8,7 @@ import com.mmsp.model.Subject;
  * Creating, Retriving, Updating and Deleting
  */
 
-public interface SubjectRepository {
+public interface SubjectDAO {
 	
 	void addSubject(Subject subject);
 	
@@ -17,8 +17,6 @@ public interface SubjectRepository {
 	void removeSubject(Subject subject);
 	
 	void updateSubject(Subject subject);
-	
-	List query(SubjectSpecification specification);
 	
 	/*
 	 * public List<Book> findAll() {

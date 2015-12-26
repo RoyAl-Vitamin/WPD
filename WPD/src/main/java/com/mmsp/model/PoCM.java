@@ -30,7 +30,7 @@ public class PoCM implements Serializable { // Plan of Control Measures
     */
     
     @Column(name = "POCM_NUMBER_OF_SEMESTER")
-    private Integer number; // номер семместра
+    private Integer number; // номер семестра
     
     /*
         Будут формироваться как степень 2-ки

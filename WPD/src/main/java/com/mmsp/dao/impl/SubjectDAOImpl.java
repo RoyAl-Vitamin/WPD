@@ -1,4 +1,4 @@
-package com.mmsp.repository.impl;
+package com.mmsp.dao.impl;
 
 import java.util.List;
 
@@ -6,21 +6,20 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
+import com.mmsp.dao.SubjectDAO;
 import com.mmsp.model.Subject;
-import com.mmsp.repository.SubjectRepository;
-import com.mmsp.repository.SubjectSpecification;
 import com.mmsp.util.HibernateUtil;
 
 /**
  * @author Алексей
  *
  */
-public class SubjectRepositoryImpl implements SubjectRepository {
+public class SubjectDAOImpl implements SubjectDAO {
 
 	/**
 	 * 
 	 */
-	public SubjectRepositoryImpl() {
+	public SubjectDAOImpl() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -61,14 +60,6 @@ public class SubjectRepositoryImpl implements SubjectRepository {
 	public void updateSubject(Subject subject) {
 		// TODO Auto-generated method stub
 
-	}
-
-	/* (non-Javadoc)
-	 * @see com.mmsp.repository.SubjectRepository#query(com.mmsp.repository.SubjectSpecification)
-	 */
-	public List<Subject> query(SubjectSpecification specification) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public List<Subject> getAllSubject() {

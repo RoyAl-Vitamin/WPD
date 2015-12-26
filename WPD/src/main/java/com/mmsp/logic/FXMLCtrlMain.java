@@ -9,7 +9,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -47,6 +49,12 @@ public class FXMLCtrlMain extends VBox {
 
     @FXML
     private Label lStatus;
+    
+    @FXML
+    private TextField tfNumberOfSemesters;
+
+    @FXML
+    private ListView<?> lvTypeOfControlMeasures;
 
     @FXML
     void clickBClose(ActionEvent event) {
@@ -90,5 +98,7 @@ public class FXMLCtrlMain extends VBox {
         loader.load(); // загрузка
         
         dPDateOfCreate.setValue(LocalDate.now());
+        
+        lvTypeOfControlMeasures.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 }
