@@ -10,11 +10,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
+//import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 /**
- * Данные РПД
+ * Версия РПД
  * @author Алексей
  */
 
@@ -32,21 +32,24 @@ public class WPDVersion implements Serializable {
     private Date date; // дата
     
     @Column(name = "WPD_VERSION_NUMBER")
-    private Integer number; // номер
+    private Long number; // номер (id HandbookDiscipline)
     
     @Column(name = "WPD_VERSION_TEMPLATE_NAME")
-    private String templateName; // название шаблона
+    private String templateName; // название шаблона или путь
     
     @Column(name = "WPD_VERSION_STUDY_LOAD")
     private Integer studyLoad; // учебная нагрузка по дисциплине по семестрам
 
     @ManyToOne
     @JoinColumn(name="WPD_VERSION_SUBJECT")
-    private Subject subject;
+    private WPDData subject;
     
     @OneToOne(mappedBy = "subject")
     private ThematicPlan thematicPlan; // связь с тематическим планом
-    
+
+    /*@OneToOne(mappedBy = "")
+    private PoCM planOfConMes; // связь с тематическим планом
+    */
     public WPDVersion() {
     }
 
@@ -58,7 +61,7 @@ public class WPDVersion implements Serializable {
         return date;
     }
 
-    public Integer getNumber() {
+    public Long getNumber() {
         return number;
     }
 
@@ -70,7 +73,23 @@ public class WPDVersion implements Serializable {
         return studyLoad;
     }
 
-    public void setId(Long id) {
+    public WPDData getSubject() {
+		return subject;
+	}
+    
+    public ThematicPlan getThematicPlan() {
+		return thematicPlan;
+	}
+
+	public void setSubject(WPDData subject) {
+		this.subject = subject;
+	}
+
+	public void setThematicPlan(ThematicPlan thematicPlan) {
+		this.thematicPlan = thematicPlan;
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
     
@@ -78,7 +97,7 @@ public class WPDVersion implements Serializable {
         this.date = date;
     }
 
-    public void setNumber(Integer number) {
+    public void setNumber(Long number) {
         this.number = number;
     }
 

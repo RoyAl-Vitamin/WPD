@@ -9,9 +9,9 @@
     <property name="connection.url">jdbc:derby:DB;create=true</property>
     <property name="connection.username"/>
     <property name="connection.password"/>
-    <property name="hibernate.hbm2ddl.auto">create</property>
+    <property name="hibernate.hbm2ddl.auto">update</property>
     
-    <mapping class="com.mmsp.model.Subject"/>
+    <mapping class="com.mmsp.model.WPDData"/>
     <mapping class="com.mmsp.model.WPDVersion"/>
     <mapping class="com.mmsp.model.ThematicPlan"/>
     <mapping class="com.mmsp.model.PoCM"/>

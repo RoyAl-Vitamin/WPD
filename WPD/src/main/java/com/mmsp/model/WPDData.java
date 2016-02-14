@@ -11,37 +11,39 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
- * Класс в котором содержится название предмета
+ * Данные РПД
  * @author Алексей
  */
 
 @Entity
-@Table(name = "SUBJECT")
-public class Subject implements Serializable {
+@Table(name = "WPD_DATA")
+public class WPDData implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "SUBJECT_ID")
+    @Column(name = "WPD_DATA_ID")
     private Long id;
     
-    @Column(name = "SUBJECT_FIRST_NAME")
+    @Column(name = "WPD_DATA_FIRST_NAME")
     private String firstName; // Имя
     
-    @Column(name = "SUBJECT_LAST_NAME")
+    @Column(name = "WPD_DATA_LAST_NAME")
     private String lastName; // Фамилия
     
-    @Column(name = "SUBJECT_MIDDLE_NAME")
+    @Column(name = "WPD_DATA_MIDDLE_NAME")
     private String middleName; // Отчество
         
-    @Column(name = "SUBJECT_NAME", length = 128)
+    @Column(name = "WPD_DATA_NAME", length = 128)
     private String name; // название предмета
     
     @OneToMany(mappedBy = "subject")
     private Set<WPDVersion> versions; // множество версий
 
-    public Subject() {
+    //private String tableName = "WPD_DATA";
+    
+    public WPDData() {
     }
     
     public Long getId() {
@@ -99,5 +101,9 @@ public class Subject implements Serializable {
 	public void setVersions(Set<WPDVersion> versions) {
 		this.versions = versions;
 	}
-    
+	
+	/*@Override
+	public String toString() {
+		return tableName;
+	}*/
 }

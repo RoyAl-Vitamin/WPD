@@ -5,34 +5,27 @@ import java.util.List;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-
-import com.mmsp.dao.SubjectDAO;
-import com.mmsp.model.Subject;
 import com.mmsp.util.HibernateUtil;
 
 /**
  * @author Алексей
  *
  */
-public class SubjectDAOImpl implements SubjectDAO {
+public class DAOImpl {
 
-	/**
-	 * 
-	 */
-	public SubjectDAOImpl() {
-		// TODO Auto-generated constructor stub
+	public DAOImpl() {
 	}
 
 	/* (non-Javadoc)
 	 * @see com.mmsp.repository.SubjectRepository#addSubject(com.mmsp.model.Subject)
 	 */
-	public void addSubject(Subject subject) {
+	public <T> void add(T obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();  
 		//getting session object from session factory  
 		Session session = sessionFactory.openSession();  
 		//getting transaction object from session object  
 		session.beginTransaction();  
-		session.save(subject);
+		session.save(obj);
 		System.out.println("Inserted Successfully");  
 		session.getTransaction().commit();
 		session.flush();
@@ -42,14 +35,14 @@ public class SubjectDAOImpl implements SubjectDAO {
 	/* (non-Javadoc)
 	 * @see com.mmsp.repository.SubjectRepository#removeSubject(com.mmsp.model.Subject)
 	 */
-	public void removeSubject(Subject subject) {
+	public <T> void remove(T obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();  
 		//getting session object from session factory  
 		Session session = sessionFactory.openSession();  
 		//getting transaction object from session object  
 		session.beginTransaction();  
 		// Subject subject = (Subject)session.load(Subject.class, SUBJECT_ID); 
-		session.delete(subject);  
+		session.delete(obj);  
 		System.out.println("Deleted Successfully");  
 		session.getTransaction().commit();  
 	}
@@ -57,28 +50,26 @@ public class SubjectDAOImpl implements SubjectDAO {
 	/* (non-Javadoc)
 	 * @see com.mmsp.repository.SubjectRepository#updateSubject(com.mmsp.model.Subject)
 	 */
-	public void updateSubject(Subject subject) {
-		// TODO Auto-generated method stub
-
+	public <T> void update(T obj) {
 	}
 
-	public List<Subject> getAllSubject() {
+	public <T> List<T> getAll(T obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();  
 		//getting session object from session factory  
 		Session session = sessionFactory.openSession();  
 		//getting transaction object from session object  
 		session.beginTransaction();
 		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
-		Query query = session.createQuery("from Subject");  
-		List<Subject> subjects = query.list();  
-		for(Subject Subject : subjects)  
+		Query query = session.createQuery("from " + obj.getClass().getName());
+		List<T> objects = query.list();  
+		for(T obj_out : objects)  
 		{  
-			System.out.println("Subject Name: " + Subject.getName() + ", Teacher Second name: " + Subject.getLastName() + ", Teacher First name: " + Subject.getFirstName() + ", Teacher Middle name: " + Subject.getMiddleName());  
+			System.out.println(obj_out.toString());  
 		}
-		System.out.println("List Subject is empty? " + subjects.isEmpty());
+		//System.out.println("List Subject is empty? " + objects.isEmpty());
 		session.getTransaction().commit();  
 		//sessionFactory.close();  
-		return subjects;
+		return objects;
 	}
 
 }

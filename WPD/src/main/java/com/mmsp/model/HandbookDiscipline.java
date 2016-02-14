@@ -31,6 +31,8 @@ public class HandbookDiscipline implements Serializable {
     private String value;
 
     public HandbookDiscipline() {
+    	value = "";
+    	code = 0;
     }
 
     public Long getId() {

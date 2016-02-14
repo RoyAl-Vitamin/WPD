@@ -31,13 +31,11 @@ public class PoCM implements Serializable { // Plan of Control Measures
     
     @Column(name = "POCM_NUMBER_OF_SEMESTER")
     private Integer number; // номер семестра
-    
-    /*
-        Будут формироваться как степень 2-ки
-    */
+
+    //Будут формироваться как степень 2-ки
     @Column(name = "POCM_TYPE")
     private Integer type; // тип контрольного мероприятия
-
+    
     public PoCM() {
     }
 

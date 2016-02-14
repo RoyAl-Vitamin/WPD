@@ -1,18 +1,22 @@
 package com.mmsp.wpd;
 
-import com.mmsp.logic.FXMLCtrlAuth;
-import com.mmsp.logic.FXMLCtrlMain;
-import com.mmsp.logic.Logic;
+import com.mmsp.dao.impl.DAO_WPDData;
+import com.mmsp.logic.*;
+import com.mmsp.model.WPDData;
+
 import java.io.IOException;
 import java.util.List;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+//import javafx.scene.control.Alert;
+//import javafx.scene.control.Alert.AlertType;
 
 /**
  * WPD - the work program of the discipline
@@ -21,41 +25,49 @@ import javafx.stage.WindowEvent;
 
 public class WPD extends Application {
     
+	public static WPDData data = new WPDData();
+	
     @Override
     public void start(final Stage primaryStage) throws IOException {
         
         final Logic core = new Logic();
         
-        VBox vBMain = new FXMLCtrlMain(primaryStage); // подгружаем класс контроллера, расширенного VBox, заодно и запомним Stage (вроде нужен для FileChooser'а)
+        VBox vBMain = new FXMLCtrlMain(primaryStage); // подгружаем класс контроллера, расширенного VBox, заодно запомним Stage (вроде нужен для FileChooser'а)
 	    Scene scene = new Scene(vBMain);
 	    primaryStage.setTitle("WPD");
+	    primaryStage.getIcons().add(new Image("Logo.png"));
 	    primaryStage.setScene(scene); 
 	    
 	    primaryStage.show();
-	    
-        // TODO Проверить на сущесвование пользователя, если его нет - вызвать код ниже
-	    com.mmsp.dao.impl.SubjectDAOImpl S1 = new com.mmsp.dao.impl.SubjectDAOImpl();
-	    
-	    // Start Test
-		    com.mmsp.model.Subject Su1 = new com.mmsp.model.Subject();
-		    Su1.setFirstName("Al");
-		    Su1.setLastName("Ro");
-		    Su1.setMiddleName("Vit");
-		    Su1.setName("Inform");
-		    Su1.setTeacher(null);
-		    Su1.setVersions(null);
-		    S1.addSubject(Su1);
-	    // End Test
-	    
-	    List<com.mmsp.model.Subject> li = S1.getAllSubject();
+
+	    DAO_WPDData daoS = new DAO_WPDData();
+
+	    List<WPDData> li = daoS.getAll(data);
+
         if (li.isEmpty()) {
         	Stage stageAuth = new Stage();
         	stageAuth.initModality(Modality.APPLICATION_MODAL);
         	Scene sceneAuth = new Scene(new FXMLCtrlAuth(stageAuth));
         	stageAuth.setScene(sceneAuth);
         	stageAuth.setTitle("Auth");
+        	stageAuth.getIcons().add(new Image("Logo.png"));
         	stageAuth.showAndWait();
+        	daoS.add(data); // TODO Определить: нужно ли сохранение?
+        } else {
+        	if (li.size() == 1) {
+        		data = li.get(0);
+        	} else {
+        		System.err.println("ERROR: number of Subject == " + li.size());
+        		// FIXME как такое обработать?
+        		data = li.get(0);
+        		/*Alert alert = new Alert(AlertType.ERROR); // Почему не работает?
+        		alert.setTitle("Ошибка");
+        		alert.setHeaderText("К сожалению, ...");
+        		alert.setContentText("...возникла ошибка при выборке");
+        		alert.showAndWait();*/
+        	}
         }
+        
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent t) {
             	core.closeSessionFactory(); // Закрываем сессию

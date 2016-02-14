@@ -1,6 +1,9 @@
 package com.mmsp.logic;
 
 import java.io.IOException;
+
+import com.mmsp.wpd.WPD;
+
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
@@ -10,8 +13,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
 /**
+ * Контроллер авторизационной формы
  * @author Alex
- *
  */
 
 public class FXMLCtrlAuth extends VBox {
@@ -32,19 +35,26 @@ public class FXMLCtrlAuth extends VBox {
 
     @FXML
     void clickBSave(ActionEvent event) {
-    	stage.close();
+    	WPD.data.setFirstName(tFFirstName.getText());
+    	WPD.data.setLastName(tFLastName.getText());
+    	WPD.data.setMiddleName(tFMiddleName.getText());
+    	this.stage.close();
     }
     
 	public FXMLCtrlAuth(Stage stage) throws IOException {
 		this.stage = stage;
     	
-    	FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("Auth.fxml")); // ��������� �����
+    	FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("Auth.fxml"));
         
-        loader.setController(this); // ����� �����������, �.�. ���������� � �� ������ � Scene Builder'�
+        loader.setController(this);
         
-        loader.setRoot(this); // ��������� �����
+        loader.setRoot(this);
         
-        loader.load(); // ��������
+        loader.load();
+        
+        tFFirstName.setText(WPD.data.getFirstName());
+        tFLastName.setText(WPD.data.getLastName());
+        tFMiddleName.setText(WPD.data.getMiddleName());
 	}
 
 }

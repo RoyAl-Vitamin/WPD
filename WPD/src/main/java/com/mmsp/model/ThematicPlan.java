@@ -36,10 +36,15 @@ public class ThematicPlan implements Serializable {
     
     @OneToOne
     @PrimaryKeyJoinColumn
-    private Subject subject; // связь с дисциплиной, к которой это тематический план принаделжит
+    private WPDData subject; // связь с дисциплиной, к которой это тематический план принаделжит
     
-    @Column(name = "THEMATIC_PLAN_NUMBER")
-    private Integer number; // Принадлежность к модулю
+    @Column(name = "THEMATIC_PLAN_BELONGING_TO_THE_MODULE")
+    private Integer belongingToTheModule; // Принадлежность к модулю, его номер
+    
+    @Column(name = "THEMATIC_PLAN_BELONGING_TO_THE_SECTION")
+    private Integer belongingToTheSection; // Принадлежность к разделу, его номер раздела дисциплины
+    
+    private String tableName = "THEMATIC_PLAN";
     
     public ThematicPlan() {
     }
@@ -60,15 +65,19 @@ public class ThematicPlan implements Serializable {
         return laboriousness;
     }
 
-    public Subject getSubject() {
+    public WPDData getSubject() {
         return subject;
     }
 
-    public Integer getNumber() {
-        return number;
+    public Integer getBelongingToTheModule() {
+        return belongingToTheModule;
+    }
+    
+    public Integer getBelongingToTheSection() {
+        return belongingToTheSection;
     }
 
-    public void setId(Long id) {
+	public void setId(Long id) {
         this.id = id;
     }
 
@@ -84,11 +93,20 @@ public class ThematicPlan implements Serializable {
         this.laboriousness = laboriousness;
     }
 
-    public void setSubject(Subject subject) {
+    public void setSubject(WPDData subject) {
         this.subject = subject;
     }
 
-    public void setNumber(Integer number) {
-        this.number = number;
+    public void setBelongingToTheModule(Integer value) {
+        this.belongingToTheModule = value;
+    }
+    
+    public void setBelongingToTheSection(Integer value) {
+        this.belongingToTheModule = value;
+    }
+    
+    @Override
+    public String toString() {
+    	return tableName + " " + title;
     }
 }
