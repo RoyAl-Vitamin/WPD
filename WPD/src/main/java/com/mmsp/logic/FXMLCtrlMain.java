@@ -119,44 +119,78 @@ public class FXMLCtrlMain extends VBox {
     	stageDiscipline.getIcons().add(new Image("Logo.png"));
     	stageDiscipline.showAndWait();
     	
-    	olDiscipline.add(hbD.getValue());
-    	
-    	DAOImpl dao = new DAOImpl();
-    	dao.add(hbD);
+    	if (!(hbD.getValue().equals(""))) { // проверка на отсутствие введённых данных
+    		if (hbD.getCode().intValue() == 0) System.err.println("Код дисциплины == 0, возможно, это была ошибка?");
+    		olDiscipline.add(hbD.getValue() + ":" + hbD.getCode().toString());
+	    	DAOImpl dao = new DAOImpl();
+	    	dao.add(hbD);
+    	} else {
+    		System.err.println("Не введено название дисциплины");
+    	}
+    	if ((olDiscipline.size() > 0) && (cbDiscipline.getSelectionModel().getSelectedIndex() == -1)) cbDiscipline.getSelectionModel().select(0); 
     }
 	
 	@FXML
     void clickBChange(ActionEvent event) throws IOException {
-		System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
+		System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex() + "\nId = " + hbD.getId() + "\nValue = " + hbD.getValue() + "\nCode = " + hbD.getCode()); // посмотрим, что внутри
+		
+		// не меняем индекс у cbDisc, если индексы cbDisc and lvDisc совпадали до начала изменения
+		boolean b = false;
+		if (lvDiscipline.getSelectionModel().getSelectedIndex() == cbDiscipline.getSelectionModel().getSelectedIndex()) b = true; 
+		
+		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
+		hbD = dao.get(hbD.getValue(), hbD.getCode());
+		if (hbD == null) System.err.println("НЕ НАЙДЕН!!!");
+		
 		Stage stageDiscipline = new Stage();
 		stageDiscipline.initModality(Modality.APPLICATION_MODAL);
     	Scene sceneDiscipline = new Scene(new FXMLCtrlDiscipline(stageDiscipline));
+    	/*
+    	 * после удаления дисциплины при наждатии "Изменить" вылетает NPE, т.к. пытается считать из hbD не загруженные в него данные
+    	 */
     	stageDiscipline.setScene(sceneDiscipline);
     	stageDiscipline.setTitle("Change Discipline");
     	stageDiscipline.getIcons().add(new Image("Logo.png"));
     	stageDiscipline.showAndWait();
-    	DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
+
+    	/*
+    	HandbookDiscipline obj = dao.get(hbD.getValue(), hbD.getCode());
+    	System.out.println("Value = " + hbD.getValue() + " Code = " + hbD.getCode()); 
+    	System.out.println("Obj.ID = " + obj.getId() + "\nObj.Code = " + obj.getCode() + "\nObj.Value = " + obj.getValue());
+    	*/
     	dao.update(hbD);
     	System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
-    	String res = olDiscipline.set(lvDiscipline.getSelectionModel().getSelectedIndex(), hbD.getValue());
+    	String res = olDiscipline.set(lvDiscipline.getSelectionModel().getSelectedIndex(), hbD.getValue() + ":" + hbD.getCode());
     	if ((res == null) || (res.equals(""))) System.err.println("Попытка заменить что-то не понятное на сторку");
+    	if (b) cbDiscipline.getSelectionModel().select(lvDiscipline.getSelectionModel().getSelectedIndex()); // меняет занчение в cbDisc булевая переменная
     }
 	
 	@FXML
     void clickBDelete(ActionEvent event) {
-		System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
-		//olDiscipline.remove(hbD.getValue()); // FIXME java.lang.ArrayIndexOutOfBoundsException: -1
 
-		String errStr = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // FIXME На этом моменте он стреляет мне в ногу // FIXME удаляет только первое вхождение
+		//hbD.setValue(olDiscipline.get(lvDiscipline.getSelectionModel().getSelectedIndex()).split(":")[0]);
+		//hbD.setCode(Integer.valueOf(olDiscipline.get(lvDiscipline.getSelectionModel().getSelectedIndex()).split(":")[1]));
+		System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
+
+		//System.out.println("Индекс выбранного удалённого элемента == " + lvDiscipline.getSelectionModel().getSelectedIndex());
+		String errStr = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // Удаляем объект из списка
+		
 		System.out.println("Deleted = " + errStr);
-		System.out.println("ID = " + hbD.getId() + "\nValue = " + hbD.getValue() + "\nCode = " + hbD.getCode());
+		
+		//System.out.println("ID = " + hbD.getId() + "\nValue = " + hbD.getValue() + "\nCode = " + hbD.getCode());
+		
 		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
-		List<HandbookDiscipline> liHBD = dao.getByValue(hbD.getValue());
-		for (int i = 0; i < liHBD.size(); i++) {
-			System.out.println("ID = " + liHBD.get(i).getId() + "\nValue = " + liHBD.get(i).getValue() + "\nCode = " + liHBD.get(i).getCode());
-			dao.remove(liHBD.get(i));
-		}
+		dao.remove(dao.get(hbD.getValue(), hbD.getCode())); // удаляем объект из БД
 		cbDiscipline.getSelectionModel().selectFirst();
+		
+		// После удаления элемента, подгружаем тот, что находится перед ним, т.к. видимо lvDisc.onChanged не справляется с этим
+		if (olDiscipline.size() > 0) {
+			String temp = olDiscipline.get(lvDiscipline.getSelectionModel().getSelectedIndex());
+			System.out.println("Элемент удалён, подгружаем новый cо значениями " + temp);
+			hbD = dao.get(temp.split(":")[0], Integer.valueOf(temp.split(":")[1])); // FIXME java.lang.NullPointerException
+			System.out.println("\nId = " + hbD.getId() + "\nValue = " + hbD.getValue() + "\nCode = " + hbD.getCode());
+			System.out.println("Элемент = " + hbD.toString());
+		}
     }
 
     public FXMLCtrlMain(Stage stage) throws IOException {
@@ -170,36 +204,27 @@ public class FXMLCtrlMain extends VBox {
         
         loader.load(); // загрузка
 
-        // TODO Загрузка из справочников значений Дисциплина и Версия
         DAOImpl dao = new DAOImpl(); // FIXME DAOImpl
         List<HandbookDiscipline> li1 = dao.getAll(new HandbookDiscipline());
         for (int i = 0; i < li1.size(); i++) {
-        	String temp = li1.get(i).getValue();
-        	olDiscipline.add(temp);
+        	olDiscipline.add(li1.get(i).getValue() + ":" + li1.get(i).getCode().intValue());
         }
         
         lvDiscipline.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
         	
         	// МБ сделать так же? http://java-buddy.blogspot.ru/2013/05/implement-javafx-listview-for-custom.html
         	
+        	// Подгрузка в hbD дисциплины при смене выделенной строки
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-            	//System.out.println("ObservableValue = " + observable.toString());
             	System.out.println("Selected Index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
-                //System.out.println("ListView selection changed from oldValue = " + oldValue + " to newValue = " + newValue);
             	if (newValue != null) {
             		bChange.setDisable(false);
             		bDelete.setDisable(false);
-            		// FIXME? если дисциплины по названию не могут совпадать
-        			hbD.setValue(newValue);
+
         			DAO_HandBookDiscipline DAO_HBD = new DAO_HandBookDiscipline();
-        			List<HandbookDiscipline> li2 = DAO_HBD.getByValue(newValue);
-        			System.out.println("Size of list(deleted) = " + li2.size());
-        			if (li2.size() != 0) {
-        				// FIXME Для предметов с одинаковыми названиями, но разными кодами, можем полиучить список, что в таком случае выгружать?
-        				hbD.setCode(li2.get(0).getCode());
-        				System.out.println(hbD.getValue() + ":" + hbD.getCode().toString());
-        			}
+        			System.out.println("NEWVALUE = " + newValue);
+        			hbD = DAO_HBD.get(newValue.split(":")[0], Integer.valueOf(newValue.split(":")[1]));
         		} else {
         			bChange.setDisable(true);
         			bDelete.setDisable(true);
@@ -212,12 +237,12 @@ public class FXMLCtrlMain extends VBox {
         cbDiscipline.getSelectionModel().selectedIndexProperty().addListener(
         	new ChangeListener<Number>() {
 				public void changed (ObservableValue ov, Number value, Number new_value) {
-					if (new_value.intValue() < 0) new_value = 0; // КАЖИСЬ ПАЧИНИЛ. АА
+					if (new_value.intValue() < 0) new_value = 0;
 					System.out.println("ObservableValue ov = " + ov.toString() + "\n Number value = " +  value.intValue()+ "\n Number new_value = " + new_value.intValue());
 					if (li1.size() != 0) {
-						Long i = li1.get(new_value.intValue()).getId(); // FIXME
+						Long i = li1.get(new_value.intValue()).getId();
 						DAO_WPDVersion dao = new DAO_WPDVersion(); 
-						List<WPDVersion> liOfWDPVersion = dao.get("FROM WPDVersion WHERE number = " + i); // Вроде работает // Кажется, на этом моменте должно выстрелить в ногу // WPD_VERSION_NUMBER || number?
+						List<WPDVersion> liOfWDPVersion = dao.get("FROM WPDVersion WHERE number = " + i);
 						for (int j = 0; j < liOfWDPVersion.size(); j++) {
 				        	String temp = String.valueOf(liOfWDPVersion.get(j).getDate().getYear());
 				        	olVersion.add(temp);
@@ -233,7 +258,9 @@ public class FXMLCtrlMain extends VBox {
         
         cbDiscipline.setItems(olDiscipline);
         cbVersion.setItems(olVersion);
-        cbDiscipline.setValue(olDiscipline.get(0));
-        cbVersion.setValue(olVersion.get(0));
+        if (olDiscipline.size() != 0)
+        	cbDiscipline.setValue(olDiscipline.get(0));
+        if (olVersion.size() != 0)
+        	cbVersion.setValue(olVersion.get(0));
     }
 }

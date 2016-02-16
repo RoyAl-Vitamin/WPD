@@ -39,7 +39,7 @@
 </ToolBar>
       <TabPane fx:id="tpDiscipline" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="30.0" prefHeight="139.0" prefWidth="841.0" tabClosingPolicy="ALL_TABS" VBox.vgrow="ALWAYS">
 <tabs>
-<Tab text="Дисциплины">
+<Tab closable="false" text="Дисциплины">
                <content>
                   <HBox alignment="CENTER">
                      <children>

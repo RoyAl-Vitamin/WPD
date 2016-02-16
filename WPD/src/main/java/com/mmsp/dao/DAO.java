@@ -9,6 +9,8 @@ import org.hibernate.SessionFactory;
 import com.mmsp.model.WPDVersion;
 import com.mmsp.util.HibernateUtil;
 
+// https://docs.jboss.org/hibernate/orm/3.3/reference/en/html/queryhql.html
+
 public interface DAO<T> {
 	
 	default public void add(T obj) {
@@ -18,7 +20,7 @@ public interface DAO<T> {
 		//getting transaction object from session object  
 		session.beginTransaction();  
 		session.save(obj);
-		System.out.println("Inserted Successfully");  
+		System.out.println("Inserted Successfully");
 		session.getTransaction().commit();
 		session.flush();
 		session.close(); 
