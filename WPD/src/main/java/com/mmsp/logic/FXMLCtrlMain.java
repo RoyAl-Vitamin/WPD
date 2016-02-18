@@ -173,24 +173,29 @@ public class FXMLCtrlMain extends VBox {
 		System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
 
 		//System.out.println("Индекс выбранного удалённого элемента == " + lvDiscipline.getSelectionModel().getSelectedIndex());
-		String errStr = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // Удаляем объект из списка
-		
-		System.out.println("Deleted = " + errStr);
+
 		
 		//System.out.println("ID = " + hbD.getId() + "\nValue = " + hbD.getValue() + "\nCode = " + hbD.getCode());
 		
 		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
-		dao.remove(dao.get(hbD.getValue(), hbD.getCode())); // удаляем объект из БД
-		cbDiscipline.getSelectionModel().selectFirst();
+		hbD.setId(dao.getId(hbD.getValue(), hbD.getCode()));
+		dao.remove(hbD); // удаляем объект из БД
+		
+		String strWasRemoved = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // Удаляем объект из списка
+
+		System.out.println("Удалённая строка = " + strWasRemoved);
+		
+		if (hbD.getCode() != null || hbD.getValue() != null) System.out.println("Valut = " + hbD.getValue() + "\nCode = " + hbD.getCode().intValue());
+		//cbDiscipline.getSelectionModel().selectFirst();
 		
 		// После удаления элемента, подгружаем тот, что находится перед ним, т.к. видимо lvDisc.onChanged не справляется с этим
-		if (olDiscipline.size() > 0) {
+		/*if (olDiscipline.size() > 0) {
 			String temp = olDiscipline.get(lvDiscipline.getSelectionModel().getSelectedIndex());
 			System.out.println("Элемент удалён, подгружаем новый cо значениями " + temp);
 			hbD = dao.get(temp.split(":")[0], Integer.valueOf(temp.split(":")[1])); // FIXME java.lang.NullPointerException
 			System.out.println("\nId = " + hbD.getId() + "\nValue = " + hbD.getValue() + "\nCode = " + hbD.getCode());
 			System.out.println("Элемент = " + hbD.toString());
-		}
+		}*/
     }
 
     public FXMLCtrlMain(Stage stage) throws IOException {
@@ -240,7 +245,7 @@ public class FXMLCtrlMain extends VBox {
 					if (new_value.intValue() < 0) new_value = 0;
 					System.out.println("ObservableValue ov = " + ov.toString() + "\n Number value = " +  value.intValue()+ "\n Number new_value = " + new_value.intValue());
 					if (li1.size() != 0) {
-						Long i = li1.get(new_value.intValue()).getId();
+						Long i = li1.get(new_value.intValue()).getId(); // FIXME java.lang.IndexOutOfBoundsException: Index: 1, Size: 1
 						DAO_WPDVersion dao = new DAO_WPDVersion(); 
 						List<WPDVersion> liOfWDPVersion = dao.get("FROM WPDVersion WHERE number = " + i);
 						for (int j = 0; j < liOfWDPVersion.size(); j++) {

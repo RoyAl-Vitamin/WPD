@@ -30,14 +30,14 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 		return objects;
 	}
 	
-	public HandbookDiscipline getId(String sValue, Integer iCode) { // FIXME return Long!
+	public Long getId(String sValue, Integer iCode) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
 		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
-		Query query = session.createQuery("select id from HandbookDiscipline WHERE value = \'" + sValue + "\' and code = " + iCode.intValue());
-		List<HandbookDiscipline> objects = query.list();
-		System.out.println("Found ALL Successfully");
+		Query query = session.createQuery("SELECT id FROM HandbookDiscipline WHERE value = \'" + sValue + "\' AND code = " + iCode.intValue());
+		List<Long> objects = query.list();
+		System.out.println("Found ID Successfully");
 		session.getTransaction().commit();
 		if (objects.size() != 0)
 			return objects.get(0);
