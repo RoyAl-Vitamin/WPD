@@ -10,6 +10,7 @@ import com.mmsp.dao.DAO;
 import com.mmsp.model.WPDVersion;
 import com.mmsp.util.HibernateUtil;
 
+@SuppressWarnings("unchecked")
 public class DAO_WPDVersion implements DAO<WPDVersion> {
 
 	// provide on request
@@ -26,5 +27,20 @@ public class DAO_WPDVersion implements DAO<WPDVersion> {
 		}
 		session.getTransaction().commit();    
 		return objects;
+	}
+	
+	public Long getId(Long iValue) {
+		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
+		Query query = session.createQuery("SELECT id FROM WPDVersion WHERE number = \'" + iValue + "\'");
+		List<Long> objects = query.list();
+		System.out.println("Found ID Successfully");
+		session.getTransaction().commit();
+		if (objects.size() != 0)
+			return objects.get(0);
+		else
+			return null;
 	}
 }

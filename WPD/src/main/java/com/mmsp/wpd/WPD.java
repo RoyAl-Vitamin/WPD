@@ -27,11 +27,11 @@ public class WPD extends Application {
     
 	public static WPDData data = new WPDData();
 	
+	final Logic core = new Logic();
+	
     @Override
     public void start(final Stage primaryStage) throws IOException {
-        
-        final Logic core = new Logic();
-        
+
         VBox vBMain = new FXMLCtrlMain(primaryStage); // подгружаем класс контроллера, расширенного VBox, заодно запомним Stage (вроде нужен для FileChooser'а)
 	    Scene scene = new Scene(vBMain);
 	    primaryStage.setTitle("WPD");
@@ -57,10 +57,10 @@ public class WPD extends Application {
         	if (li.size() == 1) {
         		data = li.get(0);
         	} else {
-        		System.err.println("ERROR: number of Subject == " + li.size());
+        		System.err.println("ERROR: number of WPDData == " + li.size());
         		// FIXME как такое обработать?
         		data = li.get(0);
-        		/*Alert alert = new Alert(AlertType.ERROR); // Почему не работает?
+        		/*Alert alert = new Alert(AlertType.ERROR); // Почему не работает? UPD: Update JDK to 8u40
         		alert.setTitle("Ошибка");
         		alert.setHeaderText("К сожалению, ...");
         		alert.setContentText("...возникла ошибка при выборке");
@@ -68,11 +68,9 @@ public class WPD extends Application {
         	}
         }
         
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() { // Работает только на закрытие окна по крестику
             public void handle(WindowEvent t) {
-            	core.closeSessionFactory(); // Закрываем сессию
-                Platform.exit();
-                System.exit(0);
+            	stop();
             }
         });
     }
@@ -82,6 +80,13 @@ public class WPD extends Application {
      */
     public static void main(String[] args) {
         launch(args);
+    }
+
+    @Override
+    public void stop(){ // адекватное закрытие окна
+    	core.closeSessionFactory(); // Закрываем сессию
+    	Platform.exit();
+        System.exit(0);
     }
     
 }

@@ -33,7 +33,7 @@
             <ChoiceBox fx:id="cbDiscipline" prefWidth="150.0" xmlns:fx="http://javafx.com/fxml" />
             <Label text="Версия" />
             <ChoiceBox fx:id="cbVersion" prefWidth="150.0" />
-            <Button mnemonicParsing="false" text="Открыть" />
+            <Button fx:id="bOpenTab" mnemonicParsing="false" onAction="#clickBOpenTab" text="Открыть" />
 <Button fx:id="bAddTab" mnemonicParsing="false" onAction="#clickBAddTab" text="+" />
 </items>
 </ToolBar>

@@ -6,7 +6,6 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import com.mmsp.model.WPDVersion;
 import com.mmsp.util.HibernateUtil;
 
 // https://docs.jboss.org/hibernate/orm/3.3/reference/en/html/queryhql.html
@@ -45,6 +44,7 @@ public interface DAO<T> {
 		session.getTransaction().commit();
 	}
 
+	@SuppressWarnings("unchecked")
 	default public List<T> getAll(T obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
@@ -61,6 +61,7 @@ public interface DAO<T> {
 		return objects;
 	}
 
+	@SuppressWarnings("unchecked")
 	default public T getById(T obj, Long id) {
 		T value = null;
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
@@ -72,6 +73,7 @@ public interface DAO<T> {
 		return value;
 	}
 
+	@SuppressWarnings("unchecked")
 	default public List<T> get(String value) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();    
 		Session session = sessionFactory.openSession();

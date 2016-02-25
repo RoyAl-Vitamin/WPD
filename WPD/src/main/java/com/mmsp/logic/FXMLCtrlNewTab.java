@@ -586,7 +586,7 @@ public class FXMLCtrlNewTab extends VBox {
      * Описание методов поведения TableView, TreeTableView and ListView
      */
     private void initT() {
-    	initTtvTable41();
+    	//initTtvTable41(); // DELETE
     	initTvStudyLoad();
     	initLvTypeOfControlMeasures();
     }
@@ -655,9 +655,7 @@ public class FXMLCtrlNewTab extends VBox {
     	WPDData subject = new WPDData();
     	ThematicPlan thematicPlan = new ThematicPlan();
     	WPDVersion wpdVersion = new WPDVersion();
-    	
-    	
-    	
+
     	wpdVersion.setSubject(subject);
     	wpdVersion.setThematicPlan(thematicPlan);
 
@@ -708,7 +706,7 @@ public class FXMLCtrlNewTab extends VBox {
     	root.getChildren().add(item);
     }
 	
-	public FXMLCtrlNewTab(Stage curr_stage, String value) throws IOException { // TODO Добавить аргументы
+	public FXMLCtrlNewTab(Stage curr_stage, Long id_Disc, Long id_Vers) throws IOException {
 		
 		FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
         
@@ -720,7 +718,7 @@ public class FXMLCtrlNewTab extends VBox {
         
         stage = curr_stage;
 
-        tfVersion.setText(value);
+        tfVersion.setText("FIXME");
         
         mbNumberOfSemesters.setText(tsFNOS.toString());
         

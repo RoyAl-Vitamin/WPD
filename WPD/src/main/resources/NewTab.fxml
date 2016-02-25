@@ -183,49 +183,6 @@
                   </VBox>
                </content>
             </Tab>
-            <Tab closable="false" text="Таблица 4.1 *УДАЛИТЬ*">
-              <content>
-                  <VBox alignment="TOP_CENTER" spacing="3.0">
-                     <children>
-                        <HBox alignment="TOP_CENTER" spacing="7.0" VBox.vgrow="NEVER">
-                           <children>
-                              <Button fx:id="bAddRowT41" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBAddRowT41" prefHeight="25.0" prefWidth="25.0" text="+" HBox.hgrow="NEVER" />
-                              <Button maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="-" HBox.hgrow="NEVER" />
-                           </children>
-                        </HBox>
-                        <TreeTableView fx:id="ttvTable41" disable="true" stylesheets="@Main.css" VBox.vgrow="ALWAYS">
-                           <columnResizePolicy>
-                              <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                           </columnResizePolicy>
-                           <columns>
-                              <TreeTableColumn fx:id="colTTVNumberOfModule" prefWidth="123.0" sortable="false" text="Номер модуля" />
-                              <TreeTableColumn fx:id="colTTVNumberOfDisciplineSection" minWidth="0.0" prefWidth="184.0" sortable="false" text="Номер раздела дисциплины" />
-                              <TreeTableColumn fx:id="colTTVNumberOfDisciplineTopics" prefWidth="184.0" sortable="false" text="Номер темы дисциплины" />
-                              <TreeTableColumn prefWidth="325.0" sortable="false" text="Количество часов (очная форма обучения)">
-                                 <columns>
-                                    <TreeTableColumn prefWidth="75.0" sortable="false" text="Аудиторная работа">
-                                       <columns>
-                                          <TreeTableColumn fx:id="colTTVNumberOfHours" prefWidth="75.0" sortable="false" text="Всего" />
-                                          <TreeTableColumn fx:id="colTTVNumberOfL" prefWidth="75.0" sortable="false" text="Л" />
-                                          <TreeTableColumn fx:id="colTTVNumberOfPZ" prefWidth="75.0" sortable="false" text="ПЗ" />
-                                          <TreeTableColumn fx:id="colTTVNumberOfLR" prefWidth="75.0" sortable="false" text="ЛР" />
-                                       </columns>
-                                    </TreeTableColumn>
-                                    <TreeTableColumn fx:id="colTTVKSR" prefWidth="75.0" sortable="false" text="КСР" />
-                                    <TreeTableColumn fx:id="colTTVFinalAttestation" prefWidth="75.0" sortable="false" text="Итоговая аттестация" />
-                                    <TreeTableColumn fx:id="colTTVIndividualWork" prefWidth="75.0" sortable="false" text="Самостоятельная работа" />
-                                 </columns>
-                              </TreeTableColumn>
-                              <TreeTableColumn fx:id="colTTVLaborIntensity" prefWidth="75.0" sortable="false" text="Трудоёмкость Трудоёмк., ч./ЗЕ" />
-                           </columns>
-                        </TreeTableView>
-                     </children>
-                     <padding>
-                        <Insets top="3.0" />
-                     </padding>
-                  </VBox>
-              </content>
-            </Tab>
             <Tab closable="false" text="Таблица 7.1">
                <content>
                   <VBox alignment="TOP_CENTER" spacing="3.0">

@@ -34,7 +34,7 @@ public class FXMLCtrlDiscipline extends VBox {
         loader.load();
 		
 		tfDisciplineName.setText(com.mmsp.logic.FXMLCtrlMain.hbD.getValue());
-		tfCode.setText(com.mmsp.logic.FXMLCtrlMain.hbD.getCode().toString());
+		tfCode.setText(com.mmsp.logic.FXMLCtrlMain.hbD.getCode().toString()); // FIXME проверка на ввод и что б в Integer помещалось
 
 		this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent t) {

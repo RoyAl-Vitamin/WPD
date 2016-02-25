@@ -1,7 +1,7 @@
 package com.mmsp.model;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.sql.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -48,8 +48,9 @@ public class WPDVersion implements Serializable {
     private ThematicPlan thematicPlan; // связь с тематическим планом
 
     /*@OneToOne(mappedBy = "")
-    private PoCM planOfConMes; // связь с тематическим планом
+    private PoCM planOfConMes; // связь с планом контр мероприятий
     */
+
     public WPDVersion() {
     }
 

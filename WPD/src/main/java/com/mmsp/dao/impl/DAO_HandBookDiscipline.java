@@ -10,6 +10,7 @@ import com.mmsp.dao.DAO;
 import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.util.HibernateUtil;
 
+@SuppressWarnings("unchecked")
 public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 	
 	public List<HandbookDiscipline> getByValue(String value) {
@@ -34,7 +35,6 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
-		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
 		Query query = session.createQuery("SELECT id FROM HandbookDiscipline WHERE value = \'" + sValue + "\' AND code = " + iCode.intValue());
 		List<Long> objects = query.list();
 		System.out.println("Found ID Successfully");
@@ -70,16 +70,6 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 				remove(objects.get(i)); // удалим все, кроме нулевого
 			}
 		}
-		
-		/*if (objects.size() > 1) { // Удалим похожие
-			object = objects.get(0);
-			System.err.println("Найдены похожие элементы по Value and Id");
-			for (int i = 1; i < objects.size(); i++) {	
-				remove(objects.get(i)); // удалим все, кроме нулевого
-			}
-		} else
-			if (objects.size() == 1) object = objects.get(0);
-		*/
 		return object;
 	}
 }
