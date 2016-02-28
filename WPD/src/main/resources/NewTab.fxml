@@ -14,15 +14,15 @@
                <children>
                   <Label alignment="BASELINE_CENTER" text="Версия:" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                   <Label text="Дата создания:" textAlignment="CENTER" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-                  <TextField id="lab" fx:id="tfVersion" editable="false" stylesheets="@Main.css" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" />
-                  <TextField fx:id="tFPath" text="C:\rpdmaker\subd.m" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                  <TextField id="lab" fx:id="tfVersion" stylesheets="@Main.css" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" />
+                  <TextField fx:id="tfPath" text="C:\rpdmaker\subd.m" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                      <GridPane.margin>
                         <Insets left="5.0" right="5.0" />
                      </GridPane.margin>
                   </TextField>
                   <Button fx:id="bCallFileChooser" alignment="CENTER" minWidth="63.0" mnemonicParsing="false" onAction="#clickBFileChooser" prefHeight="26.0" prefWidth="70.0" text="Выбрать" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                   <Label alignment="BASELINE_CENTER" minWidth="60.0" text="Семестры:" GridPane.columnIndex="4" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
-                  <DatePicker fx:id="dPDateOfCreate" editable="false" prefWidth="250.0" promptText="26.10.2001" style="-fx-background-color: #3333;" GridPane.columnIndex="3" GridPane.columnSpan="3" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                  <DatePicker fx:id="dpDateOfCreate" editable="false" prefWidth="250.0" promptText="26.10.2001" style="-fx-background-color: #3333;" GridPane.columnIndex="3" GridPane.columnSpan="3" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                   <Label alignment="BASELINE_CENTER" contentDisplay="CENTER" text="Шаблон:" textAlignment="CENTER" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                   <MenuButton fx:id="mbNumberOfSemesters" alignment="BASELINE_LEFT" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" mnemonicParsing="false" GridPane.columnIndex="5" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                      <items>

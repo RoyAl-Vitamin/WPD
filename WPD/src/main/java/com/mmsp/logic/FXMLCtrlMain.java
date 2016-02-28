@@ -2,6 +2,7 @@ package com.mmsp.logic;
 
 import java.io.IOException;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -11,6 +12,7 @@ import com.mmsp.dao.impl.DAO_HandBookDiscipline;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.model.WPDVersion;
+import com.mmsp.wpd.WPD;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -107,13 +109,12 @@ public class FXMLCtrlMain extends VBox {
     	Tab t = new Tab();
 		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + cbVersion.getValue());
 		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
-		Long id_Disc = dao_Disc.getId(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
+		Long id_Disc = dao_Disc.getIdByValueAndCode(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
 		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
+
+		Long id_Vers = dao_Vers.getIdByNumber(id_Disc);
 		
-		// UNDONE по какому критерию искать РПДВерсию? 
-		Long id_Vers = dao_Vers.getId(id_Disc);
-		
-		VBox vbNewTab = new FXMLCtrlNewTab(stage, id_Disc, id_Vers); // передача WPDVersion, а не только лишь его названия
+		VBox vbNewTab = new FXMLCtrlNewTab(stage, id_Vers); // передача WPDVersion, а не только лишь его названия
 		vbNewTab.setAlignment(Pos.CENTER);
 		t.setContent(vbNewTab);
 		tpDiscipline.getTabs().add(t);
@@ -122,27 +123,34 @@ public class FXMLCtrlMain extends VBox {
 	@FXML
 	void clickBAddTab(ActionEvent event) throws IOException { // Кнопка "+" Добавление вкладки в вверхнй TabPane
 		Tab t = new Tab();
-		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + cbVersion.getValue());
 		
 		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
-		Long id_Disc = dao_Disc.getId(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
-		
+		hbD = dao_Disc.getByValueAndCode(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
+
 		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();		
 		WPDVersion wpdVers = new WPDVersion();
-		wpdVers.setNumber(id_Disc);
-		// FIXME NPE! Какое-то число 70
-		// FIXME Попросить пользователя ввести дату
-		wpdVers.setDate(new Date(0));
-		dao_Vers.add(wpdVers);
+
+		wpdVers.setNumber(hbD.getId()); // Номер версии есть ID Дисциплины
+		wpdVers.setDate(Date.valueOf(LocalDate.now())); // Используем сегодняшнюю дату при создании WPDVerison
+		wpdVers.setWPDData(WPD.data); // Соединяем WPDVersion с WPDData
+		wpdVers.setId(dao_Vers.add(wpdVers)); // Запоминаем ID, попутно сохранив в БД WPDVerison 
+		//dao_Vers.update(wpdVers); // Обновляем Версию после сделанных изменений
+
+		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + wpdVers.getDate().getYear());
 		
-		VBox vbNewTab = new FXMLCtrlNewTab(stage, id_Disc, wpdVers.getId());
+		VBox vbNewTab = new FXMLCtrlNewTab(stage, wpdVers.getId());
 		vbNewTab.setAlignment(Pos.CENTER);
+
 		t.setContent(vbNewTab);
 		tpDiscipline.getTabs().add(t);
+
+		// UNDONE Как из внутренности Tab поменять название вкладки
+		olVersion.add(wpdVers.toString());
+		if (olVersion.size() == 1) cbVersion.getSelectionModel().selectFirst();
     }
 	
 	@FXML
-    void clickBCreate(ActionEvent event) throws IOException {
+    void clickBCreate(ActionEvent event) throws IOException { // "Создать" Дисциплину
 		hbD.setCode(0);
 		hbD.setValue("");
 		Stage stageDiscipline = new Stage();
@@ -163,10 +171,6 @@ public class FXMLCtrlMain extends VBox {
     	}
 
     	lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конце
-    	/*
-    	 * Исправлен баг:
-    	 * После создания не перефокусировался lvDiscipline, из-за чего возникала ситуация с загрузкой не выделенного элемента, а только что созданного, при этом редактирование производилось для первого
-    	 */
     }
 	
 	@FXML
@@ -178,7 +182,7 @@ public class FXMLCtrlMain extends VBox {
 		if (lvDiscipline.getSelectionModel().getSelectedIndex() == cbDiscipline.getSelectionModel().getSelectedIndex()) b = true; 
 		
 		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
-		hbD = dao.get(hbD.getValue(), hbD.getCode());
+		hbD = dao.getByValueAndCode(hbD.getValue(), hbD.getCode());
 		if (hbD == null) System.err.println("НЕ НАЙДЕН!!!");
 		
 		Stage stageDiscipline = new Stage();
@@ -204,35 +208,19 @@ public class FXMLCtrlMain extends VBox {
 	
 	@FXML
     void clickBDelete(ActionEvent event) {
-
-		//hbD.setValue(olDiscipline.get(lvDiscipline.getSelectionModel().getSelectedIndex()).split(":")[0]);
-		//hbD.setCode(Integer.valueOf(olDiscipline.get(lvDiscipline.getSelectionModel().getSelectedIndex()).split(":")[1]));
-		System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
-
-		//System.out.println("Индекс выбранного удалённого элемента == " + lvDiscipline.getSelectionModel().getSelectedIndex());
-		
-		//System.out.println("ID = " + hbD.getId() + "\nValue = " + hbD.getValue() + "\nCode = " + hbD.getCode());
-		
+		// UNDONE Если есть версии, то уточнить у пользователя стоит ли удалять? UPD: Отловить Exception
 		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
-		hbD.setId(dao.getId(hbD.getValue(), hbD.getCode())); // FIXME удаление предметов с одинаковыми параметрами
-		dao.remove(hbD); // удаляем объект из БД
+		hbD.setId(dao.getIdByValueAndCode(hbD.getValue(), hbD.getCode())); // FIXME удаление предметов с одинаковыми параметрами
+		try {
+			dao.remove(hbD); // удаляем объект из БД не каскадно
+		} catch (Exception e) {
+			System.err.println(e); 
+		}
 		
 		String strWasRemoved = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // Удаляем объект из списка
 
 		System.out.println("Удалённая строка = " + strWasRemoved);
-		
-		if (hbD.getCode() != null || hbD.getValue() != null) System.out.println("Valut = " + hbD.getValue() + "\nCode = " + hbD.getCode().intValue()); // FIXME java.lang.NullPointerException не понятно когда возникает
-
 		cbDiscipline.getSelectionModel().selectFirst();
-		
-		// После удаления элемента, подгружаем тот, что находится перед ним, т.к. видимо lvDisc.onChanged не справляется с этим
-		/*if (olDiscipline.size() > 0) {
-			String temp = olDiscipline.get(lvDiscipline.getSelectionModel().getSelectedIndex());
-			System.out.println("Элемент удалён, подгружаем новый cо значениями " + temp);
-			hbD = dao.get(temp.split(":")[0], Integer.valueOf(temp.split(":")[1]));
-			System.out.println("\nId = " + hbD.getId() + "\nValue = " + hbD.getValue() + "\nCode = " + hbD.getCode());
-			System.out.println("Элемент = " + hbD.toString());
-		}*/
     }
 
     public FXMLCtrlMain(Stage stage) throws IOException {
@@ -264,7 +252,7 @@ public class FXMLCtrlMain extends VBox {
 
         			DAO_HandBookDiscipline DAO_HBD = new DAO_HandBookDiscipline();
         			System.out.println("NEWVALUE = " + newValue);
-        			hbD = DAO_HBD.get(newValue.split(":")[0], Integer.valueOf(newValue.split(":")[1]));
+        			hbD = DAO_HBD.getByValueAndCode(newValue.split(":")[0], Integer.valueOf(newValue.split(":")[1]));
         		} else {
         			bChange.setDisable(true);
         			bDelete.setDisable(true);
@@ -277,42 +265,47 @@ public class FXMLCtrlMain extends VBox {
         cbDiscipline.getSelectionModel().selectedIndexProperty().addListener(
         	new ChangeListener<Number>() {
 				public void changed (ObservableValue ov, Number value, Number new_value) {
-					if (new_value.intValue() < 0) new_value = 0;
-					olVersion.clear();
-					System.out.println("ObservableValue ov = " + ov.toString() + "\n Number value = " +  value.intValue()+ "\n Number new_value = " + new_value.intValue());
-					List<HandbookDiscipline> li1 = dao_disc.getAll(new HandbookDiscipline());
-					if (li1.size() != 0) {
-						String temp_disc = olDiscipline.get(new_value.intValue());
-						Long i = dao_disc.getId(temp_disc.split(":")[0], Integer.valueOf(temp_disc.split(":")[1]));
-						DAO_WPDVersion dao_vers = new DAO_WPDVersion(); 
-						List<WPDVersion> liOfWDPVersion = dao_vers.get("FROM WPDVersion WHERE number = " + i);
-						for (int j = 0; j < liOfWDPVersion.size(); j++) {
-							GregorianCalendar calDate = new GregorianCalendar(liOfWDPVersion.get(j).getDate().getYear(), liOfWDPVersion.get(j).getDate().getMonth(), liOfWDPVersion.get(j).getDate().getDay());
-				        	String temp = String.valueOf(calDate.get(Calendar.YEAR)); // FIXME вытащить дату (год) String.valueOf(liOfWDPVersion.get(j).getDate().getYear());
-				        	olVersion.add(temp);
-				        }
+					if (new_value.intValue() > -1) {
+						bAddTab.setDisable(false);
+						olVersion.clear();
+						System.out.println("ObservableValue ov = " + ov.toString() + "\n Number value = " +  value.intValue()+ "\n Number new_value = " + new_value.intValue());
+						List<HandbookDiscipline> li1 = dao_disc.getAll(new HandbookDiscipline());
+						if (li1.size() != 0) {
+							String temp_disc = olDiscipline.get(new_value.intValue());
+							Long i = dao_disc.getIdByValueAndCode(temp_disc.split(":")[0], Integer.valueOf(temp_disc.split(":")[1]));
+							DAO_WPDVersion dao_vers = new DAO_WPDVersion(); 
+							List<WPDVersion> liOfWDPVersion = dao_vers.run("FROM WPDVersion WHERE number = " + i);
+							for (int j = 0; j < liOfWDPVersion.size(); j++) {
+								GregorianCalendar calDate = new GregorianCalendar(liOfWDPVersion.get(j).getDate().getYear(), liOfWDPVersion.get(j).getDate().getMonth(), liOfWDPVersion.get(j).getDate().getDay());
+					        	String temp = String.valueOf(calDate.get(Calendar.YEAR)); // FIXME вытащить дату (год) String.valueOf(liOfWDPVersion.get(j).getDate().getYear());
+					        	olVersion.add(temp);
+					        }
+						}
+					} else { // если пустое поле
+						bAddTab.setDisable(true);
+						bOpenTab.setDisable(true);
 					}
 				}
 	        }
         );
         
         cbVersion.getSelectionModel().selectedIndexProperty().addListener(
-            	new ChangeListener<Number>() {
-    				public void changed (ObservableValue ov, Number value, Number new_value) {
-    					if (new_value.intValue() < 0)
-    						bOpenTab.setDisable(true);
-    					else
-    						bOpenTab.setDisable(false);
-    				}
-    	        }
-            );
-        
-        // <Test // UNDONE Delete
-        olVersion.addAll("2001_Test", "1994_Test", "1997_Test", "2010_Test");
-        // Test/>
-        
+        	new ChangeListener<Number>() {
+				public void changed (ObservableValue ov, Number value, Number new_value) {
+					if (new_value.intValue() < 0)
+						bOpenTab.setDisable(true);
+					else
+						bOpenTab.setDisable(false);
+				}
+	        }
+        );
         cbDiscipline.setItems(olDiscipline);
         cbVersion.setItems(olVersion);
+        if (olDiscipline.isEmpty()) {
+    		bAddTab.setDisable(true);
+        	if (olVersion.isEmpty())
+        		bOpenTab.setDisable(true);
+        }
 
         cbDiscipline.getSelectionModel().selectFirst();
         cbVersion.getSelectionModel().selectFirst();

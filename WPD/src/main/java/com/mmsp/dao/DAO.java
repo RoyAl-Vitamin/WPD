@@ -10,19 +10,21 @@ import com.mmsp.util.HibernateUtil;
 
 // https://docs.jboss.org/hibernate/orm/3.3/reference/en/html/queryhql.html
 
+@SuppressWarnings("unchecked")
 public interface DAO<T> {
 	
-	default public void add(T obj) {
+	default public Long add(T obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();  
 		//getting session object from session factory  
 		Session session = sessionFactory.openSession();  
 		//getting transaction object from session object  
 		session.beginTransaction();  
-		session.save(obj);
+		Long iValue = (Long) session.save(obj);
 		System.out.println("Inserted Successfully");
 		session.getTransaction().commit();
 		session.flush();
-		session.close(); 
+		session.close();
+		return iValue;
 	}
 	
 	default public void remove(T obj) {
@@ -44,7 +46,6 @@ public interface DAO<T> {
 		session.getTransaction().commit();
 	}
 
-	@SuppressWarnings("unchecked")
 	default public List<T> getAll(T obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
@@ -61,20 +62,21 @@ public interface DAO<T> {
 		return objects;
 	}
 
-	@SuppressWarnings("unchecked")
 	default public T getById(T obj, Long id) {
 		T value = null;
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
 		value = (T) session.get(obj.getClass(), id);
-		System.out.println("Found by ID Successfully");
+		if (value != null)
+			System.out.println("Found by ID Successfully");
+		else
+			System.err.println("NOT FOUND by ID");
 		session.getTransaction().commit();
 		return value;
 	}
 
-	@SuppressWarnings("unchecked")
-	default public List<T> get(String value) {
+	default public List<T> run(String value) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();    
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();

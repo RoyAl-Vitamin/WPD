@@ -6,6 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 /**
@@ -36,6 +38,9 @@ public class PoCM implements Serializable { // Plan of Control Measures
     @Column(name = "POCM_TYPE")
     private Integer type; // тип контрольного мероприятия
     
+    @OneToOne(mappedBy = "planOfConMes")
+    private WPDVersion wpdVersion; // связь с дисциплиной, к которой это тематический план принаделжит
+    
     public PoCM() {
     }
 
@@ -51,7 +56,23 @@ public class PoCM implements Serializable { // Plan of Control Measures
         return type;
     }
     
-    public void setId(Long id) {
+    public Integer getNumber() {
+		return number;
+	}
+
+	public WPDVersion getWpdVersion() {
+		return wpdVersion;
+	}
+
+	public void setNumber(Integer number) {
+		this.number = number;
+	}
+
+	public void setWpdVersion(WPDVersion wpdVersion) {
+		this.wpdVersion = wpdVersion;
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
 

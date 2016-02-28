@@ -15,7 +15,7 @@ public class DAO_WPDVersion implements DAO<WPDVersion> {
 
 	// provide on request
 	@Override
-	public List<WPDVersion> get(String value) {
+	public List<WPDVersion> run(String value) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();    
 		Session session = sessionFactory.openSession();  
 		session.beginTransaction();
@@ -29,12 +29,13 @@ public class DAO_WPDVersion implements DAO<WPDVersion> {
 		return objects;
 	}
 	
-	public Long getId(Long iValue) {
+	public Long getIdByNumber(Long iValue) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
 		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
-		Query query = session.createQuery("SELECT id FROM WPDVersion WHERE number = \'" + iValue + "\'");
+		//System.err.println("SELECT id FROM WPDVersion WHERE number = \'" + iValue.toString() + "\'");
+		Query query = session.createQuery("SELECT id FROM WPDVersion WHERE number = " + iValue.toString());
 		List<Long> objects = query.list();
 		System.out.println("Found ID Successfully");
 		session.getTransaction().commit();

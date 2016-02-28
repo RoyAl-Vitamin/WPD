@@ -1,7 +1,7 @@
 package com.mmsp.model;
 
 import java.io.Serializable;
-import java.sql.Date;
+import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 //import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
@@ -42,14 +43,15 @@ public class WPDVersion implements Serializable {
 
     @ManyToOne
     @JoinColumn(name="WPD_VERSION_SUBJECT")
-    private WPDData subject;
+    private WPDData wpdData;
     
-    @OneToOne(mappedBy = "subject")
+    @OneToOne
+    @PrimaryKeyJoinColumn
     private ThematicPlan thematicPlan; // связь с тематическим планом
 
-    /*@OneToOne(mappedBy = "")
+    @OneToOne
+    @PrimaryKeyJoinColumn
     private PoCM planOfConMes; // связь с планом контр мероприятий
-    */
 
     public WPDVersion() {
     }
@@ -74,20 +76,28 @@ public class WPDVersion implements Serializable {
         return studyLoad;
     }
 
-    public WPDData getSubject() {
-		return subject;
+    public WPDData getWPDData() {
+		return wpdData;
 	}
     
     public ThematicPlan getThematicPlan() {
 		return thematicPlan;
 	}
+    
+    public PoCM getPoCM() {
+		return planOfConMes;
+	}
 
-	public void setSubject(WPDData subject) {
-		this.subject = subject;
+	public void setWPDData(WPDData wpdData) {
+		this.wpdData = wpdData;
 	}
 
 	public void setThematicPlan(ThematicPlan thematicPlan) {
 		this.thematicPlan = thematicPlan;
+	}
+	
+	public void setPoCM(PoCM pocm) {
+		this.planOfConMes = pocm;
 	}
 
 	public void setId(Long id) {

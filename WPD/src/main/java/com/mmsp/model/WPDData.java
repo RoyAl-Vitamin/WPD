@@ -34,11 +34,8 @@ public class WPDData implements Serializable {
     
     @Column(name = "WPD_DATA_MIDDLE_NAME")
     private String middleName; // Отчество
-        
-    @Column(name = "WPD_DATA_NAME", length = 128)
-    private String name; // название предмета
-    
-    @OneToMany(mappedBy = "subject")
+
+    @OneToMany(mappedBy = "wpdData")
     private Set<WPDVersion> versions; // множество версий
 
     //private String tableName = "WPD_DATA";
@@ -49,10 +46,6 @@ public class WPDData implements Serializable {
     public Long getId() {
         return id;
     }
-    
-    public String getName() {
-        return name;
-    }
 
     public Set<WPDVersion> getTeacher() {
         return versions;
@@ -61,11 +54,7 @@ public class WPDData implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
+
     public void setTeacher(Set<WPDVersion> versions) {
         this.versions = versions;
     }

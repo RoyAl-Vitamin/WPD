@@ -34,9 +34,8 @@ public class ThematicPlan implements Serializable {
     @Column(name = "THEMATIC_PLAN_LABORIOUSNESS")
     private Integer laboriousness; // трудоемкость темы по всем видам нагрузки; Вроде как измеряется в ЗЕ (зачётных единицах)
     
-    @OneToOne
-    @PrimaryKeyJoinColumn
-    private WPDData subject; // связь с дисциплиной, к которой это тематический план принаделжит
+    @OneToOne(mappedBy = "thematicPlan")
+    private WPDVersion wpdVersion; // связь с дисциплиной, к которой это тематический план принаделжит
     
     @Column(name = "THEMATIC_PLAN_BELONGING_TO_THE_MODULE")
     private Integer belongingToTheModule; // Принадлежность к модулю, его номер
@@ -65,8 +64,8 @@ public class ThematicPlan implements Serializable {
         return laboriousness;
     }
 
-    public WPDData getSubject() {
-        return subject;
+    public WPDVersion getWPDVerion() {
+        return wpdVersion;
     }
 
     public Integer getBelongingToTheModule() {
@@ -93,8 +92,8 @@ public class ThematicPlan implements Serializable {
         this.laboriousness = laboriousness;
     }
 
-    public void setSubject(WPDData subject) {
-        this.subject = subject;
+    public void setWPDVerion(WPDVersion wpdVersion) {
+        this.wpdVersion = wpdVersion;
     }
 
     public void setBelongingToTheModule(Integer value) {

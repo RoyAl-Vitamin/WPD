@@ -12,26 +12,33 @@ import com.mmsp.util.HibernateUtil;
 
 @SuppressWarnings("unchecked")
 public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
+
+	@Override
+	public Long add(HandbookDiscipline hbdValue) {
+		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		Long iValue = (Long) session.save(hbdValue);
+		System.out.println("Inserted HANDBOOK Successfully with ID = " + iValue.toString());
+		session.getTransaction().commit();
+		session.flush();
+		session.close();
+		return iValue;
+	}
 	
 	public List<HandbookDiscipline> getByValue(String value) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
 		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
-		Query query = session.createQuery("from HandbookDiscipline WHERE value = \'" + value + "\'"); // HANDBOOK_DISCIPLINE_VALUE
+		Query query = session.createQuery("from HandbookDiscipline WHERE value = \'" + value + "\'");
 		List<HandbookDiscipline> objects = query.list();
 		System.out.println("Found ALL Successfully with size = " + objects.size());
-		// <test
-		for(HandbookDiscipline obj_out : objects)
-		{
-			System.out.println(obj_out.toString());
-		}
-		// test/>
 		session.getTransaction().commit();
 		return objects;
 	}
 	
-	public Long getId(String sValue, Integer iCode) {
+	public Long getIdByValueAndCode(String sValue, Integer iCode) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
@@ -45,7 +52,7 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 			return null;
 	}
 	
-	public HandbookDiscipline get(String sValue, Integer iCode) {
+	public HandbookDiscipline getByValueAndCode(String sValue, Integer iCode) {
 		// FIXME Узнать: Мб дисциплины с одинаковым value(названием) и code?
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();

@@ -14,21 +14,23 @@ import com.mmsp.util.HibernateUtil;
  * @author Алексей
  *
  */
+@SuppressWarnings("unchecked")
 public class DAO_PoCM implements DAO<PoCM> {
 
 	public DAO_PoCM() {
 	}
 
 	@Override
-	public void add(PoCM obj) {
+	public Long add(PoCM obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();    
 		Session session = sessionFactory.openSession();  
 		session.beginTransaction();  
-		session.save(obj);
+		Long iValue = (Long) session.save(obj);
 		System.out.println("Inserted PoCM Successfully");  
 		session.getTransaction().commit();
 		session.flush();
-		session.close();  
+		session.close();
+		return iValue;
 	}
 
 	@Override

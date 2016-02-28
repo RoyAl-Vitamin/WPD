@@ -2,11 +2,15 @@ package com.mmsp.logic;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.TreeSet;
 
 import com.mmsp.dao.impl.DAOImpl;
+import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.model.PoCM;
-import com.mmsp.model.WPDData;
 import com.mmsp.model.ThematicPlan;
 import com.mmsp.model.WPDVersion;
 
@@ -31,7 +35,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableColumn.CellDataFeatures;
+//import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -163,7 +167,7 @@ public class FXMLCtrlNewTab extends VBox {
             return laborIntensity;
         }
         
-        public RowT41(int value) { // FIXME Исправить повторяющийся код
+        public RowT41(int value) {
         	this.numberOfModule = new SimpleStringProperty(String.valueOf(value));
             this.numberOfDisciplineSection = new SimpleStringProperty("");
             this.numberOfDisciplineTopics = new SimpleStringProperty("");
@@ -346,6 +350,10 @@ public class FXMLCtrlNewTab extends VBox {
 	
 	private final Stage stage;
 	
+	private WPDVersion currWPDVersion;
+	private PoCM currPoCM;
+	private ThematicPlan currThematicPlan;
+	
 	@FXML
     private TextField tfVersion;
 
@@ -365,7 +373,7 @@ public class FXMLCtrlNewTab extends VBox {
     private Button bDelete;
 
     @FXML
-    private TextField tFPath;
+    private TextField tfPath;
 
     @FXML
     private Button bCallFileChooser;
@@ -442,7 +450,7 @@ public class FXMLCtrlNewTab extends VBox {
     private CheckMenuItem cmi3;
 
     @FXML
-    private DatePicker dPDateOfCreate;
+    private DatePicker dpDateOfCreate;
 
     @FXML
     private CheckMenuItem cmi4;
@@ -456,7 +464,7 @@ public class FXMLCtrlNewTab extends VBox {
     @FXML
     private MenuButton mbNumberOfSemesters;
 
-    private void initTtvTable41() {
+    /*private void initTtvTable41() {
     	colTTVNumberOfModule.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
 			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
 				// p.getValue() returns the TreeItem instance for a particular
@@ -519,7 +527,7 @@ public class FXMLCtrlNewTab extends VBox {
     	root = new TreeItem<RowT41>(new RowT41());
     	ttvTable41.setShowRoot(false);
     	ttvTable41.setRoot(root);
-    }
+    }*/
 
     private void initTvStudyLoad() {
     	Callback<TableColumn<RowSL, String>, TableCell<RowSL, String>> cellFactory =
@@ -581,14 +589,22 @@ public class FXMLCtrlNewTab extends VBox {
         
         lvTypeOfControlMeasures.setItems(items);
     }
-    
+
 	/*
-     * Описание методов поведения TableView, TreeTableView and ListView
+     * Описание методов поведения TableView, TreeTableView and ListView, а так же выделение памяти и установление связей
      */
     private void initT() {
     	//initTtvTable41(); // DELETE
     	initTvStudyLoad();
     	initLvTypeOfControlMeasures();
+
+    	currWPDVersion = new WPDVersion();
+    	currPoCM = new PoCM();
+    	currThematicPlan = new ThematicPlan();
+    	currWPDVersion = new WPDVersion();
+    	
+    	currWPDVersion.setThematicPlan(currThematicPlan);
+    	currWPDVersion.setPoCM(currPoCM);
     }
 
 	@FXML
@@ -597,7 +613,7 @@ public class FXMLCtrlNewTab extends VBox {
     	fileChooser.setTitle("Открыть шаблон");
     	File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
-            tFPath.setText(file.getPath());
+            tfPath.setText(file.getPath());
         }
     }
 
@@ -651,24 +667,19 @@ public class FXMLCtrlNewTab extends VBox {
 
     @FXML
     void clickBSave(ActionEvent event) {
-    	PoCM pocm = new PoCM();
-    	WPDData subject = new WPDData();
-    	ThematicPlan thematicPlan = new ThematicPlan();
-    	WPDVersion wpdVersion = new WPDVersion();
-
-    	wpdVersion.setSubject(subject);
-    	wpdVersion.setThematicPlan(thematicPlan);
-
-    	// TODO add PoCM in WPDVersion OneToOne!
-    	// wpdVersion.setPoCM(pocm);
+    	currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
     	
-    	// TODO достать данные из полей и вставить их в объекты
+    	/* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
+    	LocalDate localDate = dpDateOfCreate.getValue();
+    	Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault()));
+    	currWPDVersion.setDate(Date.from(instant)); // Попробуем занести дату создания
     	
-    	DAOImpl dao = new DAOImpl();
-    	dao.add(pocm);
-    	dao.add(subject);
-    	dao.add(thematicPlan);
-    	dao.add(wpdVersion);
+    	// TODO first достать данные из полей и вставить их в объекты PoCM and ThematicPlan
+
+    	DAOImpl dao = new DAOImpl(); // FIXME Убрать DAOImpl
+    	dao.add(currPoCM);
+    	dao.add(currThematicPlan);
+    	dao.add(currWPDVersion);
     }
 
     @FXML
@@ -678,7 +689,10 @@ public class FXMLCtrlNewTab extends VBox {
 
     @FXML
     void clickBDelete(ActionEvent event) {
-
+    	DAO_WPDVersion dao_vers = new DAO_WPDVersion();
+    	dao_vers.remove(currWPDVersion);
+    	// TODO Каскадное удаление Тематического плана и Плана контрольных мероприятий UPD: Найти ошибку
+    	// TODO Закрыть вкладку?
     }
 
     @FXML
@@ -706,7 +720,7 @@ public class FXMLCtrlNewTab extends VBox {
     	root.getChildren().add(item);
     }
 	
-	public FXMLCtrlNewTab(Stage curr_stage, Long id_Disc, Long id_Vers) throws IOException {
+	public FXMLCtrlNewTab(Stage curr_stage, Long id_Vers) throws IOException {
 		
 		FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
         
@@ -717,12 +731,17 @@ public class FXMLCtrlNewTab extends VBox {
         loader.load();
         
         stage = curr_stage;
+        
+        if (id_Vers == null) System.err.println("Error");
+        
+        initT();
 
-        tfVersion.setText("FIXME");
+        DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
+        currWPDVersion = dao_Vers.getById(currWPDVersion, id_Vers);
         
         mbNumberOfSemesters.setText(tsFNOS.toString());
         
-        initT();
+        dpDateOfCreate.setValue(LocalDate.now());
 	}
 
 }
