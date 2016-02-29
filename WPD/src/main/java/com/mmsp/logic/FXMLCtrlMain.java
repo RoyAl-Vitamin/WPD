@@ -48,6 +48,8 @@ public class FXMLCtrlMain extends VBox {
 	
 	public static HandbookDiscipline hbD = new HandbookDiscipline();
 	
+	//public static String versionName;
+	
 	private final ObservableList<String> olDiscipline = FXCollections.observableArrayList(); // for cbDiscipline
 	
 	private final ObservableList<String> olVersion = FXCollections.observableArrayList(); // for cbVersion
@@ -134,9 +136,18 @@ public class FXMLCtrlMain extends VBox {
 		wpdVers.setDate(Date.valueOf(LocalDate.now())); // Используем сегодняшнюю дату при создании WPDVerison
 		wpdVers.setWPDData(WPD.data); // Соединяем WPDVersion с WPDData
 		wpdVers.setId(dao_Vers.add(wpdVers)); // Запоминаем ID, попутно сохранив в БД WPDVerison 
-		//dao_Vers.update(wpdVers); // Обновляем Версию после сделанных изменений
 
-		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + wpdVers.getDate().getYear());
+		Stage stageVersionName = new Stage();
+		stageVersionName.initModality(Modality.APPLICATION_MODAL);
+    	Scene sceneDiscipline = new Scene(new FXMLCtrlVersionName(stageVersionName, wpdVers));
+    	stageVersionName.setScene(sceneDiscipline);
+    	stageVersionName.setTitle("Enter name version");
+    	stageVersionName.getIcons().add(new Image("Logo.png"));
+    	stageVersionName.showAndWait();
+
+    	dao_Vers.update(wpdVers); // Обновляем Версию после получения имени версии
+    	
+		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + wpdVers.getName());
 		
 		VBox vbNewTab = new FXMLCtrlNewTab(stage, wpdVers.getId());
 		vbNewTab.setAlignment(Pos.CENTER);
@@ -145,7 +156,7 @@ public class FXMLCtrlMain extends VBox {
 		tpDiscipline.getTabs().add(t);
 
 		// UNDONE Как из внутренности Tab поменять название вкладки
-		olVersion.add(wpdVers.toString());
+		olVersion.add(wpdVers.getName());
 		if (olVersion.size() == 1) cbVersion.getSelectionModel().selectFirst();
     }
 	
@@ -284,6 +295,7 @@ public class FXMLCtrlMain extends VBox {
 					} else { // если пустое поле
 						bAddTab.setDisable(true);
 						bOpenTab.setDisable(true);
+						olVersion.clear();
 					}
 				}
 	        }

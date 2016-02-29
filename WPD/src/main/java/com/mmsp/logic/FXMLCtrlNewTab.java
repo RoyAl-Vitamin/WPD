@@ -593,7 +593,7 @@ public class FXMLCtrlNewTab extends VBox {
 	/*
      * Описание методов поведения TableView, TreeTableView and ListView, а так же выделение памяти и установление связей
      */
-    private void initT() {
+    private void initT(Long id_Vers) {
     	//initTtvTable41(); // DELETE
     	initTvStudyLoad();
     	initLvTypeOfControlMeasures();
@@ -601,10 +601,14 @@ public class FXMLCtrlNewTab extends VBox {
     	currWPDVersion = new WPDVersion();
     	currPoCM = new PoCM();
     	currThematicPlan = new ThematicPlan();
-    	currWPDVersion = new WPDVersion();
     	
+    	DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
+    	currWPDVersion = dao_Vers.getById(currWPDVersion, id_Vers);
     	currWPDVersion.setThematicPlan(currThematicPlan);
     	currWPDVersion.setPoCM(currPoCM);
+    	System.err.println("Name of Version == " + currWPDVersion.getName());
+    	tfVersion.setText(currWPDVersion.getName());
+    	dpDateOfCreate.setValue(LocalDate.now());
     }
 
 	@FXML
@@ -667,14 +671,15 @@ public class FXMLCtrlNewTab extends VBox {
 
     @FXML
     void clickBSave(ActionEvent event) {
-    	currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
-    	
+
     	/* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
     	LocalDate localDate = dpDateOfCreate.getValue();
     	Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault()));
     	currWPDVersion.setDate(Date.from(instant)); // Попробуем занести дату создания
     	
     	// TODO first достать данные из полей и вставить их в объекты PoCM and ThematicPlan
+    	currWPDVersion.setName(tfVersion.getText()); // Запоминаем название версии
+    	currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
 
     	DAOImpl dao = new DAOImpl(); // FIXME Убрать DAOImpl
     	dao.add(currPoCM);
@@ -684,7 +689,7 @@ public class FXMLCtrlNewTab extends VBox {
 
     @FXML
     void clickBGenerate(ActionEvent event) {
-
+    	// TODO Генерация РПД по атомарным данным
     }
 
     @FXML
@@ -734,14 +739,9 @@ public class FXMLCtrlNewTab extends VBox {
         
         if (id_Vers == null) System.err.println("Error");
         
-        initT();
+        initT(id_Vers); // Инициализация и подгрузка данных в Экземпляры
 
-        DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
-        currWPDVersion = dao_Vers.getById(currWPDVersion, id_Vers);
-        
         mbNumberOfSemesters.setText(tsFNOS.toString());
-        
-        dpDateOfCreate.setValue(LocalDate.now());
 	}
 
 }

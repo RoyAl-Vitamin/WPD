@@ -36,7 +36,10 @@ public class WPDVersion implements Serializable {
     private Long number; // номер (id HandbookDiscipline)
     
     @Column(name = "WPD_VERSION_TEMPLATE_NAME")
-    private String templateName; // название шаблона или путь
+    private String templateName; // путь до шаблона
+    
+    @Column(name = "WPD_VERSION_NAME")
+    private String name; // имя версии
     
     @Column(name = "WPD_VERSION_STUDY_LOAD")
     private Integer studyLoad; // учебная нагрузка по дисциплине по семестрам
@@ -87,6 +90,10 @@ public class WPDVersion implements Serializable {
     public PoCM getPoCM() {
 		return planOfConMes;
 	}
+    
+    public String getName() {
+		return name;
+	}
 
 	public void setWPDData(WPDData wpdData) {
 		this.wpdData = wpdData;
@@ -98,6 +105,10 @@ public class WPDVersion implements Serializable {
 	
 	public void setPoCM(PoCM pocm) {
 		this.planOfConMes = pocm;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public void setId(Long id) {
