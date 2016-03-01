@@ -51,6 +51,7 @@ public class DAOImpl {
 	 * @see com.mmsp.repository.SubjectRepository#updateSubject(com.mmsp.model.Subject)
 	 */
 	public <T> void update(T obj) {
+		throw new NullPointerException("Method not Resolved");
 	}
 
 	public <T> List<T> getAll(T obj) {

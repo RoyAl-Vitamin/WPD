@@ -38,7 +38,7 @@ public class FXMLCtrlDiscipline extends VBox {
 
 		this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent event) {
-            	if ((isInteger(tfCode.getText())) && (true)) { // Костыль здесь
+            	if ((isInteger(tfCode.getText())) && (true)) { // FIXME Костыль здесь
 	            	com.mmsp.logic.FXMLCtrlMain.hbD.setValue(tfDisciplineName.getText());
 	            	com.mmsp.logic.FXMLCtrlMain.hbD.setCode(Integer.valueOf(tfCode.getText()));
 	            	stage.close();

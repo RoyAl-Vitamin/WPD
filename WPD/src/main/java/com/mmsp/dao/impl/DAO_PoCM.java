@@ -45,6 +45,12 @@ public class DAO_PoCM implements DAO<PoCM> {
 
 	@Override
 	public void update(PoCM obj) {
+		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();  
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		session.saveOrUpdate(obj);
+		System.out.println("Save or Update PoCM Successfully");
+		session.getTransaction().commit();
 	}
 
 	@Override

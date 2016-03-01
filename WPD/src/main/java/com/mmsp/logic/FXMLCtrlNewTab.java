@@ -6,9 +6,12 @@ import java.util.Date;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.TreeSet;
 
 import com.mmsp.dao.impl.DAOImpl;
+import com.mmsp.dao.impl.DAO_PoCM;
+import com.mmsp.dao.impl.DAO_ThematicPlan;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.model.PoCM;
 import com.mmsp.model.ThematicPlan;
@@ -358,12 +361,6 @@ public class FXMLCtrlNewTab extends VBox {
     private TextField tfVersion;
 
     @FXML
-    private Button bAddRowStudyLoad;
-
-    @FXML
-    private Button bDeleteRowStudyLoad;
-
-    @FXML
     private ListView<String> lvTypeOfControlMeasures;
 
     @FXML
@@ -380,6 +377,12 @@ public class FXMLCtrlNewTab extends VBox {
 
     @FXML
     private Button bSave;
+    
+    @FXML
+    private Button bAddRowStudyLoad;
+
+    @FXML
+    private Button bDeleteRowStudyLoad;
 
     @FXML
     private TableColumn<RowSL, String> colTVViewOfStudyLoad; // Вид учебной нагрузки
@@ -462,7 +465,20 @@ public class FXMLCtrlNewTab extends VBox {
     private CheckMenuItem cmi2;
 
     @FXML
+    private Button bAddRowT71;
+
+    @FXML
+    private Button bDelRowT71;
+
+    @FXML
+    private Button bSetT71;
+    
+    @FXML
+    private TableView<?> tvTable71;
+
+    @FXML
     private MenuButton mbNumberOfSemesters;
+    
 
     /*private void initTtvTable41() {
     	colTTVNumberOfModule.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
@@ -606,9 +622,18 @@ public class FXMLCtrlNewTab extends VBox {
     	currWPDVersion = dao_Vers.getById(currWPDVersion, id_Vers);
     	currWPDVersion.setThematicPlan(currThematicPlan);
     	currWPDVersion.setPoCM(currPoCM);
-    	System.err.println("Name of Version == " + currWPDVersion.getName());
-    	tfVersion.setText(currWPDVersion.getName());
-    	dpDateOfCreate.setValue(LocalDate.now());
+
+    	tfVersion.setText(currWPDVersion.getName()); // Name должен всегда существовать
+    	if (currWPDVersion.getTemplateName() != null) // Грузим шабло при открытии, но не при создании
+    		tfPath.setText(currWPDVersion.getTemplateName());
+    	
+    	/* http://stackoverflow.com/questions/21242110/convert-java-util-date-to-java-time-localdate */
+    	if (currWPDVersion.getDate() != null) {
+    		Instant instant = currWPDVersion.getDate().toInstant();
+    		ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault()); // FIXME ZoneId должен быть не стандартным?
+    		dpDateOfCreate.setValue(zdt.toLocalDate()); // Попробуем достать дату создания
+    	} else
+    		dpDateOfCreate.setValue(LocalDate.now());
     }
 
 	@FXML
@@ -672,19 +697,25 @@ public class FXMLCtrlNewTab extends VBox {
     @FXML
     void clickBSave(ActionEvent event) {
 
-    	/* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
-    	LocalDate localDate = dpDateOfCreate.getValue();
-    	Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault()));
-    	currWPDVersion.setDate(Date.from(instant)); // Попробуем занести дату создания
-    	
     	// TODO first достать данные из полей и вставить их в объекты PoCM and ThematicPlan
     	currWPDVersion.setName(tfVersion.getText()); // Запоминаем название версии
     	currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
-
-    	DAOImpl dao = new DAOImpl(); // FIXME Убрать DAOImpl
-    	dao.add(currPoCM);
-    	dao.add(currThematicPlan);
-    	dao.add(currWPDVersion);
+    	
+    	/* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
+    	LocalDate localDate = dpDateOfCreate.getValue();
+    	Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault())); // FIXME ZoneId должен быть не стандартным?
+    	currWPDVersion.setDate(Date.from(instant)); // Попробуем занести дату создания
+    	
+    	// TODO Изменять название вкладки при изменении версии?
+    	
+    	DAO_PoCM dao_pocm = new DAO_PoCM();
+    	dao_pocm.update(currPoCM);
+    	
+    	DAO_ThematicPlan dao_thematicPlan = new DAO_ThematicPlan();
+    	dao_thematicPlan.update(currThematicPlan);
+    	
+    	DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
+    	dao_wpdVersion.update(currWPDVersion);
     }
 
     @FXML

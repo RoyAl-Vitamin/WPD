@@ -107,7 +107,7 @@ public class FXMLCtrlMain extends VBox {
     }
     
     @FXML
-    void clickBOpenTab(ActionEvent event) throws IOException {
+    void clickBOpenTab(ActionEvent event) throws IOException { // "Открыть" WPDVersion
     	Tab t = new Tab();
 		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + cbVersion.getValue());
 		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
@@ -185,9 +185,8 @@ public class FXMLCtrlMain extends VBox {
     }
 	
 	@FXML
-    void clickBChange(ActionEvent event) throws IOException {
-		System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex() + "\nId = " + hbD.getId() + "\nValue = " + hbD.getValue() + "\nCode = " + hbD.getCode()); // посмотрим, что внутри
-		
+    void clickBChange(ActionEvent event) throws IOException { // Изменить дисциплину
+
 		// не меняем индекс у cbDisc, если индексы cbDisc and lvDisc совпадали до начала изменения
 		boolean b = false;
 		if (lvDiscipline.getSelectionModel().getSelectedIndex() == cbDiscipline.getSelectionModel().getSelectedIndex()) b = true; 
@@ -205,11 +204,6 @@ public class FXMLCtrlMain extends VBox {
     	stageDiscipline.getIcons().add(new Image("Logo.png"));
     	stageDiscipline.showAndWait();
 
-    	/*
-    	HandbookDiscipline obj = dao.get(hbD.getValue(), hbD.getCode());
-    	System.out.println("Value = " + hbD.getValue() + " Code = " + hbD.getCode()); 
-    	System.out.println("Obj.ID = " + obj.getId() + "\nObj.Code = " + obj.getCode() + "\nObj.Value = " + obj.getValue());
-    	*/
     	dao.update(hbD);
     	System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
     	String res = olDiscipline.set(lvDiscipline.getSelectionModel().getSelectedIndex(), hbD.getValue() + ":" + hbD.getCode());
@@ -221,10 +215,10 @@ public class FXMLCtrlMain extends VBox {
     void clickBDelete(ActionEvent event) {
 		// UNDONE Если есть версии, то уточнить у пользователя стоит ли удалять? UPD: Отловить Exception
 		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
-		hbD.setId(dao.getIdByValueAndCode(hbD.getValue(), hbD.getCode())); // FIXME удаление предметов с одинаковыми параметрами
+		hbD.setId(dao.getIdByValueAndCode(hbD.getValue(), hbD.getCode())); // FIXME Решить проблему: удаление предметов с одинаковыми параметрами или их добавление
 		try {
 			dao.remove(hbD); // удаляем объект из БД не каскадно
-		} catch (Exception e) {
+		} catch (Exception e) { // Чёт не ловится
 			System.err.println(e); 
 		}
 		
