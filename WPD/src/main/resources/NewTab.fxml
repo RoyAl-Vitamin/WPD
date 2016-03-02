@@ -267,7 +267,7 @@
                               <TableColumn editable="false" maxWidth="55.0" minWidth="55.0" prefWidth="55.0" sortable="false" text="Итого" />
                            </columns>
                            <VBox.margin>
-                              <Insets bottom="10.0" left="10.0" right="10.0" />
+                              <Insets bottom="5.0" left="10.0" right="10.0" />
                            </VBox.margin>
                         </TableView>
                      </children>

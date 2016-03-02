@@ -116,7 +116,7 @@ public class FXMLCtrlMain extends VBox {
 
 		Long id_Vers = dao_Vers.getIdByNumber(id_Disc);
 		
-		VBox vbNewTab = new FXMLCtrlNewTab(stage, id_Vers); // передача WPDVersion, а не только лишь его названия
+		VBox vbNewTab = new FXMLCtrlNewTab(stage, id_Vers, t); // передача WPDVersion, а не только лишь его названия
 		vbNewTab.setAlignment(Pos.CENTER);
 		t.setContent(vbNewTab);
 		tpDiscipline.getTabs().add(t);
@@ -149,7 +149,7 @@ public class FXMLCtrlMain extends VBox {
     	
 		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + wpdVers.getName());
 		
-		VBox vbNewTab = new FXMLCtrlNewTab(stage, wpdVers.getId());
+		VBox vbNewTab = new FXMLCtrlNewTab(stage, wpdVers.getId(), t);
 		vbNewTab.setAlignment(Pos.CENTER);
 
 		t.setContent(vbNewTab);
@@ -182,6 +182,7 @@ public class FXMLCtrlMain extends VBox {
     	}
 
     	lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конце
+    	lStatus.setText("Дисциплина создана");
     }
 	
 	@FXML
@@ -209,6 +210,7 @@ public class FXMLCtrlMain extends VBox {
     	String res = olDiscipline.set(lvDiscipline.getSelectionModel().getSelectedIndex(), hbD.getValue() + ":" + hbD.getCode());
     	if ((res == null) || (res.equals(""))) System.err.println("Попытка заменить что-то не понятное на сторку");
     	if (b) cbDiscipline.getSelectionModel().select(lvDiscipline.getSelectionModel().getSelectedIndex()); // меняет занчение в cbDisc булевая переменная
+    	lStatus.setText("Изменениея сохранены");
     }
 	
 	@FXML
@@ -226,6 +228,7 @@ public class FXMLCtrlMain extends VBox {
 
 		System.out.println("Удалённая строка = " + strWasRemoved);
 		cbDiscipline.getSelectionModel().selectFirst();
+		lStatus.setText("Дисциплина удалена");
     }
 
     public FXMLCtrlMain(Stage stage) throws IOException {

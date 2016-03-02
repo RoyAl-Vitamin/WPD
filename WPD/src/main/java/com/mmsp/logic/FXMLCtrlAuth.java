@@ -49,11 +49,11 @@ public class FXMLCtrlAuth extends VBox {
         
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent event) {
-            	if (!(tFFirstName.getText().equals("")) // FIXME java.lang.NullPointerException при сравнении пустой строки
+            	if (isSatisfies(tFFirstName.getText())
             		&&
-        			(!(tFLastName.getText().equals("")))
+        			isSatisfies(tFLastName.getText())
         			&&
-        			(!(tFMiddleName.getText().equals("")))) 
+        			isSatisfies(tFMiddleName.getText())) 
             	{
             		WPD.data.setFirstName(tFFirstName.getText());
                 	WPD.data.setLastName(tFLastName.getText());
@@ -61,6 +61,21 @@ public class FXMLCtrlAuth extends VBox {
 	            	stage.close();
             	} else { // не дадим закрыть, если хотя бы одно поле не заполнено
             		event.consume();
+            	}
+            }
+            
+            public boolean isSatisfies(String sValue) {
+            	if (sValue != null) {
+            		if (!sValue.equals("")) {
+            			//System.err.println("String != \"\"");
+            			return true;
+            		} else {
+            			//System.err.println("String == \"\"");
+            			return false;
+            		}
+            	} else {
+            		//System.err.println("String == NULL");
+            		return false;
             	}
             }
         });

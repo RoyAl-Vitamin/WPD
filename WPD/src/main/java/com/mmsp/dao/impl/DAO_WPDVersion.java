@@ -9,6 +9,7 @@ import org.hibernate.SessionFactory;
 import com.mmsp.dao.DAO;
 import com.mmsp.model.WPDVersion;
 import com.mmsp.util.HibernateUtil;
+import com.mmsp.wpd.WPD;
 
 @SuppressWarnings("unchecked")
 public class DAO_WPDVersion implements DAO<WPDVersion> {
@@ -29,13 +30,13 @@ public class DAO_WPDVersion implements DAO<WPDVersion> {
 		return objects;
 	}
 	
-	public Long getIdByNumber(Long iValue) {
+	public Long getIdByNumber(Long lValue) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
 		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
 		//System.err.println("SELECT id FROM WPDVersion WHERE number = \'" + iValue.toString() + "\'");
-		Query query = session.createQuery("SELECT id FROM WPDVersion WHERE number = " + iValue.toString());
+		Query query = session.createQuery("SELECT id FROM WPDVersion WHERE number = " + lValue.toString());
 		List<Long> objects = query.list();
 		System.out.println("Found ID Successfully");
 		session.getTransaction().commit();
@@ -43,5 +44,17 @@ public class DAO_WPDVersion implements DAO<WPDVersion> {
 			return objects.get(0);
 		else
 			return null;
+	}
+	
+	// Список всех версий, которые ссылаются на дисциплину с ID = lValue
+	public List<WPDVersion> getAllByNumber(Long lValue) {
+		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
+		Query query = session.createQuery("from WPDVersion WHERE number = " + lValue.toString());
+		List<WPDVersion> objects = query.list();
+		session.getTransaction().commit();
+		return objects;
 	}
 }

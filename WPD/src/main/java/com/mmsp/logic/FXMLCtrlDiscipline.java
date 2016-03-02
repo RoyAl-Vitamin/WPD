@@ -38,9 +38,12 @@ public class FXMLCtrlDiscipline extends VBox {
 
 		this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent event) {
-            	if ((isInteger(tfCode.getText())) && (true)) { // FIXME Костыль здесь
+            	if (isInteger(tfCode.getText()) && isSatisfies(tfDisciplineName.getText())) {
 	            	com.mmsp.logic.FXMLCtrlMain.hbD.setValue(tfDisciplineName.getText());
 	            	com.mmsp.logic.FXMLCtrlMain.hbD.setCode(Integer.valueOf(tfCode.getText()));
+	            	
+	            	// FIXME Убедится, что нет дисциплины с такими же кодом и именем
+	            	
 	            	stage.close();
             	} else { // не дадим закрыть, если не Integer
             		event.consume();
@@ -55,6 +58,21 @@ public class FXMLCtrlDiscipline extends VBox {
 					return false;
 				}
 			}
+			
+			private boolean isSatisfies(String sValue) {
+            	if (sValue != null) {
+            		if (!sValue.equals("")) {
+            			//System.err.println("String != \"\"");
+            			return true;
+            		} else {
+            			//System.err.println("String == \"\"");
+            			return false;
+            		}
+            	} else {
+            		//System.err.println("String == NULL");
+            		return false;
+            	}
+            }
         });
 	}
 }

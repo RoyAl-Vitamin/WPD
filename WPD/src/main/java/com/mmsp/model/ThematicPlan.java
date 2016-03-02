@@ -104,8 +104,8 @@ public class ThematicPlan implements Serializable {
         this.belongingToTheModule = value;
     }
     
-    @Override
+    /*@Override
     public String toString() {
     	return tableName + " " + title;
-    }
+    }*/
 }

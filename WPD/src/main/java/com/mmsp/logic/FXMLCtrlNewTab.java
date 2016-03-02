@@ -3,13 +3,13 @@ package com.mmsp.logic;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.TreeSet;
 
-import com.mmsp.dao.impl.DAOImpl;
 import com.mmsp.dao.impl.DAO_PoCM;
 import com.mmsp.dao.impl.DAO_ThematicPlan;
 import com.mmsp.dao.impl.DAO_WPDVersion;
@@ -32,6 +32,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -353,6 +354,8 @@ public class FXMLCtrlNewTab extends VBox {
 	
 	private final Stage stage;
 	
+	private Tab currTab;
+	
 	private WPDVersion currWPDVersion;
 	private PoCM currPoCM;
 	private ThematicPlan currThematicPlan;
@@ -615,16 +618,26 @@ public class FXMLCtrlNewTab extends VBox {
     	initLvTypeOfControlMeasures();
 
     	currWPDVersion = new WPDVersion();
-    	currPoCM = new PoCM();
-    	currThematicPlan = new ThematicPlan();
-    	
+
     	DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
     	currWPDVersion = dao_Vers.getById(currWPDVersion, id_Vers);
-    	currWPDVersion.setThematicPlan(currThematicPlan);
-    	currWPDVersion.setPoCM(currPoCM);
+    	
+    	if (currWPDVersion.getThematicPlan() == null) {
+    		currThematicPlan = new ThematicPlan(); // При создании
+    		currWPDVersion.setThematicPlan(currThematicPlan);
+    	} else {
+    		System.err.println("Thematic Plan == " + currWPDVersion.getThematicPlan().toString()); // При загрузке существующего плана
+    	}
+    	
+    	if (currWPDVersion.getPoCM() == null) {
+    		currPoCM = new PoCM();
+    		currWPDVersion.setPoCM(currPoCM);
+    	} else {
+    		System.err.println("PoCM == " + currWPDVersion.getPoCM().toString());
+    	}
 
     	tfVersion.setText(currWPDVersion.getName()); // Name должен всегда существовать
-    	if (currWPDVersion.getTemplateName() != null) // Грузим шабло при открытии, но не при создании
+    	if (currWPDVersion.getTemplateName() != null) // Грузим шаблон при открытии, но не при создании
     		tfPath.setText(currWPDVersion.getTemplateName());
     	
     	/* http://stackoverflow.com/questions/21242110/convert-java-util-date-to-java-time-localdate */
@@ -706,8 +719,8 @@ public class FXMLCtrlNewTab extends VBox {
     	Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault())); // FIXME ZoneId должен быть не стандартным?
     	currWPDVersion.setDate(Date.from(instant)); // Попробуем занести дату создания
     	
-    	// TODO Изменять название вкладки при изменении версии?
-    	
+    	// TODO Изменять название вкладки при изменении версии? Теперь надо и как-то обновить список имён версий подключённых к cbVersion
+    	currTab.setText(currTab.getText().split(":")[0] + ":" + currWPDVersion.getName());
     	DAO_PoCM dao_pocm = new DAO_PoCM();
     	dao_pocm.update(currPoCM);
     	
@@ -725,8 +738,25 @@ public class FXMLCtrlNewTab extends VBox {
 
     @FXML
     void clickBDelete(ActionEvent event) {
+    	
+    	Long id = currWPDVersion.getNumber();
+    	
     	DAO_WPDVersion dao_vers = new DAO_WPDVersion();
     	dao_vers.remove(currWPDVersion);
+
+    	List<WPDVersion> listOfVersion = dao_vers.getAllByNumber(id);
+    	for (int i = 0; i < listOfVersion.size(); i++) {
+    		System.err.println("Name = " + listOfVersion.get(i).getName() + "\nID = " + listOfVersion.get(i).getId().toString());
+    		if (listOfVersion.get(i).getPoCM() != null) {
+    			System.err.println("PoCM == " + listOfVersion.get(i).getPoCM().toString());
+    		} else
+    			System.err.println("PoCM == null");
+    		if (listOfVersion.get(i).getThematicPlan() != null) {
+    			System.err.println("ThematicPlan == " + listOfVersion.get(i).getThematicPlan().toString());
+    		} else
+    			System.err.println("ThematicPlan == null");
+    	}
+    	
     	// TODO Каскадное удаление Тематического плана и Плана контрольных мероприятий UPD: Найти ошибку
     	// TODO Закрыть вкладку?
     }
@@ -756,7 +786,7 @@ public class FXMLCtrlNewTab extends VBox {
     	root.getChildren().add(item);
     }
 	
-	public FXMLCtrlNewTab(Stage curr_stage, Long id_Vers) throws IOException {
+	public FXMLCtrlNewTab(Stage curr_stage, Long id_Vers, Tab t) throws IOException {
 		
 		FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
         
@@ -767,6 +797,8 @@ public class FXMLCtrlNewTab extends VBox {
         loader.load();
         
         stage = curr_stage;
+        
+        currTab = t;
         
         if (id_Vers == null) System.err.println("Error");
         
