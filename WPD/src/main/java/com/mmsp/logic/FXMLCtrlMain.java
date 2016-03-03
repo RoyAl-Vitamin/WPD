@@ -3,6 +3,7 @@ package com.mmsp.logic;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -218,11 +219,19 @@ public class FXMLCtrlMain extends VBox {
 		// UNDONE Если есть версии, то уточнить у пользователя стоит ли удалять? UPD: Отловить Exception
 		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
 		hbD.setId(dao.getIdByValueAndCode(hbD.getValue(), hbD.getCode())); // FIXME Решить проблему: удаление предметов с одинаковыми параметрами или их добавление
-		try {
-			dao.remove(hbD); // удаляем объект из БД не каскадно
-		} catch (Exception e) { // Чёт не ловится
-			System.err.println(e); 
+		
+		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
+		
+		List<WPDVersion> lWPDVers = dao_Vers.getAllByNumber(hbD.getId());
+		if (!lWPDVers.isEmpty()) {
+			System.err.println("Будет удалено " + lWPDVers.size() + " версий данной дисциплины");
+			
+			// FIXME Возможно стоит пересмотреть связь между Handbook'ом и Version???? OneToMany?? Тогда можно будет каскадно удалять
+			
+			for (int i = 0; i < lWPDVers.size(); i++)
+				dao_Vers.remove(lWPDVers.get(i));
 		}
+		dao.remove(hbD); // удаляем объект из БД
 		
 		String strWasRemoved = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // Удаляем объект из списка
 

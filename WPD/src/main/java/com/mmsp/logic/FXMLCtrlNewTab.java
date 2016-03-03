@@ -36,6 +36,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
@@ -52,44 +53,79 @@ import javafx.util.Callback;
 public class FXMLCtrlNewTab extends VBox {
 
 	public static class RowSL { // класс строки // RowStudyLoad
-	    private final SimpleStringProperty viewOfStudyLoad; // Вид учебной нагрузки
-	    private final SimpleStringProperty numberOfHours; // Количество часов
-	    private final SimpleStringProperty ladderpointsUnit; // ЗЕ
-	 
-	    private RowSL(String fName, String lName, String email) {
-	        this.viewOfStudyLoad = new SimpleStringProperty(fName);
-	        this.numberOfHours = new SimpleStringProperty(lName);
-	        this.ladderpointsUnit = new SimpleStringProperty(email);
-	    }
-	 
-	    public String getViewOfStudyLoad() {
-	        return viewOfStudyLoad.get();
-	    }
-	    public void setViewOfStudyLoad(String fName) {
-	        viewOfStudyLoad.set(fName);
-	    }
-	        
-	    public String getNumberOfHours() {
-	        return numberOfHours.get();
-	    }
-	    public void setNumberOfHours(String fName) {
-	        numberOfHours.set(fName);
-	    }
-	    
-	    public String getLadderpointsUnit() {
-	        return ladderpointsUnit.get();
-	    }
-	    public void setLadderpointsUnit(String fName) {
-	    	ladderpointsUnit.set(fName);
-	    }
-	    
-	    @Override
-	    public String toString() {
-	    	return "view Of Study Load " + viewOfStudyLoad.toString() + ", number Of Hours " + numberOfHours;
-	    }
-	        
+		private final SimpleStringProperty viewOfStudyLoad; // Вид учебной нагрузки
+		private final SimpleStringProperty numberOfHours; // Количество часов
+		private final SimpleStringProperty ladderpointsUnit; // ЗЕ
+
+		private RowSL(String fName, String lName, String email) {
+			this.viewOfStudyLoad = new SimpleStringProperty(fName);
+			this.numberOfHours = new SimpleStringProperty(lName);
+			this.ladderpointsUnit = new SimpleStringProperty(email);
+		}
+
+		public String getViewOfStudyLoad() {
+			return viewOfStudyLoad.get();
+		}
+		public void setViewOfStudyLoad(String fName) {
+			viewOfStudyLoad.set(fName);
+		}
+
+		public String getNumberOfHours() {
+			return numberOfHours.get();
+		}
+		public void setNumberOfHours(String fName) {
+			numberOfHours.set(fName);
+		}
+
+		public String getLadderpointsUnit() {
+			return ladderpointsUnit.get();
+		}
+		public void setLadderpointsUnit(String fName) {
+			ladderpointsUnit.set(fName);
+		}
+
+		@Override
+		public String toString() {
+			return "view Of Study Load " + viewOfStudyLoad.toString() + ", number Of Hours " + numberOfHours;
+		}
 	}
-	
+
+	public static class RowT71 { // класс строки
+		private final SimpleStringProperty sspNumberOfWeek; // Номер недели
+		private final SimpleStringProperty sspTotal; // Итого
+		private final SimpleStringProperty ssp; // i-ая колонка
+
+		private RowT71(String sNumberOfWeek, String sTotal, String sValue) {
+			this.sspNumberOfWeek = new SimpleStringProperty(sNumberOfWeek);
+			this.sspTotal = new SimpleStringProperty(sTotal);
+			this.ssp = new SimpleStringProperty(sValue);
+		}
+
+		public String getSspNumberOfWeek() {
+			return sspNumberOfWeek.get();
+		}
+
+		public String getSspTotal() {
+			return sspTotal.get();
+		}
+
+		public String getSsp() {
+			return ssp.get();
+		}
+		
+		public void setSspNumberOfWeek(String sValue) {
+			sspNumberOfWeek.set(sValue);
+		}
+
+		public void setSspTotal(String sValue) {
+			sspTotal.set(sValue);
+		}
+
+		public void setSsp(String sValue) {
+			ssp.set(sValue);
+		}
+	}
+
 	public class RowT41 {
 		 
         private SimpleStringProperty numberOfModule;
@@ -213,7 +249,7 @@ public class FXMLCtrlNewTab extends VBox {
             this.individualWork = new SimpleStringProperty(individualWork);
             this.laborIntensity = new SimpleStringProperty(laborIntensity);
         }
-        
+
         public String getNumberOfModule() {
             return numberOfModule.get();
         }
@@ -280,38 +316,39 @@ public class FXMLCtrlNewTab extends VBox {
 		public void setLaborIntensity(String value) {
 			this.laborIntensity.set(value);
 		}        
-    }
+}
+
 	
 	class EditingCell extends TableCell<RowSL, String> { // Для UX, что б не надо было после редактирования жать Enter
 		 
-        private TextField textField;
- 
-        public EditingCell() {
-        }
+		private TextField textField;
 
-        @Override
-        public void startEdit() {
-            if (!isEmpty()) {
-                super.startEdit();
-                createTextField();
-                setText(null);
-                setGraphic(textField);
-                textField.selectAll();
-            }
-        }
- 
-        @Override
-        public void cancelEdit() {
-            super.cancelEdit();
- 
-            setText((String) getItem());
-            setGraphic(null);
-        }
- 
-        @Override
-        public void updateItem(String item, boolean empty) {
-            super.updateItem(item, empty);
- 
+		public EditingCell() {
+		}
+
+		@Override
+		public void startEdit() {
+			if (!isEmpty()) {
+				super.startEdit();
+				createTextField();
+				setText(null);
+				setGraphic(textField);
+				textField.selectAll();
+			}
+		}
+
+		@Override
+		public void cancelEdit() {
+			super.cancelEdit();
+
+			setText((String) getItem());
+			setGraphic(null);
+		}
+
+		@Override
+		public void updateItem(String item, boolean empty) {
+			super.updateItem(item, empty);
+
             if (empty) {
                 setText(null);
                 setGraphic(null);
@@ -347,90 +384,98 @@ public class FXMLCtrlNewTab extends VBox {
             return getItem() == null ? "" : getItem().toString();
         }
     }
-	
-	private final ObservableList<RowSL> dataOfStudyLoad = FXCollections.observableArrayList();
-	
+
+	private final ObservableList<RowSL> olDataOfStudyLoad = FXCollections.observableArrayList();
+
+	private final ObservableList<RowT71> olDataOfTableT71 = FXCollections.observableArrayList();
+
 	private TreeSet<Integer> tsFNOS = new TreeSet<Integer>();
-	
+
 	private final Stage stage;
-	
+
 	private Tab currTab;
-	
+
 	private WPDVersion currWPDVersion;
 	private PoCM currPoCM;
 	private ThematicPlan currThematicPlan;
+
+	@FXML
+	private TextField tfVersion;
+
+	@FXML
+	private ListView<String> lvTypeOfControlMeasures;
+
+	@FXML
+	private Button bGenerate;
+
+	@FXML
+	private Button bDelete;
+
+	@FXML
+	private TextField tfPath;
+
+	@FXML
+	private Button bCallFileChooser;
+
+	@FXML
+	private Button bSave;
+
+	@FXML
+	private Button bAddRowStudyLoad;
+
+	@FXML
+	private Button bDeleteRowStudyLoad;
+
+	@FXML
+	private TableColumn<RowSL, String> colTVViewOfStudyLoad; // Вид учебной нагрузки
+
+	@FXML
+	private TableColumn<RowSL, String> colTVNumberOfHours; // Часов
+
+	@FXML
+	private TableColumn<RowSL, String> colTVLadderpointsUnit; // ЗЕ
+
+	@FXML
+	private TableView<RowSL> tvStudyLoad;
 	
 	@FXML
-    private TextField tfVersion;
+	private TextField tfTitleOfThematicPlan;
+	
+	@FXML
+	private TextArea tfDescriptionOfThematicPlan;
 
-    @FXML
-    private ListView<String> lvTypeOfControlMeasures;
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVNumberOfModule;
 
-    @FXML
-    private Button bGenerate;
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVNumberOfDisciplineSection;
 
-    @FXML
-    private Button bDelete;
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVNumberOfDisciplineTopics;
 
-    @FXML
-    private TextField tfPath;
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVNumberOfHours;
 
-    @FXML
-    private Button bCallFileChooser;
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVNumberOfL;
 
-    @FXML
-    private Button bSave;
-    
-    @FXML
-    private Button bAddRowStudyLoad;
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVNumberOfPZ;
 
-    @FXML
-    private Button bDeleteRowStudyLoad;
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVNumberOfLR;
 
-    @FXML
-    private TableColumn<RowSL, String> colTVViewOfStudyLoad; // Вид учебной нагрузки
-    
-    @FXML
-    private TableColumn<RowSL, String> colTVNumberOfHours; // Часов
-    
-    @FXML
-    private TableColumn<RowSL, String> colTVLadderpointsUnit; // ЗЕ
-    
-    @FXML
-    private TableView<RowSL> tvStudyLoad;
-    
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVNumberOfModule;
-    
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVNumberOfDisciplineSection;
-    
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVNumberOfDisciplineTopics;
-    
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVNumberOfHours;
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVKSR;
 
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVNumberOfL;
-    
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVNumberOfPZ;
-    
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVNumberOfLR;
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVFinalAttestation;
 
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVKSR;
-    
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVFinalAttestation;
-    
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVIndividualWork;
-    
-    @FXML
-    private TreeTableColumn<RowT41, String> colTTVLaborIntensity;
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVIndividualWork;
+
+	@FXML
+	private TreeTableColumn<RowT41, String> colTTVLaborIntensity;
 
     @FXML
 	private TreeTableView<RowT41> ttvTable41;
@@ -595,7 +640,7 @@ public class FXMLCtrlNewTab extends VBox {
                 }
             }
         );
-        tvStudyLoad.setItems(dataOfStudyLoad);  
+        tvStudyLoad.setItems(olDataOfStudyLoad);  
     }
     
     private void initLvTypeOfControlMeasures() {
@@ -612,41 +657,10 @@ public class FXMLCtrlNewTab extends VBox {
 	/*
      * Описание методов поведения TableView, TreeTableView and ListView, а так же выделение памяти и установление связей
      */
-    private void initT(Long id_Vers) {
+    private void initT() {
     	//initTtvTable41(); // DELETE
     	initTvStudyLoad();
     	initLvTypeOfControlMeasures();
-
-    	currWPDVersion = new WPDVersion();
-
-    	DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
-    	currWPDVersion = dao_Vers.getById(currWPDVersion, id_Vers);
-    	
-    	if (currWPDVersion.getThematicPlan() == null) {
-    		currThematicPlan = new ThematicPlan(); // При создании
-    		currWPDVersion.setThematicPlan(currThematicPlan);
-    	} else {
-    		System.err.println("Thematic Plan == " + currWPDVersion.getThematicPlan().toString()); // При загрузке существующего плана
-    	}
-    	
-    	if (currWPDVersion.getPoCM() == null) {
-    		currPoCM = new PoCM();
-    		currWPDVersion.setPoCM(currPoCM);
-    	} else {
-    		System.err.println("PoCM == " + currWPDVersion.getPoCM().toString());
-    	}
-
-    	tfVersion.setText(currWPDVersion.getName()); // Name должен всегда существовать
-    	if (currWPDVersion.getTemplateName() != null) // Грузим шаблон при открытии, но не при создании
-    		tfPath.setText(currWPDVersion.getTemplateName());
-    	
-    	/* http://stackoverflow.com/questions/21242110/convert-java-util-date-to-java-time-localdate */
-    	if (currWPDVersion.getDate() != null) {
-    		Instant instant = currWPDVersion.getDate().toInstant();
-    		ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault()); // FIXME ZoneId должен быть не стандартным?
-    		dpDateOfCreate.setValue(zdt.toLocalDate()); // Попробуем достать дату создания
-    	} else
-    		dpDateOfCreate.setValue(LocalDate.now());
     }
 
 	@FXML
@@ -721,10 +735,13 @@ public class FXMLCtrlNewTab extends VBox {
     	
     	// TODO Изменять название вкладки при изменении версии? Теперь надо и как-то обновить список имён версий подключённых к cbVersion
     	currTab.setText(currTab.getText().split(":")[0] + ":" + currWPDVersion.getName());
+    	
     	DAO_PoCM dao_pocm = new DAO_PoCM();
     	dao_pocm.update(currPoCM);
     	
     	DAO_ThematicPlan dao_thematicPlan = new DAO_ThematicPlan();
+    	currThematicPlan.setTitle(tfTitleOfThematicPlan.getText());
+    	currThematicPlan.setDescription(tfDescriptionOfThematicPlan.getText());
     	dao_thematicPlan.update(currThematicPlan);
     	
     	DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
@@ -757,54 +774,117 @@ public class FXMLCtrlNewTab extends VBox {
     			System.err.println("ThematicPlan == null");
     	}
     	
-    	// TODO Каскадное удаление Тематического плана и Плана контрольных мероприятий UPD: Найти ошибку
+    	// TODO Каскадное удаление Тематического плана и Плана контрольных мероприятий 
+    	// UPD[1]: Найти ошибку 
+    	// UPD[2]: Ошибку нашёл, но так как нет зависимости @OneToMany каскадное удаление не будет производиться
+    	
     	// TODO Закрыть вкладку?
     }
 
     @FXML
     void clickBAddRowStudyLoad(ActionEvent event) {
-    	dataOfStudyLoad.add(new RowSL("", "", ""));
+    	olDataOfStudyLoad.add(new RowSL("", "", ""));
     }
 
     @FXML
     void clickBDeleteRowStudyLoad(ActionEvent event) {
     	int selectedIndex = tvStudyLoad.getSelectionModel().getSelectedIndex();
-    	//System.out.println("Del: " + selectedIndex);
-    	/*
-    	 * int row = myTableView.getSelectionRow();
+		//System.out.println("Del: " + selectedIndex);
+		/*
+		 * int row = myTableView.getSelectionRow();
 		 * int col = myTableView.getSelectionCol();
 		 * myTableView.getModel().getSelectedValue(row,col);
-    	 */
-    	if (selectedIndex >= 0) tvStudyLoad.getItems().remove(selectedIndex);
-    	//for (int i = 0; i < dataOfStudyLoad.size(); i++) System.out.println(dataOfStudyLoad.get(i).toString());
-    }
-    
-    @FXML // Добавление строки в Т41
-    void clickBAddRowT41(ActionEvent event) {
-    	System.out.println(root.getChildren().size());
-    	TreeItem<RowT41> item = new TreeItem<>(new RowT41(root.getChildren().size() + 1));
-    	root.getChildren().add(item);
-    }
-	
-	public FXMLCtrlNewTab(Stage curr_stage, Long id_Vers, Tab t) throws IOException {
-		
-		FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
-        
-        loader.setController(this);
-        
-        loader.setRoot(this);
-        
-        loader.load();
-        
-        stage = curr_stage;
-        
-        currTab = t;
-        
-        if (id_Vers == null) System.err.println("Error");
-        
-        initT(id_Vers); // Инициализация и подгрузка данных в Экземпляры
-
-        mbNumberOfSemesters.setText(tsFNOS.toString());
+		 */
+		if (selectedIndex >= 0) tvStudyLoad.getItems().remove(selectedIndex);
+		// for (int i = 0; i < dataOfStudyLoad.size(); i++) System.out.println(dataOfStudyLoad.get(i).toString());
 	}
 
+	@FXML // Добавление строки в Т41
+	void clickBAddRowT41(ActionEvent event) {
+		System.out.println(root.getChildren().size());
+		TreeItem<RowT41> item = new TreeItem<>(new RowT41(root.getChildren().size() + 1));
+		root.getChildren().add(item);
+	}
+
+	@FXML
+	void clickBAddRowT71(ActionEvent event) {
+		olDataOfTableT71.add(new RowT71("", "", ""));
+	}
+
+	@FXML
+	void clickBDelRowT71(ActionEvent event) {
+    	int selectedIndex = tvTable71.getSelectionModel().getSelectedIndex();
+		if (selectedIndex >= 0) tvTable71.getItems().remove(selectedIndex);
+	}
+
+	@FXML
+	void clickBSetT71(ActionEvent event) {
+
+	}
+
+    private void load(Long id_Vers) {
+		currWPDVersion = new WPDVersion();
+
+    	DAO_WPDVersion dao_Vers = new DAO_WPDVersion(); // FIXME NPE время от времени
+    	currWPDVersion = dao_Vers.getById(new WPDVersion(), id_Vers);
+    	
+    	if (currWPDVersion.getThematicPlan() == null) {
+    		
+    		currThematicPlan = new ThematicPlan(); // При создании
+    		currWPDVersion.setThematicPlan(currThematicPlan);
+    		
+    	} else {
+    		
+    		System.err.println("Thematic Plan == " + currWPDVersion.getThematicPlan().toString()); // При загрузке существующего плана
+    		
+    		currThematicPlan = currWPDVersion.getThematicPlan();
+    		if (currThematicPlan.getTitle() != null) // Загрузка "Название Дисциплины"
+        		tfTitleOfThematicPlan.setText(currThematicPlan.getTitle());
+    		if (currThematicPlan.getDescription() != null) 
+    			tfDescriptionOfThematicPlan.setText(currThematicPlan.getDescription());
+    	}
+    	
+    	if (currWPDVersion.getPoCM() == null) {
+    		currPoCM = new PoCM();
+    		currWPDVersion.setPoCM(currPoCM);
+    	} else {
+    		System.err.println("PoCM == " + currWPDVersion.getPoCM().toString());
+    		currPoCM = currWPDVersion.getPoCM();
+    	}
+
+    	tfVersion.setText(currWPDVersion.getName()); // Name должен всегда существовать
+    	if (currWPDVersion.getTemplateName() != null) // Грузим шаблон при открытии, но не при создании
+    		tfPath.setText(currWPDVersion.getTemplateName());
+    	
+    	/* http://stackoverflow.com/questions/21242110/convert-java-util-date-to-java-time-localdate */
+    	if (currWPDVersion.getDate() != null) {
+    		Instant instant = currWPDVersion.getDate().toInstant();
+    		ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault()); // FIXME ZoneId должен быть не стандартным?
+    		dpDateOfCreate.setValue(zdt.toLocalDate()); // Попробуем достать дату создания
+    	} else
+    		dpDateOfCreate.setValue(LocalDate.now());
+	}
+	
+	public FXMLCtrlNewTab(Stage curr_stage, Long id_Vers, Tab t) throws IOException {
+
+		FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
+
+		loader.setController(this);
+
+		loader.setRoot(this);
+
+		loader.load();
+
+		stage = curr_stage;
+
+		currTab = t;
+
+		if (id_Vers == null) System.err.println("Error");
+
+		initT(); // Инициализация
+
+		load(id_Vers); // Подгрузка данных во вкладку
+
+		mbNumberOfSemesters.setText(tsFNOS.toString());
+	}
 }
