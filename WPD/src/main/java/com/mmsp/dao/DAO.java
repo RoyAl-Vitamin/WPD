@@ -44,6 +44,8 @@ public interface DAO<T> {
 		session.saveOrUpdate(obj);
 		System.out.println("Save or Update Successfully");
 		session.getTransaction().commit();
+		session.flush();
+		session.close();
 	}
 
 	default public List<T> getAll(T obj) {

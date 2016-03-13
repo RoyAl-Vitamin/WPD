@@ -9,9 +9,10 @@ import java.util.List;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -32,12 +33,24 @@ public class WPD extends Application {
     @Override
     public void start(final Stage primaryStage) throws IOException {
 
-        VBox vBMain = new FXMLCtrlMain(primaryStage); // подгружаем класс контроллера, расширенного VBox, заодно запомним Stage (вроде нужен для FileChooser'а)
-	    Scene scene = new Scene(vBMain);
-	    primaryStage.setTitle("WPD");
-	    primaryStage.getIcons().add(new Image("Logo.png"));
-	    primaryStage.setScene(scene); 
-	    
+    	try {
+			FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Main.fxml"));
+			Parent root = (Parent) fxmlLoader.load();
+			
+			FXMLCtrlMain fxmlCtrlMain = fxmlLoader.getController();
+			System.out.println("Ctrl null? " + fxmlCtrlMain.toString());
+			fxmlCtrlMain.setStage(primaryStage);
+			
+			Scene scene = new Scene(root);
+			
+			primaryStage.setScene(scene);
+			primaryStage.setTitle("WPD");
+		    primaryStage.getIcons().add(new Image("Logo.png"));
+		    
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	}
+
 	    primaryStage.show();
 
 	    DAO_WPDData daoS = new DAO_WPDData();
@@ -52,7 +65,8 @@ public class WPD extends Application {
         	stageAuth.setTitle("Auth");
         	stageAuth.getIcons().add(new Image("Logo.png"));
         	stageAuth.showAndWait();
-        	daoS.add(data); // TODO Определить: нужно ли сохранение?
+        	daoS.add(data); 
+        	// TODO Определить: нужно ли сохранение?
         } else {
         	if (li.size() == 1) {
         		data = li.get(0);
@@ -67,6 +81,9 @@ public class WPD extends Application {
         		alert.showAndWait();*/
         	}
         }
+        
+        // Посмотрим, что он сохранил =_=
+        System.err.println(data.toString());
         
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() { // Работает только на закрытие окна по крестику
             public void handle(WindowEvent t) {
@@ -83,7 +100,7 @@ public class WPD extends Application {
     }
 
     @Override
-    public void stop(){ // адекватное закрытие окна
+    public void stop() { // адекватное закрытие окна
     	core.closeSessionFactory(); // Закрываем сессию
     	Platform.exit();
         System.exit(0);

@@ -83,4 +83,12 @@ public class PoCM implements Serializable { // Plan of Control Measures
     public void setType(Integer type) {
         this.type = type;
     }
+    
+    @Override
+    public String toString() {
+    	return "\nPoCM: " + this.getClass().getName() + "@" + this.hashCode() +
+    			"\nID == " + (this.getId() != null ? this.getId().toString() : "null" ) +
+    			"\nnumber == " + (this.getNumber() != null ? this.getNumber().toString() : "null") +
+    			"\nWPDVersion == " + this.getWpdVersion().getClass().getName() + "@" + this.getWpdVersion().hashCode();
+    }
 }

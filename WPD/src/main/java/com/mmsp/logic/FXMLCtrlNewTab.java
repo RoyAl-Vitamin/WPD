@@ -26,13 +26,13 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -318,7 +318,6 @@ public class FXMLCtrlNewTab extends VBox {
 		}        
 }
 
-	
 	class EditingCell extends TableCell<RowSL, String> { // Для UX, что б не надо было после редактирования жать Enter
 		 
 		private TextField textField;
@@ -392,8 +391,8 @@ public class FXMLCtrlNewTab extends VBox {
 	private TreeSet<Integer> tsFNOS = new TreeSet<Integer>();
 
 	private final Stage stage;
-
-	private Tab currTab;
+	
+	private String tabName; // здесь полное название вкладки, возможно стоило хранить только название версии, т.к. название дисциплины пока не менятся
 
 	private WPDVersion currWPDVersion;
 	private PoCM currPoCM;
@@ -644,17 +643,17 @@ public class FXMLCtrlNewTab extends VBox {
     }
     
     private void initLvTypeOfControlMeasures() {
-    	lvTypeOfControlMeasures.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    	/*lvTypeOfControlMeasures.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         ObservableList<String> items = FXCollections.observableArrayList ( // Перенести расшифровки аббревиатур в подсказки
         		"ТТ – текущее тестирование", 
         		"РТ – рубежное тестирование по модулю", 
         		"КР – рубежная контрольная работа по модулю", 
         		"РГР (КР) –  расчетно-графическая работа");
         
-        lvTypeOfControlMeasures.setItems(items);
+        lvTypeOfControlMeasures.setItems(items);*/
     }
 
-	/*
+	/**
      * Описание методов поведения TableView, TreeTableView and ListView, а так же выделение памяти и установление связей
      */
     private void initT() {
@@ -730,12 +729,9 @@ public class FXMLCtrlNewTab extends VBox {
     	
     	/* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
     	LocalDate localDate = dpDateOfCreate.getValue();
-    	Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault())); // FIXME ZoneId должен быть не стандартным?
+    	Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault()));
     	currWPDVersion.setDate(Date.from(instant)); // Попробуем занести дату создания
-    	
-    	// TODO Изменять название вкладки при изменении версии? Теперь надо и как-то обновить список имён версий подключённых к cbVersion
-    	currTab.setText(currTab.getText().split(":")[0] + ":" + currWPDVersion.getName());
-    	
+
     	DAO_PoCM dao_pocm = new DAO_PoCM();
     	dao_pocm.update(currPoCM);
     	
@@ -746,6 +742,20 @@ public class FXMLCtrlNewTab extends VBox {
     	
     	DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
     	dao_wpdVersion.update(currWPDVersion);
+    	
+    	// TODO Изменить название вкладки при изменении версии
+    	if (!tabName.split(":")[1].equals(currWPDVersion.getName())) { // Если сменилось название версии, то подгрузим контроллер и изменим из него значение названия вкладки и обновим список названий версий
+	    	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Main.fxml"));
+	    	try {
+				//Parent root = (Parent) fxmlLoader.load();
+				fxmlLoader.load(); // необходимо сделать, прежде чем обращаться к контроллеру
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			FXMLCtrlMain fxmlCtrlMain = fxmlLoader.getController();
+			fxmlCtrlMain.updateOlVersion(null); // Обновляет список, содержащийся в cbVersion
+			fxmlCtrlMain.updateTabName(tabName, currWPDVersion.getName()); // обновляет название вкладки
+    	}
     }
 
     @FXML
@@ -777,6 +787,7 @@ public class FXMLCtrlNewTab extends VBox {
     	// TODO Каскадное удаление Тематического плана и Плана контрольных мероприятий 
     	// UPD[1]: Найти ошибку 
     	// UPD[2]: Ошибку нашёл, но так как нет зависимости @OneToMany каскадное удаление не будет производиться
+    	// UPD[3]: Сделал зависимость, но не смотре как удаляется
     	
     	// TODO Закрыть вкладку?
     }
@@ -825,18 +836,16 @@ public class FXMLCtrlNewTab extends VBox {
     private void load(Long id_Vers) {
 		currWPDVersion = new WPDVersion();
 
-    	DAO_WPDVersion dao_Vers = new DAO_WPDVersion(); // FIXME NPE время от времени
+    	DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
     	currWPDVersion = dao_Vers.getById(new WPDVersion(), id_Vers);
     	
     	if (currWPDVersion.getThematicPlan() == null) {
-    		
     		currThematicPlan = new ThematicPlan(); // При создании
     		currWPDVersion.setThematicPlan(currThematicPlan);
-    		
+    		currThematicPlan.setWPDVerion(currWPDVersion);
+    		DAO_ThematicPlan dao_TP = new DAO_ThematicPlan();
+    		currThematicPlan.setId(dao_TP.add(currThematicPlan));
     	} else {
-    		
-    		System.err.println("Thematic Plan == " + currWPDVersion.getThematicPlan().toString()); // При загрузке существующего плана
-    		
     		currThematicPlan = currWPDVersion.getThematicPlan();
     		if (currThematicPlan.getTitle() != null) // Загрузка "Название Дисциплины"
         		tfTitleOfThematicPlan.setText(currThematicPlan.getTitle());
@@ -847,9 +856,12 @@ public class FXMLCtrlNewTab extends VBox {
     	if (currWPDVersion.getPoCM() == null) {
     		currPoCM = new PoCM();
     		currWPDVersion.setPoCM(currPoCM);
+    		currPoCM.setWpdVersion(currWPDVersion);
+    		DAO_PoCM dao_PoCM = new DAO_PoCM();
+    		currPoCM.setId(dao_PoCM.add(currPoCM));
     	} else {
-    		System.err.println("PoCM == " + currWPDVersion.getPoCM().toString());
     		currPoCM = currWPDVersion.getPoCM();
+    		// TODO Загрузка полей во вкладку
     	}
 
     	tfVersion.setText(currWPDVersion.getName()); // Name должен всегда существовать
@@ -863,9 +875,14 @@ public class FXMLCtrlNewTab extends VBox {
     		dpDateOfCreate.setValue(zdt.toLocalDate()); // Попробуем достать дату создания
     	} else
     		dpDateOfCreate.setValue(LocalDate.now());
+    	
+    	//Вывод того, что есть
+    	System.err.println(currWPDVersion.toString());
+    	System.err.println(currPoCM.toString());
+    	System.err.println(currThematicPlan.toString());
 	}
 	
-	public FXMLCtrlNewTab(Stage curr_stage, Long id_Vers, Tab t) throws IOException {
+	public FXMLCtrlNewTab(Stage curr_stage, Long id_Vers, String tabName) throws IOException {
 
 		FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
 
@@ -876,8 +893,8 @@ public class FXMLCtrlNewTab extends VBox {
 		loader.load();
 
 		stage = curr_stage;
-
-		currTab = t;
+		
+		this.tabName = tabName;
 
 		if (id_Vers == null) System.err.println("Error");
 

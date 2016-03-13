@@ -33,8 +33,10 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
 		Query query = session.createQuery("from HandbookDiscipline WHERE value = \'" + value + "\'");
 		List<HandbookDiscipline> objects = query.list();
-		System.out.println("Found ALL Successfully with size = " + objects.size());
+		System.out.println("Found ALL HandBook Discipline Successfully with size = " + objects.size());
 		session.getTransaction().commit();
+		session.flush();
+		session.close();
 		return objects;
 	}
 	
@@ -44,8 +46,10 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 		session.beginTransaction();
 		Query query = session.createQuery("SELECT id FROM HandbookDiscipline WHERE value = \'" + sValue + "\' AND code = " + iCode.intValue());
 		List<Long> objects = query.list();
-		System.out.println("Found ID Successfully");
+		System.out.println("Found handbook discipline ID Successfully");
 		session.getTransaction().commit();
+		session.flush();
+		session.close();
 		if (objects.size() != 0)
 			return objects.get(0);
 		else
@@ -61,6 +65,8 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 		List<HandbookDiscipline> objects = query.list();
 		System.out.println("Found by value and code Successfully. Size = " + objects.size());
 		session.getTransaction().commit();
+		session.flush();
+		session.close();
 
 		HandbookDiscipline object = null;
 		switch (objects.size()) {

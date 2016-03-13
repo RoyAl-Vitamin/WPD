@@ -104,8 +104,12 @@ public class ThematicPlan implements Serializable {
         this.belongingToTheModule = value;
     }
     
-    /*@Override
-    public String toString() {
-    	return tableName + " " + title;
-    }*/
+    @Override
+	public String toString() {
+		return "\nThematicPlan: " + this.getClass().getName() + "@" + this.hashCode() +
+    			"\nID == " + (this.getId() != null ? this.getId().toString() : "null") +
+    			"\ntitle == " + this.getTitle() +
+    			"\ndescription == " + this.getDescription() +
+    			"\nWPDVersion == " + this.getWPDVerion().getClass().getName() + "@" + this.getWPDVerion().hashCode();
+	}
 }

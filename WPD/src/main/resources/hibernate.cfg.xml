@@ -3,7 +3,7 @@
 <hibernate-configuration>
   <session-factory>
     <property name="show_sql">true</property>
-    <property name="format_sql">true</property>
+    <property name="format_sql">false</property>
     <property name="dialect">org.hibernate.dialect.DerbyDialect</property>
     <property name="connection.driver_class">org.apache.derby.jdbc.EmbeddedDriver</property>
     <property name="connection.url">jdbc:derby:DB;create=true</property>

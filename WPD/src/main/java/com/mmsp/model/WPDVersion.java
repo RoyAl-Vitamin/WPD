@@ -33,7 +33,7 @@ public class WPDVersion implements Serializable {
     @Column(name = "WPD_VERSION_ID")
     private Long id;
     
-    @Column(name = "WPD_VERSION_DATA")
+    @Column(name = "WPD_VERSION_DATE")
     //@Temporal(value = TemporalType.DATE)
     private Date date; // дата
     
@@ -49,17 +49,21 @@ public class WPDVersion implements Serializable {
     @Column(name = "WPD_VERSION_STUDY_LOAD")
     private Integer studyLoad; // учебная нагрузка по дисциплине по семестрам
 
-    @ManyToOne
-    @JoinColumn(name="WPD_VERSION_SUBJECT")
+    @ManyToOne//(cascade = CascadeType.REFRESH)
+    @JoinColumn(name="WPD_VERSION_DATA")
     private WPDData wpdData;
     
-    @OneToOne
+    @OneToOne//(cascade = CascadeType.REMOVE)
     @PrimaryKeyJoinColumn
     private ThematicPlan thematicPlan; // связь с тематическим планом
 
-    @OneToOne
+    @OneToOne//(cascade = CascadeType.REMOVE)
     @PrimaryKeyJoinColumn
     private PoCM planOfConMes; // связь с планом контр мероприятий
+    
+    @ManyToOne//(cascade = CascadeType.REFRESH)
+    @JoinColumn(name="HANDBOOK_DISCIPLINE_ID")
+    private HandbookDiscipline hbD;
 
     public WPDVersion() {
     }
@@ -100,6 +104,14 @@ public class WPDVersion implements Serializable {
 		return name;
 	}
 
+	public HandbookDiscipline getHbD() {
+		return hbD;
+	}
+
+	public void setHbD(HandbookDiscipline hbD) {
+		this.hbD = hbD;
+	}
+
 	public void setWPDData(WPDData wpdData) {
 		this.wpdData = wpdData;
 	}
@@ -134,5 +146,17 @@ public class WPDVersion implements Serializable {
 
     public void setStudyLoad(Integer studyLoad) {
         this.studyLoad = studyLoad;
+    }
+    
+    @Override
+    public String toString() {
+    	return "WPDVers: " + this.getClass().getName() + "@" + this.hashCode() +
+    			"\nID == " + this.getId().toString() +
+    			"\nname == " + this.getName() +
+    			"\ntemplate name == " + this.getTemplateName() +
+    			"\ndate == " + this.getDate().toString() +
+    			"\nHANDBOOKDISCIPLINE == " + this.getHbD().toString() +
+    			"\nPoCM == " + this.getPoCM().getClass().getName() + "@" + this.getPoCM().hashCode() +
+    			"\nThematicPlan == " + this.getThematicPlan().getClass().getName() + "@" + this.getThematicPlan().hashCode();
     }
 }

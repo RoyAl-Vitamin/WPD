@@ -1,7 +1,10 @@
 package com.mmsp.model;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -35,8 +38,8 @@ public class WPDData implements Serializable {
     @Column(name = "WPD_DATA_MIDDLE_NAME")
     private String middleName; // Отчество
 
-    @OneToMany(mappedBy = "wpdData")
-    private Set<WPDVersion> versions; // множество версий
+    @OneToMany(mappedBy = "wpdData") //, cascade = CascadeType.REMOVE)
+    private Set<WPDVersion> versions = new HashSet<WPDVersion>(); // множество версий
 
     //private String tableName = "WPD_DATA";
     
@@ -53,10 +56,6 @@ public class WPDData implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public void setTeacher(Set<WPDVersion> versions) {
-        this.versions = versions;
     }
 
 	public String getFirstName() {
@@ -91,8 +90,13 @@ public class WPDData implements Serializable {
 		this.versions = versions;
 	}
 	
-	/*@Override
+	@Override
 	public String toString() {
-		return tableName;
-	}*/
+		return "\nWPDData: " + this.getClass().getName() + "@" + this.hashCode() +
+				"\nID == " + this.id +
+				"\nfirstName == " + this.firstName +
+				"\nmiddleName == " + this.middleName +
+				"\nlastName == " + this.lastName +
+				"\nversion ==" + this.versions.toString();
+	}
 }

@@ -8,9 +8,10 @@ import org.hibernate.SessionFactory;
 import com.mmsp.util.HibernateUtil;
 
 /**
+ * Общий DAO временный
  * @author Алексей
- *
  */
+@Deprecated
 public class DAOImpl {
 
 	public DAOImpl() {

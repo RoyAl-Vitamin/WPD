@@ -1,17 +1,25 @@
 package com.mmsp.model;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
  * Класс справочника дисциплины
  * @author Алексей
  */
+
+// http://docs.jboss.org/hibernate/stable/annotations/reference/en/html_single/#entity-hibspec-cascade
 
 @Entity
 @Table(name = "HANDBOOK_DISCIPLINE")
@@ -29,6 +37,9 @@ public class HandbookDiscipline implements Serializable {
 	
     @Column(name = "HANDBOOK_DISCIPLINE_VALUE")
     private String value;
+    
+    @OneToMany(mappedBy = "hbD", fetch = FetchType.EAGER, cascade = CascadeType.ALL) //, cascade = CascadeType.REMOVE)
+    private Set<WPDVersion> versions = new HashSet<WPDVersion>(); // множество версий
 
     public HandbookDiscipline() {
     	value = "";
@@ -47,7 +58,19 @@ public class HandbookDiscipline implements Serializable {
         return value;
     }
 
-    public void setId(Long id) {
+    public Set<WPDVersion> getVersions() {
+		return versions;
+	}
+
+	public void setVersions(Set<WPDVersion> versions) {
+		this.versions = versions;
+	}
+	
+	public void addVersions(WPDVersion wpdVers) {
+		this.versions.add(wpdVers);
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
     
