@@ -57,4 +57,19 @@ public class DAO_WPDVersion implements DAO<WPDVersion> {
 		session.getTransaction().commit();
 		return objects;
 	}
+
+	public Long getIdByName(String value) {
+		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		//System.err.println("SELECT id FROM WPDVersion WHERE number = \'" + iValue.toString() + "\'");
+		Query query = session.createQuery("SELECT id FROM WPDVersion WHERE name = \'" + value + "\'");
+		List<Long> objects = query.list();
+		System.out.println("Found ID Successfully");
+		session.getTransaction().commit();
+		if (objects.size() != 0)
+			return objects.get(0);
+		else
+			return null;
+	}
 }

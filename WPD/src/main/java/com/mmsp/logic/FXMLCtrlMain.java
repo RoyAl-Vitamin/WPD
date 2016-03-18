@@ -1,15 +1,9 @@
 package com.mmsp.logic;
 
 import java.io.IOException;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Set;
 
-import com.mmsp.dao.impl.DAOImpl;
 import com.mmsp.dao.impl.DAO_HandBookDiscipline;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.model.HandbookDiscipline;
@@ -19,14 +13,13 @@ import com.mmsp.wpd.WPD;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 //import javafx.scene.control.Alert; // не работает, скорее всего связано с Maven
 //import javafx.scene.control.Alert.AlertType;
@@ -50,95 +43,193 @@ import javafx.stage.Stage;
 public class FXMLCtrlMain extends VBox {
 
 	private Stage stage; // для FileChooser'а
-	
+
+	private FXMLCtrlMain fxmlCtrlMain; // контроллер данной вкладки
+
 	public static HandbookDiscipline hbD = new HandbookDiscipline();
-	
-	//public static String versionName;
-	
+
 	private final ObservableList<String> olDiscipline = FXCollections.observableArrayList(); // for cbDiscipline
-	
+
 	private final ObservableList<String> olVersion = FXCollections.observableArrayList(); // for cbVersion
-	
-	private final ObservableList<String> olTabName = FXCollections.observableArrayList(); // for TabPane
+
+	private final ObservableList<Ctrl> olCtrl = FXCollections.observableArrayList(); // for TabPane // Список текущих открытых вкладок
 
 	@FXML
 	private ChoiceBox<String> cbDiscipline;
 
 	@FXML
 	private ChoiceBox<String> cbVersion;
-	
+
 	@FXML
 	private Button bOpenTab;
-	
+
 	@FXML
 	private Button bAddTab;
-	
-	@FXML
-    private Button bCreate;
 
 	@FXML
-    private Button bChange;
+	private Button bCreate;
 
-    @FXML
-    private Button bDelete;
+	@FXML
+	private Button bChange;
+
+	@FXML
+	private Button bDelete;
 
 	@FXML
 	private TabPane tpDiscipline;
 
 	@FXML
-    private MenuItem miAuth;
-	
-    @FXML
-    private MenuItem mbClose;
-    
-    @FXML
-    private ListView<String> lvDiscipline;
+	private MenuItem miAuth;
 
-    @FXML
-    public Label lStatus; // возможна работа из другого контроллера
-    
 	@FXML
-    void clickMIAuth(ActionEvent event) throws IOException {
-		Stage stageAuth = new Stage();
-    	stageAuth.initModality(Modality.APPLICATION_MODAL);
-    	Scene sceneAuth = new Scene(new FXMLCtrlAuth(stageAuth));
-    	stageAuth.setScene(sceneAuth);
-    	stageAuth.setTitle("Auth");
-    	stageAuth.getIcons().add(new Image("Logo.png"));
-    	stageAuth.showAndWait();
-	}
-    
-    @FXML
-    void clickBClose(ActionEvent event) {
-    	stage.close();
-    }
-    
-    @FXML
-    void clickBOpenTab(ActionEvent event) throws IOException { // "Открыть" WPDVersion
-    	Tab t = new Tab();
-		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + cbVersion.getValue());
-		olTabName.add(t.getText()); // Добавим название таба в список
-		for (int j = 0; j < olTabName.size(); j++) {
-			System.err.println("WAS ADDED: " + olTabName.get(j));
+	private MenuItem mbClose;
+
+	@FXML
+	private ListView<String> lvDiscipline;
+
+	@FXML
+	public Label lStatus; // возможна работа из другого контроллера
+
+	private class Ctrl {
+		FXMLCtrlNewTab ctrl;
+		Long id;
+		Tab t;
+		
+		public Ctrl(FXMLCtrlNewTab ctrl, Long id, Tab t) {
+			this.ctrl = ctrl;
+			this.id = id;
+			this.t = t;
 		}
-		System.err.println("AND NOW SIZE olTabName == " + olTabName.size());
+		
+		public FXMLCtrlNewTab getFXMLCtrlNewTab() {
+			return ctrl;
+		}
+
+		public Long getId() {
+			return id;
+		}
+
+		public void setFXMLCtrlNewTab(FXMLCtrlNewTab ctrl) {
+			this.ctrl = ctrl;
+		}
+
+		public void setId(Long id) {
+			this.id = id;
+		}
+
+		public Tab getTab() {
+			return t;
+		}
+
+		public void setTab(Tab t) {
+			this.t = t;
+		}
+		
+	}
+
+	@FXML
+	void clickMIAuth(ActionEvent event) throws IOException {
+		Stage stageAuth = new Stage();
+		stageAuth.initModality(Modality.APPLICATION_MODAL);
+		Scene sceneAuth = new Scene(new FXMLCtrlAuth(stageAuth));
+		stageAuth.setScene(sceneAuth);
+		stageAuth.setTitle("Auth");
+		stageAuth.getIcons().add(new Image("Logo.png"));
+		stageAuth.showAndWait();
+	}
+
+	@FXML
+	void clickBClose(ActionEvent event) {
+		stage.close();
+	}
+
+	/**
+	 * Находит по ID нужный Ctrl из olCtrl
+	 * @param id_Vers ID дисциплины
+	 * @return найденный Ctrl
+	 */
+	private Ctrl getCtrlById(Long id_Vers) {
+		Ctrl t = null;
+		for (Ctrl c: olCtrl) {
+			if (c.getId() == id_Vers) {
+				t = c;
+				break;
+			}
+		}
+		return t;
+	}
+	
+	// Функция открытия существующей версии
+	@FXML
+	void clickBOpenTab(ActionEvent event) throws IOException { // "Открыть" WPDVersion
 
 		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
 		Long id_Disc = dao_Disc.getIdByValueAndCode(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
 		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
 
-		Long id_Vers = dao_Vers.getIdByNumber(id_Disc);
-		
-		VBox vbNewTab = new FXMLCtrlNewTab(stage, id_Vers, t.getText()); // передача WPDVersion, а не только лишь его названия
-		vbNewTab.setAlignment(Pos.CENTER);
-		t.setContent(vbNewTab);
-		tpDiscipline.getTabs().add(t);
+		Long id_Vers = dao_Vers.getIdByName(cbVersion.getValue()); // TODO Проверить то ли возвращает
+
+		// проверяем открыта ли вкладка
+		// Если вкладка не открыта, то откроем
+		if (!tabIsOpen(id_Vers)) {
+			FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
+			Parent root = (Parent) fxmlLoader.load();
+
+			Tab t = new Tab();
+			t.setText(cbDiscipline.getValue().split(":")[0] + ":" + cbVersion.getValue());
+			FXMLCtrlNewTab fxmlCtrlNewTab = fxmlLoader.getController();
+			Ctrl ctrlTemp = new Ctrl(fxmlCtrlNewTab, id_Vers, t);
+
+			fxmlCtrlNewTab.setStage(stage); // Запомним Stage главного окна
+			fxmlCtrlNewTab.setTabName(t.getText()); // Начальное название вкладки
+			fxmlCtrlNewTab.setController(fxmlCtrlNewTab); // Запомним контроллер главного окна
+			fxmlCtrlNewTab.setParentCtrl(fxmlCtrlMain);
+			fxmlCtrlNewTab.init(id_Vers); // инициализируем
+
+			t.setContent(root);
+			t.setOnClosed(new EventHandler<Event>() {
+				@Override
+				public void handle(Event event) {
+					Ctrl ctrlTemp = getCtrlById(id_Vers);
+					if (ctrlTemp != null)
+						olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
+					else
+						System.err.println("Не удалось удалить Ctrl из списка");
+					// TODO Спросить о сохранении
+				}
+			});
+			tpDiscipline.getTabs().add(t);
+			
+			olCtrl.add(ctrlTemp); // Добавим контроллер и Id, Tab в список
+		} else
+		// Если вкладка открыта, найдём её и дадим ей фокус
+		{
+			// Проверить открыта ли она сейчас?
+			tpDiscipline.getSelectionModel().select(getTabById(id_Vers));
+		}
     }
 
+	/**
+	 * Возвращает вкладку по ID версии
+	 * @param id id версии
+	 * @return существующая вкладка
+	 */
+	private Tab getTabById(Long id) {
+		Tab tab = null;
+		for (Ctrl c: olCtrl) {
+			if (c.getId() == id) {
+				tab = c.getTab();
+				break;
+			}
+		}
+		return tab;
+	}
+
+	// Функция добавления новой версии и открытия для неё вкладки (Tab)
 	@FXML
 	void clickBAddTab(ActionEvent event) throws IOException { // Кнопка "+" Добавление вкладки в вверхнй TabPane
 		Tab t = new Tab();
-		
+
 		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
 		hbD = dao_Disc.getByValueAndCode(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
 
@@ -146,7 +237,7 @@ public class FXMLCtrlMain extends VBox {
 		WPDVersion wpdVers = new WPDVersion();
 
 		wpdVers.setNumber(hbD.getId()); // Номер версии есть ID Дисциплины
-		wpdVers.setDate(Date.valueOf(LocalDate.now())); // Используем сегодняшнюю дату при создании WPDVerison
+		wpdVers.setDate(Calendar.getInstance().getTime()); // Используем сегодняшнюю дату при создании WPDVerison
 		wpdVers.setWPDData(WPD.data); // Соединяем WPDVersion с WPDData
 		wpdVers.setHbD(hbD); // кажется теперь онеи ссылаются друг на друга
 		wpdVers.setId(dao_Vers.add(wpdVers)); // Запоминаем ID, попутно сохранив в БД WPDVerison
@@ -164,20 +255,30 @@ public class FXMLCtrlMain extends VBox {
 		dao_Vers.update(wpdVers); // Обновляем Версию после получения имени версии
 
 		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + wpdVers.getName());
-		olTabName.add(t.getText()); // FIXME проблема описана в changeVersionName()
-		for (String sValue : olTabName) {
-			System.out.println("была добавлена вкладка: " + sValue + " в список olTabName");
-		}
-		System.out.println("и теперь размер olTabName == " + olTabName.size());
 
-		VBox vbNewTab = new FXMLCtrlNewTab(stage, wpdVers.getId(), t.getText());
-		vbNewTab.setAlignment(Pos.CENTER);
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
+		Parent root = (Parent) fxmlLoader.load();
 
-		t.setContent(vbNewTab);
+		FXMLCtrlNewTab fxmlCtrlNewTab = fxmlLoader.getController();
+
+		fxmlCtrlNewTab.setStage(stage); // Запомним Stage главного окна
+		fxmlCtrlNewTab.setTabName(t.getText()); // Начальное название вкладки
+		fxmlCtrlNewTab.setController(fxmlCtrlNewTab); // Запомним контроллер главного окна
+		fxmlCtrlNewTab.setParentCtrl(fxmlCtrlMain);
+		fxmlCtrlNewTab.init(wpdVers.getId()); // инициализируем
+
+		t.setContent(root);
+		olCtrl.add(new Ctrl(fxmlCtrlNewTab, wpdVers.getId(), t)); // Добавим контроллер и Id, саму вкладку в список
+
 		t.setOnClosed(new EventHandler<Event>() {
 			@Override
 			public void handle(Event event) {
-				olTabName.remove(t.getText()); // удаление из списка olTabName закрытой вкладки
+				Ctrl ctrlTemp = getCtrlById(wpdVers.getId());
+				if (ctrlTemp != null)
+					olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
+				else
+					System.err.println("Не удалось удалить Ctrl из списка");
+				// TODO Спросить о сохранении
 			}
 		});
 		tpDiscipline.getTabs().add(t);
@@ -187,11 +288,26 @@ public class FXMLCtrlMain extends VBox {
 		for (int j = 0; j < tpDiscipline.getTabs().size(); j++) {
 			System.err.println(j + ": TAB Name == " + tpDiscipline.getTabs().get(j).getText());
 		}
-		
-		System.err.println("olVers WAS ADDED: " + wpdVers.getName());
+
 		if (olVersion.size() == 1) cbVersion.getSelectionModel().selectFirst(); // какой-то костыль
-    }
-	
+	}
+
+	/**
+	 * Находит открытую вкладку (для того что бы не пытались открыть ещё одну такую же)
+	 * @param id id версии
+	 * @return открыта ли вкладка (Y/N)
+	 */
+	private boolean tabIsOpen(Long id) {
+		boolean b = false;
+		for (Ctrl c: olCtrl) {
+			if (c.getId() == id) {
+				b = true;
+				break;
+			}
+		}
+		return b;
+	}
+
 	@FXML
     void clickBCreate(ActionEvent event) throws IOException { // "Создать" Дисциплину
 		hbD.setCode(0);
@@ -278,6 +394,10 @@ public class FXMLCtrlMain extends VBox {
 		this.stage = stage;
 	}
 	
+	public void setController(FXMLCtrlMain fxmlCtrlMain) {
+		this.fxmlCtrlMain = fxmlCtrlMain;
+	}
+	
 	@FXML
     void initialize() {
         assert miAuth != null : "fx:id=\"miAuth\" was not injected: check your FXML file 'Main.fxml'.";
@@ -299,13 +419,12 @@ public class FXMLCtrlMain extends VBox {
 			olDiscipline.add(li.get(i).getValue() + ":" + li.get(i).getCode().intValue());
 		}
 
-		olTabName.add("Дисциплины");
-		olTabName.addListener(new ListChangeListener<String>() {
+		/*olCtrl.addListener(new ListChangeListener<String>() {
 
 			@Override
 			public void onChanged(ListChangeListener.Change change) {
 				// TODO Возможно стоит сюда перенести создание и удаление новой вкладки?
-				/*System.out.println("Detected a change! ");
+				System.out.println("Detected a change! ");
 				while (change.next()) {
 					System.out.println("Was added? " + change.wasAdded());
 					System.out.println("Was removed? " + change.wasRemoved());
@@ -313,22 +432,20 @@ public class FXMLCtrlMain extends VBox {
 					System.out.println("Was permutated? " + change.wasPermutated());
 					//if (change.wasRemoved())
 					//	olVersion.get(index);
-				}*/
+				}
 			}
-		});
+		});*/
 
 		lvDiscipline.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
 
 			// Подгрузка в hbD дисциплины при смене выделенной строки
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				System.out.println("Selected Index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
 				if (newValue != null) {
 					bChange.setDisable(false);
 					bDelete.setDisable(false);
 
 					DAO_HandBookDiscipline DAO_HBD = new DAO_HandBookDiscipline();
-					System.out.println("NEWVALUE = " + newValue);
 					hbD = DAO_HBD.getByValueAndCode(newValue.split(":")[0], Integer.valueOf(newValue.split(":")[1]));
 				} else {
 					bChange.setDisable(true);
@@ -345,24 +462,10 @@ public class FXMLCtrlMain extends VBox {
 					if (new_value.intValue() > -1) {
 						bAddTab.setDisable(false);
 						olVersion.clear();
-						updateOlVersion(olDiscipline.get(new_value.intValue()));
-						//System.out.println("ObservableValue ov = " + ov.toString() + "\n Number value = " +  value.intValue()+ "\n Number new_value = " + new_value.intValue());
-						/*
-						List<HandbookDiscipline> li1 = dao_disc.getAll(new HandbookDiscipline());
-						if (li1.size() != 0) {
-							String temp_disc = olDiscipline.get(new_value.intValue());
-							Long i = dao_disc.getIdByValueAndCode(temp_disc.split(":")[0], Integer.valueOf(temp_disc.split(":")[1]));
-							DAO_WPDVersion dao_vers = new DAO_WPDVersion(); 
-							List<WPDVersion> liOfWDPVersion = dao_vers.run("FROM WPDVersion WHERE number = " + i);
-							for (int j = 0; j < liOfWDPVersion.size(); j++) {
-								// FIXME on UpdateOlVersion()
-
-								GregorianCalendar calDate = new GregorianCalendar(liOfWDPVersion.get(j).getDate().getYear(), liOfWDPVersion.get(j).getDate().getMonth(), liOfWDPVersion.get(j).getDate().getDay());
-					        	String temp = String.valueOf(calDate.get(Calendar.YEAR)); // FIXME вытащить дату (год) String.valueOf(liOfWDPVersion.get(j).getDate().getYear());
-					        	olVersion.add(temp);
-					        }
-						}
-						*/
+						String temp_disc = olDiscipline.get(new_value.intValue());
+						Long id = dao_disc.getIdByValueAndCode(temp_disc.split(":")[0], Integer.valueOf(temp_disc.split(":")[1]));
+						updateOlVersion(id);
+						
 					} else { // если пустое поле
 						bAddTab.setDisable(true);
 						bOpenTab.setDisable(true);
@@ -392,75 +495,57 @@ public class FXMLCtrlMain extends VBox {
 
 		cbDiscipline.getSelectionModel().selectFirst();
 		cbVersion.getSelectionModel().selectFirst();
-    }
+	}
 
 	/**
 	 * Обновляет список olVersion => cbVersion
 	 * @param sValue строка из cbDiscipline, если вызван во время переключения cbDiscipline, и null, если вызван из другого контроллера 
 	 */
-	public void updateOlVersion(String sValue) {
-		String selectedItem = null;
-		if (sValue != null) { // Если не null, то вызван из cbDiscipline.Listener
-			selectedItem = sValue;
-			System.out.println("Метод был вызван из этого контроллера");
-		} else { // Если передан null, то обновление идёт из вкладки
-			selectedItem = cbDiscipline.getSelectionModel().getSelectedItem();
-			System.out.println("Метод был вызван из другого контроллера");
-		}
-		//if (cbDiscipline.getSelectionModel().getSelectedIndex() > -1) { // т.е. элемент выбранный есть //FIXME Проверить, а нужно ли здесь условие
-			// FIXME если другая дисциплина загружена в cbDiscipline?
+	public void updateOlVersion(Long id) {
+		if (id == hbD.getId()) { // То в cbDiscipline содержится та дисциплина, версию которой надо обновить
 			DAO_HandBookDiscipline dao_disc = new DAO_HandBookDiscipline();
-			//if (selectedItem != null) {
-			HandbookDiscipline currHBD = dao_disc.getByValueAndCode(selectedItem.split(":")[0], Integer.valueOf(selectedItem.split(":")[1]));
+			HandbookDiscipline currHBD = dao_disc.getById(hbD, id);
 			olVersion.clear();
 			for (WPDVersion wpdVers: currHBD.getVersions()) {
 				olVersion.add(wpdVers.getName());
 			}
-			cbVersion.getSelectionModel().select(-1);
-			/*} else {
-				System.err.println("ERROR: selectedItem == " + selectedItem);
-			}*/
-			cbVersion.setItems(olVersion);
-			//System.out.println("СМЕНИЛАСЬ ВЕРСИЯ В cbVersion? кажись нет?");
-			System.out.println("Я знаю, что есть вот такие пункты в компоненте cbVersion:");
-			for (String sValueVers: cbVersion.getItems()) {
-				System.out.println(sValueVers);
-			}
-			System.out.println("\nЯ знаю, что есть вот такие пункты в спсике olVersion:");
-			for (String sValueVers: olVersion) {
-				System.out.println(sValueVers);
-			}
-			
-			System.out.println("\nЗаглянем во вкладки, которые имеются в компоненте tpDiscipline:");
-			for (Tab tValue: tpDiscipline.getTabs()) {
-				System.out.println(tValue.getText());
-			}
-			
-			System.out.println("\nЗаглянем во вкладки, которые имеются в списке olTabName:");
-			for (String tValue: olTabName) {
-				System.out.println(tValue);
-			}
-			System.out.println("\nПросто взгялните, какие вкладки открыты T_T, количество вкладок не совпадёт, если этот метод был вызван из другого контроллера");
-		/*} else {
-			System.err.println("ERROR: olVersion не содержит выбранного элемента");
-		}*/
+			cbVersion.getSelectionModel().selectFirst();
+			//cbVersion.setItems(olVersion);
+		}
 	}
 	
 	/**
 	 * Обновляет название вкладки. Вызывается из самой вкладки
 	 * @param oldTabName старое название вкладки
 	 * @param newVersName новое название версии
+	 * @return true в случае если смена названия прошла успешно
 	 */
-	public void updateTabName(String oldTabName, String newVersName) {
-		int i = tpDiscipline.getTabs().indexOf(oldTabName);
-		if (i > 0) {
-			tpDiscipline.getTabs().get(i).setText(oldTabName.split(":")[0] + ":" + newVersName);
-			System.out.println("СМЕНИЛАСЬ ВЕРСИЯ В Tab?");
+	public boolean updateTabName(String oldTabName, String newVersName) {
+		boolean b = false;
+		Ctrl t = null;
+		for (Ctrl ctrlValue : olCtrl) {
+			if (ctrlValue.getTab().getText().equals(oldTabName)) {
+				t = ctrlValue;
+				break;
+			}
+		}
+		if (t != null) {
+			int i = tpDiscipline.getTabs().indexOf(t.getTab());
+			if (i >= 0) {
+				String sTemp = oldTabName.split(":")[0] + ":" + newVersName;
+				tpDiscipline.getTabs().get(i).setText(sTemp);
+				t.getTab().setText(sTemp);
+				t.ctrl.setTabName(sTemp); // костыльно выглядит
+				b = true;
+			} else {
+				System.err.println("ERROR: tab with name == " + oldTabName + " not found, i == " + i);
+			}
 		} else {
-			System.err.println("ERROR: tab with name == " + oldTabName + " not found");
+			System.err.println("Вкладка с таким названием не найдена");
 		}
 		for (int j = 0; j < tpDiscipline.getTabs().size(); j++) {
 			System.err.println(j + ": TAB Name == " + tpDiscipline.getTabs().get(j).getText());
 		}
+		return b;
 	}
 }

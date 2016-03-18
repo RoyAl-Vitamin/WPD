@@ -38,8 +38,8 @@ public class WPD extends Application {
 			Parent root = (Parent) fxmlLoader.load();
 			
 			FXMLCtrlMain fxmlCtrlMain = fxmlLoader.getController();
-			System.out.println("Ctrl null? " + fxmlCtrlMain.toString());
 			fxmlCtrlMain.setStage(primaryStage);
+			fxmlCtrlMain.setController(fxmlCtrlMain); // Запомним контроллер главного окна
 			
 			Scene scene = new Scene(root);
 			

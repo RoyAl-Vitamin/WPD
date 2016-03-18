@@ -34,6 +34,9 @@ public class FXMLCtrlVersionName extends VBox {
         
 		this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent event) {
+            	
+            	// TODO Проверить, а не существует ли точно такой же версии в БД?
+            	
             	if (tfVersionName.getText().equals("")) { // не дадим закрыть, если поле пусто
             		event.consume();
             	} else {
