@@ -64,6 +64,7 @@ public class WPD extends Application {
         	stageAuth.setScene(sceneAuth);
         	stageAuth.setTitle("Auth");
         	stageAuth.getIcons().add(new Image("Logo.png"));
+        	stageAuth.setResizable(false);
         	stageAuth.showAndWait();
         	daoS.add(data); 
         	// TODO Определить: нужно ли сохранение?

@@ -1,7 +1,6 @@
 package com.mmsp.logic;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.time.Instant;
@@ -9,8 +8,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.TreeSet;
-
-import org.apache.derby.impl.sql.catalog.SYSCOLUMNSRowFactory;
 
 import com.mmsp.dao.impl.DAO_PoCM;
 import com.mmsp.dao.impl.DAO_ThematicPlan;
@@ -27,14 +24,11 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -46,6 +40,7 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 //import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -164,198 +159,6 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 	}
 
-	public class RowT41 {
-		 
-        private SimpleStringProperty numberOfModule;
-        private SimpleStringProperty numberOfDisciplineSection;
-        private SimpleStringProperty numberOfDisciplineTopics;
-        private SimpleStringProperty numberOfHours;
-        private SimpleStringProperty numberOfL;
-        private SimpleStringProperty numberOfPZ;
-        private SimpleStringProperty numberOfLR;
-        private SimpleStringProperty KSR;
-        private SimpleStringProperty finalAttestation;
-        private SimpleStringProperty individualWork;
-        private SimpleStringProperty laborIntensity;
-        
-        public SimpleStringProperty numberOfModuleProperty() {
-            if (numberOfModule == null) {
-            	numberOfModule = new SimpleStringProperty(this, "numberOfModule");
-            }
-            return numberOfModule;
-        }
-        public SimpleStringProperty numberOfDisciplineSectionProperty() {
-            if (numberOfDisciplineSection == null) {
-            	numberOfDisciplineSection = new SimpleStringProperty(this, "numberOfDisciplineSection");
-            }
-            return numberOfDisciplineSection;
-        }
-        public SimpleStringProperty numberOfDisciplineTopicsProperty() {
-            if (numberOfDisciplineTopics == null) {
-            	numberOfDisciplineTopics = new SimpleStringProperty(this, "numberOfDisciplineTopics");
-            }
-            return numberOfDisciplineTopics;
-        }
-        public SimpleStringProperty numberOfHoursProperty() {
-            if (numberOfHours == null) {
-            	numberOfHours = new SimpleStringProperty(this, "numberOfHours");
-            }
-            return numberOfHours;
-        }
-        public SimpleStringProperty numberOfLProperty() {
-            if (numberOfL == null) {
-            	numberOfL = new SimpleStringProperty(this, "numberOfL");
-            }
-            return numberOfL;
-        }
-        public SimpleStringProperty numberOfPZProperty() {
-            if (numberOfPZ == null) {
-            	numberOfPZ = new SimpleStringProperty(this, "numberOfPZ");
-            }
-            return numberOfPZ;
-        }
-        public SimpleStringProperty numberOfLRProperty() {
-            if (numberOfLR == null) {
-            	numberOfLR = new SimpleStringProperty(this, "numberOfLR");
-            }
-            return numberOfLR;
-        }
-        public SimpleStringProperty KSRProperty() {
-            if (KSR == null) {
-            	KSR = new SimpleStringProperty(this, "KSR");
-            }
-            return KSR;
-        }
-        public SimpleStringProperty finalAttestationProperty() {
-            if (finalAttestation == null) {
-            	finalAttestation = new SimpleStringProperty(this, "finalAttestation");
-            }
-            return finalAttestation;
-        }
-        public SimpleStringProperty individualWorkProperty() {
-            if (individualWork == null) {
-            	individualWork = new SimpleStringProperty(this, "individualWork");
-            }
-            return individualWork;
-        }
-        public SimpleStringProperty laborIntensityProperty() {
-            if (laborIntensity == null) {
-            	laborIntensity = new SimpleStringProperty(this, "laborIntensity");
-            }
-            return laborIntensity;
-        }
-        
-        public RowT41(int value) {
-        	this.numberOfModule = new SimpleStringProperty(String.valueOf(value));
-            this.numberOfDisciplineSection = new SimpleStringProperty("");
-            this.numberOfDisciplineTopics = new SimpleStringProperty("");
-            this.numberOfHours = new SimpleStringProperty("");
-            this.numberOfL = new SimpleStringProperty("");
-            this.numberOfPZ = new SimpleStringProperty("");
-            this.numberOfLR = new SimpleStringProperty("");
-            this.KSR = new SimpleStringProperty("");
-            this.finalAttestation = new SimpleStringProperty("");
-            this.individualWork = new SimpleStringProperty("");
-            this.laborIntensity = new SimpleStringProperty("");
-        }
-        public RowT41() {
-        	this.numberOfModule = new SimpleStringProperty("");
-            this.numberOfDisciplineSection = new SimpleStringProperty("");
-            this.numberOfDisciplineTopics = new SimpleStringProperty("");
-            this.numberOfHours = new SimpleStringProperty("");
-            this.numberOfL = new SimpleStringProperty("");
-            this.numberOfPZ = new SimpleStringProperty("");
-            this.numberOfLR = new SimpleStringProperty("");
-            this.KSR = new SimpleStringProperty("");
-            this.finalAttestation = new SimpleStringProperty("");
-            this.individualWork = new SimpleStringProperty("");
-            this.laborIntensity = new SimpleStringProperty("");
-        }
-        public RowT41(String numberOfModule, String numberOfDisciplineSection, String numberOfDisciplineTopics, 
-        		String numberOfHours, String numberOfL, String numberOfPZ, String numberOfLR, String KSR,
-        		String finalAttestation, String individualWork, String laborIntensity) {
-        	
-            this.numberOfModule = new SimpleStringProperty(numberOfModule);
-            this.numberOfDisciplineSection = new SimpleStringProperty(numberOfDisciplineSection);
-            this.numberOfDisciplineTopics = new SimpleStringProperty(numberOfDisciplineTopics);
-            this.numberOfHours = new SimpleStringProperty(numberOfHours);
-            this.numberOfL = new SimpleStringProperty(numberOfL);
-            this.numberOfPZ = new SimpleStringProperty(numberOfPZ);
-            this.numberOfLR = new SimpleStringProperty(numberOfLR);
-            this.KSR = new SimpleStringProperty(KSR);
-            this.finalAttestation = new SimpleStringProperty(finalAttestation);
-            this.individualWork = new SimpleStringProperty(individualWork);
-            this.laborIntensity = new SimpleStringProperty(laborIntensity);
-        }
-
-        public String getNumberOfModule() {
-            return numberOfModule.get();
-        }
-        public void setNumberOfModule(String value) {
-        	numberOfModule.set(value);
-        }
-        public String getNumberOfDisciplineSection() {
-            return numberOfDisciplineSection.get();
-        }
-        public void setNumberOfDisciplineSection(String value) {
-        	numberOfDisciplineSection.set(value);
-        }
-		public String getNumberOfDisciplineTopics() {
-			return numberOfDisciplineTopics.get();
-		}
-		public void setNumberOfDisciplineTopics(String value) {
-			this.numberOfDisciplineTopics.set(value);
-		}
-		public String getNumberOfHours() {
-			return numberOfHours.get();
-		}
-		public void setNumberOfHours(String value) {
-			this.numberOfHours.set(value);
-		}
-		public String getNumberOfL() {
-			return numberOfL.get();
-		}
-		public void setNumberOfL(String value) {
-			this.numberOfL.set(value);
-		}
-		public String getNumberOfPZ() {
-			return numberOfPZ.get();
-		}
-		public void setNumberOfPZ(String value) {
-			this.numberOfPZ.set(value);
-		}
-		public String getNumberOfLR() {
-			return numberOfLR.get();
-		}
-		public void setNumberOfLR(String value) {
-			this.numberOfLR.set(value);
-		}
-		public String getKSR() {
-			return KSR.get();
-		}
-		public void setKSR(String value) {
-			this.KSR.set(value);
-		}
-		public String getFinalAttestation() {
-			return finalAttestation.get();
-		}
-		public void setFinalAttestation(String value) {
-			this.finalAttestation.set(value);
-		}
-		public String getIndividualWork() {
-			return individualWork.get();
-		}
-		public void setIndividualWork(String value) {
-			this.individualWork.set(value);
-		}
-		public String getLaborIntensity() {
-			return laborIntensity.get();
-		}
-		public void setLaborIntensity(String value) {
-			this.laborIntensity.set(value);
-		}        
-}
-
 	class EditingCell extends TableCell<RowSL, String> { // Для UX, что б не надо было после редактирования жать Enter
 		 
 		private TextField textField;
@@ -443,6 +246,9 @@ public class FXMLCtrlNewTab extends VBox {
 	private ThematicPlan currThematicPlan;
 
 	@FXML
+	private MenuButton mbNumberOfSemesters;
+
+	@FXML
 	private TextField tfVersion;
 
 	@FXML
@@ -522,49 +328,6 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private Button bDelRowPoCM; // Удаление строки
 
-	// Переменные вкладки "Таблица 4.1"
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVNumberOfModule;
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVNumberOfDisciplineSection;
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVNumberOfDisciplineTopics;
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVNumberOfHours;
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVNumberOfL;
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVNumberOfPZ;
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVNumberOfLR;
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVKSR;
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVFinalAttestation;
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVIndividualWork;
-
-	@FXML
-	private TreeTableColumn<RowT41, String> colTTVLaborIntensity;
-
-	@FXML
-	private TreeTableView<RowT41> ttvTable41;
-
-	@FXML
-	private Button bAddRowT41;
-
-	private TreeItem<RowT41> root; // корневой элемент ttvTable41
-
 	// Переменные выбора семестров
 
 	@FXML
@@ -605,237 +368,192 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private TableView<?> tvTable71;
 
-	@FXML
-	private MenuButton mbNumberOfSemesters;
+	private void initTvStudyLoad() {
+		Callback<TableColumn<RowSL, String>, TableCell<RowSL, String>> cellFactory =
+			new Callback<TableColumn<RowSL, String>, TableCell<RowSL, String>>() {
+				public TableCell<RowSL, String> call(TableColumn<RowSL, String> p) {
+					return new EditingCell();
+				}
+			};
+		//colTVViewOfStudyLoad.setMinWidth(150.0);
+		colTVViewOfStudyLoad.setCellValueFactory(new PropertyValueFactory<RowSL, String>("viewOfStudyLoad"));
+		//colViewOfStudyLoad.setCellFactory(TextFieldTableCell.forTableColumn());
+		colTVViewOfStudyLoad.setCellFactory(cellFactory);
+		colTVViewOfStudyLoad.setOnEditCommit(
+			new EventHandler<CellEditEvent<RowSL, String>>() {
+				@Override
+				public void handle(CellEditEvent<RowSL, String> t) {
+					((RowSL) t.getTableView().getItems().get(
+						t.getTablePosition().getRow())
+						).setViewOfStudyLoad(t.getNewValue());
+				}
+			}
+		);
+		colTVNumberOfHours.setCellValueFactory(new PropertyValueFactory<RowSL, String>("numberOfHours"));
+		//colNumberOfHours.setCellFactory(TextFieldTableCell.forTableColumn());
+		colTVNumberOfHours.setCellFactory(cellFactory);
+		colTVNumberOfHours.setOnEditCommit(
+			new EventHandler<CellEditEvent<RowSL, String>>() {
+				@Override
+				public void handle(CellEditEvent<RowSL, String> t) {
+					((RowSL) t.getTableView().getItems().get(
+						t.getTablePosition().getRow())
+						).setNumberOfHours(t.getNewValue());
+				}
+			}
+		);
+		colTVLadderpointsUnit.setCellValueFactory(new PropertyValueFactory<RowSL, String>("ladderpointsUnit"));
+		colTVLadderpointsUnit.setCellFactory(cellFactory);
+		//colLadderpointsUnit.setCellFactory(TextFieldTableCell.forTableColumn());
+		colTVLadderpointsUnit.setOnEditCommit(
+			new EventHandler<CellEditEvent<RowSL, String>>() {
+				@Override
+				public void handle(CellEditEvent<RowSL, String> t) {
+					((RowSL) t.getTableView().getItems().get(
+						t.getTablePosition().getRow())
+						).setLadderpointsUnit(t.getNewValue());
+				}
+			}
+		);
 
-    /*private void initTtvTable41() {
-    	colTTVNumberOfModule.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				// p.getValue() returns the TreeItem instance for a particular
-				// TreeTableView row, and the second getValue() call returns the
-				// RowT41 instance contained within the TreeItem.
-				return p.getValue().getValue().numberOfModuleProperty();
-			}
-		});
-    	colTTVNumberOfDisciplineSection.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				return p.getValue().getValue().numberOfDisciplineSectionProperty();
-			}
-		});
-		colTTVNumberOfDisciplineTopics.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				return p.getValue().getValue().numberOfDisciplineTopicsProperty();
-			}
-		});
-    	colTTVNumberOfHours.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				return p.getValue().getValue().numberOfHoursProperty();
-			}
-		});
-    	colTTVNumberOfL.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				return p.getValue().getValue().numberOfLProperty();
-			}
-		});
-    	colTTVNumberOfPZ.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				return p.getValue().getValue().numberOfPZProperty();
-			}
-		});
-    	colTTVNumberOfLR.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				return p.getValue().getValue().numberOfLRProperty();
-			}
-		});
-    	colTTVKSR.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				return p.getValue().getValue().KSRProperty();
-			}
-		});
-    	colTTVFinalAttestation.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				return p.getValue().getValue().finalAttestationProperty();
-			}
-		});
-    	colTTVIndividualWork.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				return p.getValue().getValue().individualWorkProperty();
-			}
-		});
-    	colTTVLaborIntensity.setCellValueFactory(new Callback<CellDataFeatures<RowT41, String>, ObservableValue<String>>() {
-			public ObservableValue<String> call(CellDataFeatures<RowT41, String> p) {
-				return p.getValue().getValue().laborIntensityProperty();
-			}
-		});
-    	
-    	root = new TreeItem<RowT41>(new RowT41());
-    	ttvTable41.setShowRoot(false);
-    	ttvTable41.setRoot(root);
-    }*/
-
-    private void initTvStudyLoad() {
-    	Callback<TableColumn<RowSL, String>, TableCell<RowSL, String>> cellFactory =
-                new Callback<TableColumn<RowSL, String>, TableCell<RowSL, String>>() {
-                    public TableCell<RowSL, String> call(TableColumn<RowSL, String> p) {
-                       return new EditingCell();
-                    }
-                };
-        colTVViewOfStudyLoad.setMinWidth(150.0);
-        colTVViewOfStudyLoad.setCellValueFactory(new PropertyValueFactory<RowSL, String>("viewOfStudyLoad"));
-        //colViewOfStudyLoad.setCellFactory(TextFieldTableCell.forTableColumn());
-        colTVViewOfStudyLoad.setCellFactory(cellFactory);
-        colTVViewOfStudyLoad.setOnEditCommit(
-            new EventHandler<CellEditEvent<RowSL, String>>() {
-                @Override
-                public void handle(CellEditEvent<RowSL, String> t) {
-                    ((RowSL) t.getTableView().getItems().get(
-                            t.getTablePosition().getRow())
-                            ).setViewOfStudyLoad(t.getNewValue());
-                }
-            }
-        );
-        colTVNumberOfHours.setCellValueFactory(new PropertyValueFactory<RowSL, String>("numberOfHours"));
-        //colNumberOfHours.setCellFactory(TextFieldTableCell.forTableColumn());
-        colTVNumberOfHours.setCellFactory(cellFactory);
-        colTVNumberOfHours.setOnEditCommit(
-            new EventHandler<CellEditEvent<RowSL, String>>() {
-                @Override
-                public void handle(CellEditEvent<RowSL, String> t) {
-                    ((RowSL) t.getTableView().getItems().get(
-                            t.getTablePosition().getRow())
-                            ).setNumberOfHours(t.getNewValue());
-                }
-            }
-        );
-        colTVLadderpointsUnit.setCellValueFactory(new PropertyValueFactory<RowSL, String>("ladderpointsUnit"));
-        colTVLadderpointsUnit.setCellFactory(cellFactory);
-        //colLadderpointsUnit.setCellFactory(TextFieldTableCell.forTableColumn());
-        colTVLadderpointsUnit.setOnEditCommit(
-            new EventHandler<CellEditEvent<RowSL, String>>() {
-                @Override
-                public void handle(CellEditEvent<RowSL, String> t) {
-                    ((RowSL) t.getTableView().getItems().get(
-                            t.getTablePosition().getRow())
-                            ).setLadderpointsUnit(t.getNewValue());
-                }
-            }
-        );
-        tvStudyLoad.setItems(olDataOfStudyLoad);  
-    }
+		tvStudyLoad.setItems(olDataOfStudyLoad);  
+	}
 
 	void initTvPoCM() {
-		
+
+		tcCM.setCellValueFactory(cellData -> cellData.getValue().sspCtrlMes);
+		tcCM.setCellFactory(TextFieldTableCell.forTableColumn());
+
+		tcNoS.setCellValueFactory(cellData -> cellData.getValue().sspNuberOfSemester);
+		tcNoS.setCellFactory(TextFieldTableCell.forTableColumn());
+
+		tcNoW.setCellValueFactory(cellData -> cellData.getValue().sspNumberOfWeek);
+		tcNoW.setCellFactory(TextFieldTableCell.forTableColumn());
+
+		tvPoCM.setItems(olDataOfPoCM);
+		tvPoCM.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
+			if (tvPoCM.getSelectionModel().getSelectedItem() != null) {
+				bSaveRowPoCM.setDisable(false);
+				tfCM.setDisable(false);
+				tfNoS.setDisable(false);
+				tfNoW.setDisable(false);
+				tfCM.setText(newValue.getSspCtrlMes());
+				tfNoS.setText(newValue.getSspNuberOfSemester());
+				tfNoW.setText(newValue.getSspNumberOfWeek());
+			} else {
+				bSaveRowPoCM.setDisable(true);
+				tfCM.setDisable(true);
+				tfNoS.setDisable(true);
+				tfNoW.setDisable(true);
+			}
+		});
 	};
 
 	/**
-     * Описание методов поведения TableView, TreeTableView, а так же выделение памяти и установление связей
-     */
-    private void initT() {
-    	//initTtvTable41(); // DELETE
-    	initTvStudyLoad();
-    	initTvPoCM();
-    }
+	 * Описание методов поведения TableView, TreeTableView, а так же выделение памяти и установление связей
+	 */
+	private void initT() {
+		initTvStudyLoad();
+		initTvPoCM();
+	}
 
 	@FXML
-    void clickBFileChooser(ActionEvent event) {
-    	FileChooser fileChooser = new FileChooser();
-    	fileChooser.setTitle("Открыть шаблон");
-    	File file = fileChooser.showOpenDialog(stage);
-        if (file != null) {
-            tfPath.setText(file.getPath());
-        }
-    }
+	void clickBFileChooser(ActionEvent event) {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Открыть шаблон");
+		File file = fileChooser.showOpenDialog(stage);
+		if (file != null) {
+			tfPath.setText(file.getPath());
+		}
+	}
 
-    @FXML
-    void ccmi1(ActionEvent event) {
+	@FXML
+	void ccmi1(ActionEvent event) {
 		if (cmi1.isSelected()) tsFNOS.add(1); else tsFNOS.remove(1);
 		mbNumberOfSemesters.setText(tsFNOS.toString());
-    }
+	}
 
-    @FXML
-    void ccmi2(ActionEvent event) {
+	@FXML
+	void ccmi2(ActionEvent event) {
 		if (cmi2.isSelected()) tsFNOS.add(2); else tsFNOS.remove(2);
 		mbNumberOfSemesters.setText(tsFNOS.toString());
-    }
+	}
 
-    @FXML
-    void ccmi3(ActionEvent event) {
-    	if (cmi3.isSelected()) tsFNOS.add(3); else tsFNOS.remove(3);
-    	mbNumberOfSemesters.setText(tsFNOS.toString());
-    }
+	@FXML
+	void ccmi3(ActionEvent event) {
+		if (cmi3.isSelected()) tsFNOS.add(3); else tsFNOS.remove(3);
+		mbNumberOfSemesters.setText(tsFNOS.toString());
+	}
 
-    @FXML
-    void ccmi4(ActionEvent event) {
+	@FXML
+	void ccmi4(ActionEvent event) {
 		if (cmi4.isSelected()) tsFNOS.add(4); else tsFNOS.remove(4);
 		mbNumberOfSemesters.setText(tsFNOS.toString());
-    }
+	}
 
-    @FXML
-    void ccmi5(ActionEvent event) {
+	@FXML
+	void ccmi5(ActionEvent event) {
 		if (cmi5.isSelected()) tsFNOS.add(5); else tsFNOS.remove(5);
 		mbNumberOfSemesters.setText(tsFNOS.toString());
-    }
+	}
 
-    @FXML
-    void ccmi6(ActionEvent event) {
+	@FXML
+	void ccmi6(ActionEvent event) {
 		if (cmi6.isSelected()) tsFNOS.add(6); else tsFNOS.remove(6);
 		mbNumberOfSemesters.setText(tsFNOS.toString());
-    }
+	}
 
-    @FXML
-    void ccmi7(ActionEvent event) {
+	@FXML
+	void ccmi7(ActionEvent event) {
 		if (cmi7.isSelected()) tsFNOS.add(7);  else tsFNOS.remove(7);
 		mbNumberOfSemesters.setText(tsFNOS.toString());
-    }
+	}
 
-    @FXML
-    void ccmi8(ActionEvent event) {
+	@FXML
+	void ccmi8(ActionEvent event) {
 		if (cmi8.isSelected()) tsFNOS.add(8); else tsFNOS.remove(8);
 		mbNumberOfSemesters.setText(tsFNOS.toString());
-    }
+	}
 
-    @FXML
-    void clickBSave(ActionEvent event) {
+	@FXML
+	void clickBSave(ActionEvent event) {
 
-    	// TODO first достать данные из полей и вставить их в объекты PoCM and ThematicPlan
-    	currWPDVersion.setName(tfVersion.getText()); // Запоминаем название версии
-    	currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
-    	
-    	/* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
-    	LocalDate localDate = dpDateOfCreate.getValue();
-    	Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault()));
-    	currWPDVersion.setDate(Date.from(instant)); // Попробуем занести дату создания
+		// TODO first достать данные из полей и вставить их в объекты PoCM and ThematicPlan
+		currWPDVersion.setName(tfVersion.getText()); // Запоминаем название версии
+		currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
 
-    	DAO_PoCM dao_pocm = new DAO_PoCM();
-    	dao_pocm.update(currPoCM);
-    	
-    	DAO_ThematicPlan dao_thematicPlan = new DAO_ThematicPlan();
-    	currThematicPlan.setTitle(tfTitleOfThematicPlan.getText());
-    	currThematicPlan.setDescription(tfDescriptionOfThematicPlan.getText());
-    	dao_thematicPlan.update(currThematicPlan);
-    	
-    	DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
-    	dao_wpdVersion.update(currWPDVersion);
+		/* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
+		LocalDate localDate = dpDateOfCreate.getValue();
+		Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault()));
+		currWPDVersion.setDate(Date.from(instant)); // Попробуем занести дату создания
 
-    	// Блок обновления названия вкладки и списка Версий в cbVersion 
-    	if (!tabName.split(":")[1].equals(currWPDVersion.getName()))
-    	// Если сменилось название версии, то подгрузим контроллер
-    	// и изменим из него значение названия вкладки и обновим список названий версий
-    	{
-    		System.err.println("currWPDVers == " + currWPDVersion.toString());
-    		System.err.println("currHBD == " + currWPDVersion.getHbD().toString());
-    		System.err.println("ID currHBD == " + currWPDVersion.getHbD().getId());
-    		parentCtrl.updateOlVersion(currWPDVersion.getHbD().getId()); // Обновляет список, содержащийся в cbVersion
-    		if (!parentCtrl.updateTabName(tabName, currWPDVersion.getName())) { // обновляет название вкладки
-    			System.err.println("Возникла ошибка при обновлении названия вкадки");
-    		}
-    	}
-    }
+		DAO_PoCM dao_pocm = new DAO_PoCM();
+		dao_pocm.update(currPoCM);
 
-    @FXML
-    void clickBGenerate(ActionEvent event) {
-    	// TODO Генерация РПД по атомарным данным
-    }
+		DAO_ThematicPlan dao_thematicPlan = new DAO_ThematicPlan();
+		currThematicPlan.setTitle(tfTitleOfThematicPlan.getText());
+		currThematicPlan.setDescription(tfDescriptionOfThematicPlan.getText());
+		dao_thematicPlan.update(currThematicPlan);
+
+		DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
+		dao_wpdVersion.update(currWPDVersion);
+
+		// Блок обновления названия вкладки и списка Версий в cbVersion 
+		if (!tabName.split(":")[1].equals(currWPDVersion.getName()))
+		// Если сменилось название версии, то подгрузим контроллер
+		// и изменим из него значение названия вкладки и обновим список названий версий
+		{
+			parentCtrl.updateOlVersion(currWPDVersion.getHbD().getId()); // Обновляет список, содержащийся в cbVersion
+			if (!parentCtrl.updateTabName(tabName, currWPDVersion.getName())) { // обновляет название вкладки
+				System.err.println("Возникла ошибка при обновлении названия вкадки");
+			}
+		}
+	}
+
+	@FXML
+	void clickBGenerate(ActionEvent event) {
+		// TODO Генерация РПД по атомарным данным
+	}
 
     @FXML
     void clickBDelete(ActionEvent event) {
@@ -866,10 +584,10 @@ public class FXMLCtrlNewTab extends VBox {
     	// TODO Закрыть вкладку?
     }
 
-    @FXML
-    void clickBAddRowStudyLoad(ActionEvent event) {
-    	olDataOfStudyLoad.add(new RowSL("", "", ""));
-    }
+	@FXML
+	void clickBAddRowStudyLoad(ActionEvent event) {
+		olDataOfStudyLoad.add(new RowSL("", "", ""));
+	}
 
 	@FXML
 	void clickBDeleteRowStudyLoad(ActionEvent event) {
@@ -884,14 +602,7 @@ public class FXMLCtrlNewTab extends VBox {
 		// for (int i = 0; i < dataOfStudyLoad.size(); i++) System.out.println(dataOfStudyLoad.get(i).toString());
 	}
 
-	@FXML // Добавление строки в Т41
-	void clickBAddRowT41(ActionEvent event) {
-		System.out.println(root.getChildren().size());
-		TreeItem<RowT41> item = new TreeItem<>(new RowT41(root.getChildren().size() + 1));
-		root.getChildren().add(item);
-	}
-
-	@FXML
+	@FXML // TODO http://stackoverflow.com/questions/19160715/javafx-2-tableview-dynamic-column?rq=1
 	void clickBAddRowT71(ActionEvent event) {
 		olDataOfTableT71.add(new RowT71("", "", ""));
 	}
@@ -911,20 +622,29 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	void clickBAddRowPoCM(ActionEvent event) {
 		olDataOfPoCM.add(new RowPoCM("","",""));
-		System.out.println("Add row PoCM");
 	}
 
 	@FXML
 	void clickBDelRowPoCM(ActionEvent event) {
 		int selectedIndex = tvPoCM.getSelectionModel().getSelectedIndex();
 		if (selectedIndex >= 0) tvPoCM.getItems().remove(selectedIndex);
-		System.out.println("Del row PoCM");
+		if (olDataOfPoCM.size() == 0) {
+			tfCM.setText("");
+			tfNoS.setText("");
+			tfNoW.setText("");
+		}
 	}
 
 	@FXML
 	void clickBSaveRowPoCM(ActionEvent event) {
-		// TODO
-		System.out.println("Row PoCM Save");
+		/*tvPoCM.getSelectionModel().getSelectedItem().setSspCtrlMes(tfCM.getText());
+		tvPoCM.getSelectionModel().getSelectedItem().setSspNuberOfSemester(tfNoS.getText());
+		tvPoCM.getSelectionModel().getSelectedItem().setSspNumberOfWeek(tfNoW.getText());*/
+		RowPoCM rowPoCM = olDataOfPoCM.get(tvPoCM.getSelectionModel().getSelectedIndex());
+		rowPoCM.setSspCtrlMes(tfCM.getText());
+		rowPoCM.setSspNuberOfSemester(tfNoS.getText());
+		rowPoCM.setSspNumberOfWeek(tfNoW.getText());
+		olDataOfPoCM.set(tvPoCM.getSelectionModel().getSelectedIndex(), rowPoCM);
 	}
 
 	private void load(Long id_Vers) {
@@ -976,29 +696,6 @@ public class FXMLCtrlNewTab extends VBox {
 		System.err.println(currThematicPlan.toString());
 	}
 
-	/*public FXMLCtrlNewTab(Stage curr_stage, Long id_Vers, String tabName) throws IOException {
-
-		FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
-
-		loader.setController(this);
-
-		loader.setRoot(this);
-
-		loader.load();
-
-		stage = curr_stage;
-		
-		this.tabName = tabName;
-
-		if (id_Vers == null) System.err.println("Error");
-
-		initT(); // Инициализация
-
-		load(id_Vers); // Подгрузка данных во вкладку
-
-		mbNumberOfSemesters.setText(tsFNOS.toString());
-	}*/
-
 	public void setStage(Stage stage2) {
 		this.stage = stage2;
 	}
@@ -1021,6 +718,8 @@ public class FXMLCtrlNewTab extends VBox {
 		load(id_Vers); // Загрузка полей
 		
 		mbNumberOfSemesters.setText(tsFNOS.toString());
+
+		bSaveRowPoCM.setDisable(true);
 	}
 
 	public void setParentCtrl(FXMLCtrlMain fxmlCtrlMain) {

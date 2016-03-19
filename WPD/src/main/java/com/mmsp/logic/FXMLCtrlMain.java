@@ -250,6 +250,7 @@ public class FXMLCtrlMain extends VBox {
 		stageVersionName.setScene(sceneDiscipline);
 		stageVersionName.setTitle("Enter name version");
 		stageVersionName.getIcons().add(new Image("Logo.png"));
+		stageVersionName.setResizable(false);
 		stageVersionName.showAndWait();
 
 		dao_Vers.update(wpdVers); // Обновляем Версию после получения имени версии
@@ -319,6 +320,7 @@ public class FXMLCtrlMain extends VBox {
     	stageDiscipline.setScene(sceneDiscipline);
     	stageDiscipline.setTitle("Create Discipline");
     	stageDiscipline.getIcons().add(new Image("Logo.png"));
+    	stageDiscipline.setResizable(false);
     	stageDiscipline.showAndWait();
     	
     	if (!(hbD.getValue().equals(""))) { // проверка на отсутствие введённых данных
