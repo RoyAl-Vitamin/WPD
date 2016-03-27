@@ -8,12 +8,12 @@ import org.hibernate.SessionFactory;
  */
 public class Logic {
 
-    private static SessionFactory sessionFactory = null;
-    
-    /**
-     * Подгрузка конфигурационного файла
-     * Создание сессии
-     */
+	private static SessionFactory sessionFactory = null;
+
+	/**
+	 * Подгрузка конфигурационного файла
+	 * Создание сессии
+	 */
 
 	public static SessionFactory getSessionFactory() {
 		return sessionFactory;

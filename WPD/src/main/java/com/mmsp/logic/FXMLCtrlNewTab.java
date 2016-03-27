@@ -1,13 +1,17 @@
 package com.mmsp.logic;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
+import java.util.TreeSet;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.TreeSet;
 
 import com.mmsp.dao.impl.DAO_PoCM;
 import com.mmsp.dao.impl.DAO_ThematicPlan;
@@ -20,12 +24,14 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
@@ -34,10 +40,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableColumn;
-//import javafx.scene.control.TreeTableColumn.CellDataFeatures;
-import javafx.scene.control.TreeTableView;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -122,7 +124,7 @@ public class FXMLCtrlNewTab extends VBox {
 			ssp.set(sValue);
 		}
 	}
-	
+
 	public class RowPoCM { // Класс строки компонента tableView вкладки "ПКМ"
 		private final SimpleStringProperty sspCtrlMes; // Контрольное мероприятие
 		private final SimpleStringProperty sspNuberOfSemester; // Номер семестра
@@ -189,47 +191,53 @@ public class FXMLCtrlNewTab extends VBox {
 		public void updateItem(String item, boolean empty) {
 			super.updateItem(item, empty);
 
-            if (empty) {
-                setText(null);
-                setGraphic(null);
-            } else {
-                if (isEditing()) {
-                    if (textField != null) {
-                        textField.setText(getString());
-                    }
-                    setText(null);
-                    setGraphic(textField);
-                } else {
-                    setText(getString());
-                    setGraphic(null);
-                }
-            }
-        }
- 
-        private void createTextField() {
-            textField = new TextField(getString());
-            textField.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
-            textField.focusedProperty().addListener(new ChangeListener<Boolean>(){
-                @Override
-                public void changed(ObservableValue<? extends Boolean> arg0, 
-                    Boolean arg1, Boolean arg2) {
-                        if (!arg2) {
-                            commitEdit(textField.getText());
-                        }
-                }
-            });
-        }
- 
-        private String getString() {
-            return getItem() == null ? "" : getItem().toString();
-        }
-    }
+			if (empty) {
+				setText(null);
+				setGraphic(null);
+			} else {
+				if (isEditing()) {
+					if (textField != null) {
+						textField.setText(getString());
+					}
+					setText(null);
+					setGraphic(textField);
+				} else {
+					setText(getString());
+					setGraphic(null);
+				}
+			}
+		}
+
+		private void createTextField() {
+			textField = new TextField(getString());
+			textField.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
+			textField.focusedProperty().addListener(new ChangeListener<Boolean>(){
+				@Override
+				public void changed(ObservableValue<? extends Boolean> arg0, 
+						Boolean arg1, Boolean arg2) {
+					if (!arg2) {
+						commitEdit(textField.getText());
+					}
+				}
+			});
+		}
+
+		private String getString() {
+			return getItem() == null ? "" : getItem().toString();
+		}
+	}
 
 	private final ObservableList<RowSL> olDataOfStudyLoad = FXCollections.observableArrayList();
 
 	private final ObservableList<RowT71> olDataOfTableT71 = FXCollections.observableArrayList();
 	
 	private final ObservableList<RowPoCM> olDataOfPoCM = FXCollections.observableArrayList();
+
+	private final ObservableList<String> olSemester = FXCollections.observableArrayList(); // Вкладка тематический план комбобокс "Принадлежность к модулю"
+
+	private final ObservableList<String> olModule = FXCollections.observableArrayList(); // Вкладка тематический план комбобокс "Принадлежность к модулю"
+
+	private final ObservableList<String> olSection = FXCollections.observableArrayList(); // Вкладка тематический план комбобокс "Принадлежность к семестру"
 
 	private TreeSet<Integer> tsFNOS = new TreeSet<Integer>();
 
@@ -240,6 +248,14 @@ public class FXMLCtrlNewTab extends VBox {
 	private FXMLCtrlMain parentCtrl;
 	
 	private String tabName; // здесь полное название вкладки, возможно стоило хранить только название версии, т.к. название дисциплины пока не менятся
+
+	private int NUMBER_OF_SEMESTER; // количество семестров
+
+	private int NUMBER_OF_MODULE; // количество модулей
+
+	private int NUMBER_OF_SECTION; // количество разделов
+
+	private int NUMBER_OF_WEEK; // количество недель в семестре
 
 	private WPDVersion currWPDVersion;
 	private PoCM currPoCM;
@@ -297,6 +313,15 @@ public class FXMLCtrlNewTab extends VBox {
 	private TextArea tfDescriptionOfThematicPlan;
 
 	// Переменные вкладки "ПКМ"
+
+	@FXML
+	private ComboBox<String> cbSemester;
+
+	@FXML
+	private ComboBox<String> cbModule;
+
+	@FXML
+	private ComboBox<String> cbSection;
 
 	@FXML
 	private TableColumn<RowPoCM, String> tcCM;
@@ -421,6 +446,19 @@ public class FXMLCtrlNewTab extends VBox {
 
 	void initTvPoCM() {
 
+		olDataOfPoCM.addListener(new ListChangeListener<RowPoCM>() {
+
+			@Override
+			public void onChanged(ListChangeListener.Change change) {
+				if (olDataOfPoCM.size() == 0) {
+					tfCM.setDisable(true);
+					tfNoS.setDisable(true);
+					tfNoW.setDisable(true);
+					bSaveRowPoCM.setDisable(true);
+				}
+			}
+		});
+
 		tcCM.setCellValueFactory(cellData -> cellData.getValue().sspCtrlMes);
 		tcCM.setCellFactory(TextFieldTableCell.forTableColumn());
 
@@ -447,15 +485,12 @@ public class FXMLCtrlNewTab extends VBox {
 				tfNoW.setDisable(true);
 			}
 		});
+		
+		tfCM.setDisable(true);
+		tfNoS.setDisable(true);
+		tfNoW.setDisable(true);
+		bSaveRowPoCM.setDisable(true);
 	};
-
-	/**
-	 * Описание методов поведения TableView, TreeTableView, а так же выделение памяти и установление связей
-	 */
-	private void initT() {
-		initTvStudyLoad();
-		initTvPoCM();
-	}
 
 	@FXML
 	void clickBFileChooser(ActionEvent event) {
@@ -555,34 +590,36 @@ public class FXMLCtrlNewTab extends VBox {
 		// TODO Генерация РПД по атомарным данным
 	}
 
-    @FXML
-    void clickBDelete(ActionEvent event) {
-    	
-    	Long id = currWPDVersion.getNumber();
-    	
-    	DAO_WPDVersion dao_vers = new DAO_WPDVersion();
-    	dao_vers.remove(currWPDVersion);
+	@FXML
+	void clickBDelete(ActionEvent event) {
 
-    	List<WPDVersion> listOfVersion = dao_vers.getAllByNumber(id);
-    	for (int i = 0; i < listOfVersion.size(); i++) {
-    		System.err.println("Name = " + listOfVersion.get(i).getName() + "\nID = " + listOfVersion.get(i).getId().toString());
-    		if (listOfVersion.get(i).getPoCM() != null) {
-    			System.err.println("PoCM == " + listOfVersion.get(i).getPoCM().toString());
-    		} else
-    			System.err.println("PoCM == null");
-    		if (listOfVersion.get(i).getThematicPlan() != null) {
-    			System.err.println("ThematicPlan == " + listOfVersion.get(i).getThematicPlan().toString());
-    		} else
-    			System.err.println("ThematicPlan == null");
-    	}
-    	
-    	// TODO Каскадное удаление Тематического плана и Плана контрольных мероприятий 
-    	// UPD[1]: Найти ошибку 
-    	// UPD[2]: Ошибку нашёл, но так как нет зависимости @OneToMany каскадное удаление не будет производиться
-    	// UPD[3]: Сделал зависимость, но не смотрел как удаляется
-    	
-    	// TODO Закрыть вкладку?
-    }
+		Long id = currWPDVersion.getNumber();
+
+		// Закрываем вкладку
+		parentCtrl.closeTab(id);
+
+		DAO_WPDVersion dao_vers = new DAO_WPDVersion();
+		dao_vers.remove(currWPDVersion);
+
+		List<WPDVersion> listOfVersion = dao_vers.getAllByNumber(id);
+		for (int i = 0; i < listOfVersion.size(); i++) {
+			System.err.println("Name = " + listOfVersion.get(i).getName() + "\nID = " + listOfVersion.get(i).getId().toString());
+			if (listOfVersion.get(i).getPoCM() != null) {
+				System.err.println("PoCM == " + listOfVersion.get(i).getPoCM().toString());
+			} else
+				System.err.println("PoCM == null");
+			if (listOfVersion.get(i).getThematicPlan() != null) {
+				System.err.println("ThematicPlan == " + listOfVersion.get(i).getThematicPlan().toString());
+			} else
+				System.err.println("ThematicPlan == null");
+		}
+
+		// TODO Каскадное удаление Тематического плана и Плана контрольных мероприятий 
+		// UPD[1]: Найти ошибку 
+		// UPD[2]: Ошибку нашёл, но так как нет зависимости @OneToMany каскадное удаление не будет производиться
+		// UPD[3]: Сделал зависимость, но не смотрел как удаляется
+		// UPD[4]: Удаляется с ошибкой, починить!
+	}
 
 	@FXML
 	void clickBAddRowStudyLoad(ActionEvent event) {
@@ -647,6 +684,10 @@ public class FXMLCtrlNewTab extends VBox {
 		olDataOfPoCM.set(tvPoCM.getSelectionModel().getSelectedIndex(), rowPoCM);
 	}
 
+	/**
+	 * Загрузка по ID версии полей в этой вкладке
+	 * @param id_Vers ID версии
+	 */
 	private void load(Long id_Vers) {
 		currWPDVersion = new WPDVersion();
 
@@ -675,6 +716,7 @@ public class FXMLCtrlNewTab extends VBox {
 			currPoCM.setId(dao_PoCM.add(currPoCM));
 		} else {
 			currPoCM = currWPDVersion.getPoCM();
+			// TODO Выгрузить в список RowPoCM
 			// TODO Загрузка полей во вкладку
 		}
 
@@ -685,15 +727,87 @@ public class FXMLCtrlNewTab extends VBox {
 		/* http://stackoverflow.com/questions/21242110/convert-java-util-date-to-java-time-localdate */
 		if (currWPDVersion.getDate() != null) {
 			Instant instant = currWPDVersion.getDate().toInstant();
-			ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault()); // FIXME ZoneId должен быть не стандартным?
+			ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault());
 			dpDateOfCreate.setValue(zdt.toLocalDate()); // Попробуем достать дату создания
 		} else
 			dpDateOfCreate.setValue(LocalDate.now());
-
+		
 		//Вывод того, что есть
 		System.err.println(currWPDVersion.toString());
 		System.err.println(currPoCM.toString());
 		System.err.println(currThematicPlan.toString());
+	}
+
+	/**
+	 * Чтение "config.properties" 
+	 */
+	private void readProperties() {
+
+		Properties prop = new Properties();
+		InputStream input = null;
+		try {
+			//input = new FileInputStream(".\\src\\main\\resources\\config.properties");
+			input = getClass().getClassLoader().getResourceAsStream("config.properties");
+			// load a properties file
+			prop.load(input);
+			// get the property value and print it out
+			NUMBER_OF_SEMESTER = Integer.parseInt(prop.getProperty("numberOfSemester"));
+			NUMBER_OF_MODULE = Integer.parseInt(prop.getProperty("numberOfModule"));
+			NUMBER_OF_SECTION = Integer.parseInt(prop.getProperty("numberOfSection"));
+			NUMBER_OF_WEEK = Integer.parseInt(prop.getProperty("numberOfWeeks"));
+		} catch (IOException ex) {
+			ex.printStackTrace();
+			// Стандартные значения в случае ошибки
+			NUMBER_OF_SEMESTER = 1;
+			NUMBER_OF_MODULE = 2;
+			NUMBER_OF_SECTION = 4;
+			NUMBER_OF_WEEK = 17;
+			parentCtrl.setStatus("Файл \"config.properties\" не удалось найти, загружены вшитые параметры");
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Описание методов поведения TableView, TreeTableView, а так же выделение памяти и установление связей
+	 */
+	private void initT() {
+		readProperties();
+		initTvStudyLoad();
+		initTvPoCM();
+	}
+	
+	public void init(Long id_Vers) {
+		initT(); // Инициализация
+
+		load(id_Vers); // Загрузка полей
+
+		mbNumberOfSemesters.setText(tsFNOS.toString());
+
+		for (int i = 1; i <= NUMBER_OF_SEMESTER; i++) // Список семестров
+			olSemester.add(String.valueOf(i));
+		for (int i = 1; i <= NUMBER_OF_MODULE; i++) // Список модулей
+			olModule.add(String.valueOf(i));
+		for (int i = 1; i <= NUMBER_OF_SECTION; i++) // Список разделов
+			olSection.add(String.valueOf(i));
+		
+		cbSemester.setItems(olSemester);
+		cbSemester.getSelectionModel().selectFirst();
+		cbModule.setItems(olModule);
+		cbModule.getSelectionModel().selectFirst();
+		cbSection.setItems(olSection);
+		cbSection.getSelectionModel().selectFirst();
+	}
+
+	// Методы для работы со вкладкой и её контроллером
+	public void setParentCtrl(FXMLCtrlMain fxmlCtrlMain) {
+		this.parentCtrl = fxmlCtrlMain;
 	}
 
 	public void setStage(Stage stage2) {
@@ -710,19 +824,5 @@ public class FXMLCtrlNewTab extends VBox {
 
 	public void setTabName(String sValue) {
 		this.tabName = sValue;
-	}
-
-	public void init(Long id_Vers) {
-		initT(); // Инициализация
-		
-		load(id_Vers); // Загрузка полей
-		
-		mbNumberOfSemesters.setText(tsFNOS.toString());
-
-		bSaveRowPoCM.setDisable(true);
-	}
-
-	public void setParentCtrl(FXMLCtrlMain fxmlCtrlMain) {
-		this.parentCtrl = fxmlCtrlMain;
 	}
 }

@@ -34,7 +34,7 @@ public class WPDVersion implements Serializable {
     private Long id;
     
     @Column(name = "WPD_VERSION_DATE")
-    //@Temporal(value = TemporalType.DATE)
+    @Temporal(value = TemporalType.TIMESTAMP)
     private Date date; // дата
     
     @Column(name = "WPD_VERSION_NUMBER")

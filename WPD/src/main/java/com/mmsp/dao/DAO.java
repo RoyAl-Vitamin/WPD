@@ -26,7 +26,7 @@ public interface DAO<T> {
 		session.close();
 		return iValue;
 	}
-	
+
 	default public void remove(T obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();  
 		Session session = sessionFactory.openSession();  
@@ -35,6 +35,8 @@ public interface DAO<T> {
 		session.delete(obj);
 		System.out.println("Deleted Successfully");
 		session.getTransaction().commit();
+		session.flush();
+		session.close();
 	}
 	
 	default public void update(T obj) {
@@ -61,6 +63,8 @@ public interface DAO<T> {
 			System.out.println(obj_out.toString());
 		}
 		session.getTransaction().commit();
+		session.flush();
+		session.close();
 		return objects;
 	}
 
@@ -75,6 +79,8 @@ public interface DAO<T> {
 		else
 			System.err.println("NOT FOUND by ID");
 		session.getTransaction().commit();
+		session.flush();
+		session.close();
 		return value;
 	}
 
@@ -89,6 +95,8 @@ public interface DAO<T> {
 			System.out.println(obj_out.toString());
 		}
 		session.getTransaction().commit();
+		session.flush();
+		session.close();
 		return objects;
 	}
 }

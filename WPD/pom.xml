@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.mmsp.wpd</groupId>
 	<artifactId>WPD</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.7.1</version>
 	<build>
 	<plugins>
 		<plugin>
@@ -21,12 +21,17 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
-			<version>4.3.11.Final<!--5.0.2.Final--></version>
+			<version>4.3.11.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
 			<version>10.11.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.controlsfx</groupId>
+			<artifactId>controlsfx</artifactId>
+			<version>8.40.10</version>
 		</dependency>
 	</dependencies>
 </project>

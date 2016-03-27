@@ -2,6 +2,7 @@ package com.mmsp.logic;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 
 import com.mmsp.dao.impl.DAO_HandBookDiscipline;
@@ -13,6 +14,7 @@ import com.mmsp.wpd.WPD;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -88,12 +90,12 @@ public class FXMLCtrlMain extends VBox {
 	private ListView<String> lvDiscipline;
 
 	@FXML
-	public Label lStatus; // возможна работа из другого контроллера
+	private Label lStatus; // возможна работа из другого контроллера
 
 	private class Ctrl {
-		FXMLCtrlNewTab ctrl;
-		Long id;
-		Tab t;
+		private FXMLCtrlNewTab ctrl;
+		private Long id;
+		private Tab t;
 		
 		public Ctrl(FXMLCtrlNewTab ctrl, Long id, Tab t) {
 			this.ctrl = ctrl;
@@ -207,12 +209,12 @@ public class FXMLCtrlMain extends VBox {
 			// Проверить открыта ли она сейчас?
 			tpDiscipline.getSelectionModel().select(getTabById(id_Vers));
 		}
-    }
+	}
 
 	/**
 	 * Возвращает вкладку по ID версии
 	 * @param id id версии
-	 * @return существующая вкладка
+	 * @return существующая вкладка или null, если вкладка не найдена/не существует
 	 */
 	private Tab getTabById(Long id) {
 		Tab tab = null;
@@ -334,6 +336,7 @@ public class FXMLCtrlMain extends VBox {
     	}
 
     	lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конце
+    	if (olDiscipline.size() == 1) cbDiscipline.getSelectionModel().selectLast();
     	lStatus.setText("Дисциплина создана");
     }
 	
@@ -371,8 +374,8 @@ public class FXMLCtrlMain extends VBox {
 		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
 		hbD.setId(dao.getIdByValueAndCode(hbD.getValue(), hbD.getCode())); // FIXME Решить проблему: удаление предметов с одинаковыми параметрами или их добавление
 		
-		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
-		
+		/*DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
+
 		List<WPDVersion> lWPDVers = dao_Vers.getAllByNumber(hbD.getId());
 		if (!lWPDVers.isEmpty()) {
 			System.err.println("Будет удалено " + lWPDVers.size() + " версий данной дисциплины");
@@ -382,7 +385,21 @@ public class FXMLCtrlMain extends VBox {
 			
 			for (int i = 0; i < lWPDVers.size(); i++)
 				dao_Vers.remove(lWPDVers.get(i));
-		}
+		}*/
+
+		for (Iterator<WPDVersion> it = hbD.getVersions().iterator(); it.hasNext(); ) {
+	        WPDVersion f = it.next();
+	        closeTab(f.getId());
+	        //for (Ctrl ctrlValue : olCtrl) {
+	        /*for (Iterator<Ctrl> ctrlIter = olCtrl.iterator(); ctrlIter.hasNext(); ) {
+	        	Ctrl ctrl = ctrlIter.next();
+	        	if (f.getId() == ctrl.getId()) {
+	        		closeTab(ctrl.getId()); // FIXME нельзя удалять на ходу в списке olCtrl, с этим даже итератор.ремув не справляется
+	        		//// Скорее всего это из-за того, что в CloseTab() удаляется элемент из olCtrl с помощью remuve();
+	        	}
+			}*/
+	    }
+		
 		dao.remove(hbD); // удаляем объект из БД
 		
 		String strWasRemoved = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // Удаляем объект из списка
@@ -437,6 +454,30 @@ public class FXMLCtrlMain extends VBox {
 				}
 			}
 		});*/
+		
+		olDiscipline.addListener(new ListChangeListener<String>() {
+
+			@Override
+			public void onChanged(ListChangeListener.Change change) {
+				if (olDiscipline.size() != 0) {
+					cbDiscipline.setDisable(false);
+				} else {
+					cbDiscipline.setDisable(true);
+				}
+			}
+		});
+		
+		olVersion.addListener(new ListChangeListener<String>() {
+
+			@Override
+			public void onChanged(ListChangeListener.Change change) {
+				if (olVersion.size() != 0) {
+					cbVersion.setDisable(false);
+				} else {
+					cbVersion.setDisable(true);
+				}
+			}
+		});
 
 		lvDiscipline.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
 
@@ -467,7 +508,6 @@ public class FXMLCtrlMain extends VBox {
 						String temp_disc = olDiscipline.get(new_value.intValue());
 						Long id = dao_disc.getIdByValueAndCode(temp_disc.split(":")[0], Integer.valueOf(temp_disc.split(":")[1]));
 						updateOlVersion(id);
-						
 					} else { // если пустое поле
 						bAddTab.setDisable(true);
 						bOpenTab.setDisable(true);
@@ -491,6 +531,8 @@ public class FXMLCtrlMain extends VBox {
 		cbVersion.setItems(olVersion);
 		if (olDiscipline.isEmpty()) {
 			bAddTab.setDisable(true);
+			cbVersion.setDisable(true);
+			cbDiscipline.setDisable(true);
 			if (olVersion.isEmpty())
 				bOpenTab.setDisable(true);
 		}
@@ -549,5 +591,37 @@ public class FXMLCtrlMain extends VBox {
 			System.err.println(j + ": TAB Name == " + tpDiscipline.getTabs().get(j).getText());
 		}
 		return b;
+	}
+
+	public void setStatus(String sValue) {
+		lStatus.setText(sValue);
+	}
+
+	/**
+	 * Закрывает вкладку, ID версии которой == idVers и удаляем из списка olVersion
+	 * @param idVers ID версии
+	 */
+	public void closeTab(Long idVers) {
+		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
+		WPDVersion wpdVers = dao_Vers.getById(new WPDVersion(), idVers); // FIXME NPE видимо не правильно сохраняет 
+		if (wpdVers != null) {
+			String sDisc = wpdVers.getHbD().getValue() + ":" + wpdVers.getHbD().getCode(); // Название дисциплины и её код
+			//String sTabName = wpdVers.getHbD().getValue() + ":" + wpdVers.getName(); // Название вкладки
+
+			Ctrl t = getCtrlById(idVers); // Находим ту самую вкадку
+
+			if (t != null) { // А мб закрыта
+				tpDiscipline.getTabs().remove(t.getTab()); // удаляем из списка и удаляем из TabPane
+				olCtrl.remove(t);
+			} else {
+				System.err.println("ERROR: Кажется не смогли найти нужную вкладку");
+			}
+
+			if (cbDiscipline.getSelectionModel().getSelectedIndex() == olDiscipline.indexOf(sDisc)) { // Если выбрана та самая дисциплина, то надо удалить из списка версию
+				olVersion.remove(wpdVers.getName());
+			}
+		} else {
+			System.err.println("WARNING: WPDVersion с ID == " + idVers + " не был найден");
+		}
 	}
 }

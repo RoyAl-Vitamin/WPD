@@ -25,7 +25,7 @@ import javafx.stage.WindowEvent;
  */
 
 public class WPD extends Application {
-    
+
 	public static WPDData data = new WPDData();
 	
 	final Logic core = new Logic();
@@ -45,8 +45,7 @@ public class WPD extends Application {
 			
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("WPD");
-		    primaryStage.getIcons().add(new Image("Logo.png"));
-		    
+			primaryStage.getIcons().add(new Image("Logo.png"));
     	} catch(Exception e) {
     		e.printStackTrace();
     	}
