@@ -1,13 +1,18 @@
 package com.mmsp.logic;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
+
+import org.controlsfx.control.spreadsheet.GridBase;
+import org.controlsfx.control.spreadsheet.SpreadsheetCell;
+import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
+import org.controlsfx.control.spreadsheet.SpreadsheetView;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -382,6 +387,9 @@ public class FXMLCtrlNewTab extends VBox {
 	// Переменные вкладки "Таблица 7.1"
 
 	@FXML
+	private VBox vbT71;
+
+	@FXML
 	private Button bAddRowT71;
 
 	@FXML
@@ -392,6 +400,8 @@ public class FXMLCtrlNewTab extends VBox {
 
 	@FXML
 	private TableView<?> tvTable71;
+	
+	private SpreadsheetView ssvTable71; // Замена TableView<?> tvTable71;
 
 	private void initTvStudyLoad() {
 		Callback<TableColumn<RowSL, String>, TableCell<RowSL, String>> cellFactory =
@@ -613,12 +623,6 @@ public class FXMLCtrlNewTab extends VBox {
 			} else
 				System.err.println("ThematicPlan == null");
 		}
-
-		// TODO Каскадное удаление Тематического плана и Плана контрольных мероприятий 
-		// UPD[1]: Найти ошибку 
-		// UPD[2]: Ошибку нашёл, но так как нет зависимости @OneToMany каскадное удаление не будет производиться
-		// UPD[3]: Сделал зависимость, но не смотрел как удаляется
-		// UPD[4]: Удаляется с ошибкой, починить!
 	}
 
 	@FXML
@@ -639,7 +643,7 @@ public class FXMLCtrlNewTab extends VBox {
 		// for (int i = 0; i < dataOfStudyLoad.size(); i++) System.out.println(dataOfStudyLoad.get(i).toString());
 	}
 
-	@FXML // TODO http://stackoverflow.com/questions/19160715/javafx-2-tableview-dynamic-column?rq=1
+	@FXML // http://stackoverflow.com/questions/19160715/javafx-2-tableview-dynamic-column?rq=1
 	void clickBAddRowT71(ActionEvent event) {
 		olDataOfTableT71.add(new RowT71("", "", ""));
 	}
@@ -774,6 +778,96 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 	}
 
+	private void initTvT71() { // UNDONE
+		int rowCount = 7;
+		int columnCount = NUMBER_OF_WEEK + 2;
+		GridBase grid = new GridBase(rowCount, columnCount);
+
+		ObservableList<ObservableList<SpreadsheetCell>> rows = FXCollections.observableArrayList();
+		// Заполнение Header'a таблицы // 1-ая строка
+		final ObservableList<SpreadsheetCell> lh1 = FXCollections.observableArrayList();
+		lh1.add(SpreadsheetCellType.STRING.createCell(0, 0, 1, 1,"Виды работ"));
+		lh1.add(SpreadsheetCellType.STRING.createCell(0, 1, 1, 1,"Распределение по учебным неделям"));
+		lh1.get(1).getStyleClass().add("span");
+		for (int i = 2; i < grid.getColumnCount() - 1; i++) {
+			SpreadsheetCell ssc = SpreadsheetCellType.STRING.createCell(0, i, 1, 1,"");
+			lh1.add(ssc);
+		}
+		lh1.add(SpreadsheetCellType.STRING.createCell(0, 18, 1, 1,"Итого"));
+		rows.add(lh1); // первая строка заполнена
+
+		// 2-ая строка
+		final ObservableList<SpreadsheetCell> lh2 = FXCollections.observableArrayList();
+		lh2.add(SpreadsheetCellType.STRING.createCell(1, 0, 1, 1,""));
+		for (int column = 0; column < grid.getColumnCount() - 2; column++) {
+			lh2.add(SpreadsheetCellType.INTEGER.createCell(1, column + 1, 1, 1, column + 1));
+		}
+		lh2.add(SpreadsheetCellType.STRING.createCell(1, 18, 1, 1,""));
+		rows.add(lh2);
+		
+		// 3-ая строка
+		final ObservableList<SpreadsheetCell> lh3 = FXCollections.observableArrayList();
+		lh3.add(SpreadsheetCellType.STRING.createCell(2, 0, 1, 1,"Разделы"));
+		for (int column = 1; column < grid.getColumnCount(); column++) {
+			lh3.add(SpreadsheetCellType.STRING.createCell(2, column, 1, 1, ""));
+		}
+		lh3.get(1).setItem("Р1");
+		lh3.get(1).getStyleClass().add("span");
+		lh3.get(5).setItem("Р2");
+		lh3.get(5).getStyleClass().add("span");
+		lh3.get(9).setItem("Р3");
+		lh3.get(9).getStyleClass().add("span");
+		lh3.get(13).setItem("Р4");
+		lh3.get(13).getStyleClass().add("span");
+		rows.add(lh3);
+		
+		// остальные строки
+		for (ObservableList<SpreadsheetCell> row : rows) {
+			for (SpreadsheetCell cell : row) {
+				cell.setEditable(false);
+			}
+		}
+		// ТЕСТ SpreadsheetCellType.OBJECT.createEditor(ssvTable71);
+		
+		for (int i = 3; i < grid.getRowCount(); i++) {
+			ObservableList<SpreadsheetCell> lh = FXCollections.observableArrayList();
+			lh.add(SpreadsheetCellType.STRING.createCell(i, 0, 1, 1, "VALUE"));
+			for (int j = 1; j < grid.getColumnCount(); j++) {
+				lh.add(SpreadsheetCellType.INTEGER.createCell(i, j, 1, 1, 0));
+			}
+			lh.addListener(new ListChangeListener<SpreadsheetCell>() {
+				@Override
+				public void onChanged(Change<? extends SpreadsheetCell> change) {
+					int res = 0;
+					for (int k = 1; k < grid.getColumnCount(); k++) {
+						res += Integer.parseInt(lh.get(k).getText());
+					}
+					lh.get(grid.getColumnCount() - 1).setItem(res);
+					System.err.println("RES == " + res);
+				}
+			});
+			lh.get(grid.getColumnCount() - 1).setEditable(false); // Запрет на редактирование "Итого"
+			//lh.get(0).setEditable(false);
+			rows.add(lh);
+		}
+
+		grid.setRows(rows);
+		grid.spanColumn(grid.getColumnCount() - 2, 0, 1); // объединение "Распределение по учебным неделям"
+		grid.spanRow(2, 0, 0); // объединение "Виды работ"
+		grid.spanRow(2, 0, grid.getColumnCount() - 1); // объединение "Итого"
+		grid.spanColumn(4, 2, 1); // объединение "P1"
+		grid.spanColumn(4, 2, 5); // объединение "P2"
+		grid.spanColumn(4, 2, 9); // объединение "P3"
+		grid.spanColumn(5, 2, 13); // объединение "P4"
+		
+		ssvTable71 = new SpreadsheetView(grid);
+		ssvTable71.getStylesheets().add(getClass().getResource("/SpreadSheetView.css").toExternalForm());
+		ssvTable71.setShowRowHeader(true);
+		ssvTable71.setShowColumnHeader(true);
+		
+		vbT71.getChildren().add(ssvTable71);
+	}
+
 	/**
 	 * Описание методов поведения TableView, TreeTableView, а так же выделение памяти и установление связей
 	 */
@@ -781,8 +875,9 @@ public class FXMLCtrlNewTab extends VBox {
 		readProperties();
 		initTvStudyLoad();
 		initTvPoCM();
+		initTvT71();
 	}
-	
+
 	public void init(Long id_Vers) {
 		initT(); // Инициализация
 

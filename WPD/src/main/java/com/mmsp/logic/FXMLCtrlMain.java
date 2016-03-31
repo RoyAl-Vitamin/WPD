@@ -5,6 +5,8 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
+import org.controlsfx.dialog.Wizard;
+
 import com.mmsp.dao.impl.DAO_HandBookDiscipline;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.model.HandbookDiscipline;
@@ -23,8 +25,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-//import javafx.scene.control.Alert; // не работает, скорее всего связано с Maven
-//import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Alert; // не работает, скорее всего связано с Maven
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -36,6 +38,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 /**
  * @author Алексей
@@ -198,6 +201,11 @@ public class FXMLCtrlMain extends VBox {
 					else
 						System.err.println("Не удалось удалить Ctrl из списка");
 					// TODO Спросить о сохранении
+					showDialogSave();
+				}
+
+				private void showDialogSave() {
+					// UNDONE					
 				}
 			});
 			tpDiscipline.getTabs().add(t);

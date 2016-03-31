@@ -230,7 +230,7 @@
             </Tab>
             <Tab closable="false" text="Таблица 7.1">
                <content>
-                  <VBox alignment="TOP_CENTER" spacing="3.0">
+                  <VBox fx:id="vbT71" alignment="TOP_CENTER" spacing="3.0">
                      <children>
                         <HBox alignment="TOP_CENTER" spacing="7.0" VBox.vgrow="NEVER">
                            <children>

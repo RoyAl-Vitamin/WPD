@@ -1,0 +1,16 @@
+.spreadsheet-cell.span {
+    -fx-alignment: center;
+    -fx-border-color: #3B0405;
+    -fx-border-width: 1;
+}
+.spreadsheet-cell.span:hover,
+.spreadsheet-cell.span:selected{
+    -fx-alignment: center;
+}
+.spreadsheet-cell.first-cell:filled:focused:selected:hover {
+    -fx-background-color: #FFDA8C;
+}
+.spreadsheet-cell.first-cell:hover {
+    -fx-background-color: #988490;
+    -fx-background-insets: 0, 0 0 1 0;
+}
