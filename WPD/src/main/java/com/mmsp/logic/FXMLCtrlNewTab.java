@@ -3,13 +3,17 @@ package com.mmsp.logic;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
+import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 
@@ -34,6 +38,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
@@ -48,6 +53,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.Priority;
 //import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -91,42 +97,6 @@ public class FXMLCtrlNewTab extends VBox {
 		@Override
 		public String toString() {
 			return "view Of Study Load " + viewOfStudyLoad.toString() + ", number Of Hours " + numberOfHours;
-		}
-	}
-
-	public static class RowT71 { // класс строки
-		private final SimpleStringProperty sspNumberOfWeek; // Номер недели
-		private final SimpleStringProperty sspTotal; // Итого
-		private final SimpleStringProperty ssp; // i-ая колонка
-
-		private RowT71(String sNumberOfWeek, String sTotal, String sValue) {
-			this.sspNumberOfWeek = new SimpleStringProperty(sNumberOfWeek);
-			this.sspTotal = new SimpleStringProperty(sTotal);
-			this.ssp = new SimpleStringProperty(sValue);
-		}
-
-		public String getSspNumberOfWeek() {
-			return sspNumberOfWeek.get();
-		}
-
-		public String getSspTotal() {
-			return sspTotal.get();
-		}
-
-		public String getSsp() {
-			return ssp.get();
-		}
-		
-		public void setSspNumberOfWeek(String sValue) {
-			sspNumberOfWeek.set(sValue);
-		}
-
-		public void setSspTotal(String sValue) {
-			sspTotal.set(sValue);
-		}
-
-		public void setSsp(String sValue) {
-			ssp.set(sValue);
 		}
 	}
 
@@ -234,8 +204,6 @@ public class FXMLCtrlNewTab extends VBox {
 
 	private final ObservableList<RowSL> olDataOfStudyLoad = FXCollections.observableArrayList();
 
-	private final ObservableList<RowT71> olDataOfTableT71 = FXCollections.observableArrayList();
-	
 	private final ObservableList<RowPoCM> olDataOfPoCM = FXCollections.observableArrayList();
 
 	private final ObservableList<String> olSemester = FXCollections.observableArrayList(); // Вкладка тематический план комбобокс "Принадлежность к модулю"
@@ -398,109 +366,12 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private Button bSetT71;
 
-	@FXML
-	private TableView<?> tvTable71;
-	
+	// https://bitbucket.org/panemu/tiwulfx
+	// vs.
+	// https://bitbucket.org/controlsfx/controlsfx
 	private SpreadsheetView ssvTable71; // Замена TableView<?> tvTable71;
 
-	private void initTvStudyLoad() {
-		Callback<TableColumn<RowSL, String>, TableCell<RowSL, String>> cellFactory =
-			new Callback<TableColumn<RowSL, String>, TableCell<RowSL, String>>() {
-				public TableCell<RowSL, String> call(TableColumn<RowSL, String> p) {
-					return new EditingCell();
-				}
-			};
-		//colTVViewOfStudyLoad.setMinWidth(150.0);
-		colTVViewOfStudyLoad.setCellValueFactory(new PropertyValueFactory<RowSL, String>("viewOfStudyLoad"));
-		//colViewOfStudyLoad.setCellFactory(TextFieldTableCell.forTableColumn());
-		colTVViewOfStudyLoad.setCellFactory(cellFactory);
-		colTVViewOfStudyLoad.setOnEditCommit(
-			new EventHandler<CellEditEvent<RowSL, String>>() {
-				@Override
-				public void handle(CellEditEvent<RowSL, String> t) {
-					((RowSL) t.getTableView().getItems().get(
-						t.getTablePosition().getRow())
-						).setViewOfStudyLoad(t.getNewValue());
-				}
-			}
-		);
-		colTVNumberOfHours.setCellValueFactory(new PropertyValueFactory<RowSL, String>("numberOfHours"));
-		//colNumberOfHours.setCellFactory(TextFieldTableCell.forTableColumn());
-		colTVNumberOfHours.setCellFactory(cellFactory);
-		colTVNumberOfHours.setOnEditCommit(
-			new EventHandler<CellEditEvent<RowSL, String>>() {
-				@Override
-				public void handle(CellEditEvent<RowSL, String> t) {
-					((RowSL) t.getTableView().getItems().get(
-						t.getTablePosition().getRow())
-						).setNumberOfHours(t.getNewValue());
-				}
-			}
-		);
-		colTVLadderpointsUnit.setCellValueFactory(new PropertyValueFactory<RowSL, String>("ladderpointsUnit"));
-		colTVLadderpointsUnit.setCellFactory(cellFactory);
-		//colLadderpointsUnit.setCellFactory(TextFieldTableCell.forTableColumn());
-		colTVLadderpointsUnit.setOnEditCommit(
-			new EventHandler<CellEditEvent<RowSL, String>>() {
-				@Override
-				public void handle(CellEditEvent<RowSL, String> t) {
-					((RowSL) t.getTableView().getItems().get(
-						t.getTablePosition().getRow())
-						).setLadderpointsUnit(t.getNewValue());
-				}
-			}
-		);
-
-		tvStudyLoad.setItems(olDataOfStudyLoad);  
-	}
-
-	void initTvPoCM() {
-
-		olDataOfPoCM.addListener(new ListChangeListener<RowPoCM>() {
-
-			@Override
-			public void onChanged(ListChangeListener.Change change) {
-				if (olDataOfPoCM.size() == 0) {
-					tfCM.setDisable(true);
-					tfNoS.setDisable(true);
-					tfNoW.setDisable(true);
-					bSaveRowPoCM.setDisable(true);
-				}
-			}
-		});
-
-		tcCM.setCellValueFactory(cellData -> cellData.getValue().sspCtrlMes);
-		tcCM.setCellFactory(TextFieldTableCell.forTableColumn());
-
-		tcNoS.setCellValueFactory(cellData -> cellData.getValue().sspNuberOfSemester);
-		tcNoS.setCellFactory(TextFieldTableCell.forTableColumn());
-
-		tcNoW.setCellValueFactory(cellData -> cellData.getValue().sspNumberOfWeek);
-		tcNoW.setCellFactory(TextFieldTableCell.forTableColumn());
-
-		tvPoCM.setItems(olDataOfPoCM);
-		tvPoCM.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
-			if (tvPoCM.getSelectionModel().getSelectedItem() != null) {
-				bSaveRowPoCM.setDisable(false);
-				tfCM.setDisable(false);
-				tfNoS.setDisable(false);
-				tfNoW.setDisable(false);
-				tfCM.setText(newValue.getSspCtrlMes());
-				tfNoS.setText(newValue.getSspNuberOfSemester());
-				tfNoW.setText(newValue.getSspNumberOfWeek());
-			} else {
-				bSaveRowPoCM.setDisable(true);
-				tfCM.setDisable(true);
-				tfNoS.setDisable(true);
-				tfNoW.setDisable(true);
-			}
-		});
-		
-		tfCM.setDisable(true);
-		tfNoS.setDisable(true);
-		tfNoW.setDisable(true);
-		bSaveRowPoCM.setDisable(true);
-	};
+	//private int index; // # строки "Модули" в ssvTableT71
 
 	@FXML
 	void clickBFileChooser(ActionEvent event) {
@@ -643,15 +514,102 @@ public class FXMLCtrlNewTab extends VBox {
 		// for (int i = 0; i < dataOfStudyLoad.size(); i++) System.out.println(dataOfStudyLoad.get(i).toString());
 	}
 
-	@FXML // http://stackoverflow.com/questions/19160715/javafx-2-tableview-dynamic-column?rq=1
-	void clickBAddRowT71(ActionEvent event) {
-		olDataOfTableT71.add(new RowT71("", "", ""));
+	/*
+	 * Создаёт строку типа "Виды работ" + часы на каждую неделю для указанной позиции
+	 * @param posRow
+	 * @return
+	 */
+	/*private ObservableList<SpreadsheetCell> createSimpleRow(int posRow) {
+		ObservableList<SpreadsheetCell> olRow = FXCollections.observableArrayList();
+		olRow.add(SpreadsheetCellType.STRING.createCell(posRow, 0, 1, 1,""));
+		for (int column = 1; column < ssvTable71.getGrid().getColumnCount(); column++) {
+			olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, 0));
+		}
+		olRow.get(olRow.size() - 1).setEditable(false); // Последняя строка не доступна для редактирования
+		return olRow;
+	}*/
+
+	/**
+	 * Создаёт строку общего типа для указанной позиции
+	 * @param posRow позиция для новой строки
+	 * @param lValueOfOldCell список значений ячеек. Обязательно String
+	 * @return строку общего типа
+	 */
+	private ObservableList<SpreadsheetCell> createStringRow(int posRow, ArrayList<String> lValueOfOldCell) {
+		ObservableList<SpreadsheetCell> olRow = FXCollections.observableArrayList();
+		if (lValueOfOldCell == null){
+			for (int column = 0; column < ssvTable71.getGrid().getColumnCount(); column++) {
+				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1,""));
+			}
+		} else {
+			for (int column = 0; column < ssvTable71.getGrid().getColumnCount(); column++) {
+				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, lValueOfOldCell.get(column)));
+			}
+		}
+		olRow.get(olRow.size() - 1).setEditable(false); // Последняя строка не доступна для редактирования
+		return olRow;
 	}
 
+	/**
+	 * Добавляет строку общего типа в конец таблицы
+	 * @param event
+	 */
+	@FXML
+	void clickBAddRowT71(ActionEvent event)
+	// https://bitbucket.org/controlsfx/controlsfx/issues/590/adding-new-rows-to-a-spreadsheetview
+	// https://bitbucket.org/controlsfx/controlsfx/issues/151/dynamic-adding-rows-in-spreadsheetview-at
+	{
+		GridBase newGrid = new GridBase(ssvTable71.getGrid().getRowCount() + 1, ssvTable71.getGrid().getColumnCount()); // Создадим сетку с +1 строкой
+		int newRowPos = ssvTable71.getGrid().getRowCount(); // и количество строк
+
+		ObservableList<ObservableList<SpreadsheetCell>> newRows = ssvTable71.getGrid().getRows(); // а так же существующие строки
+		final ObservableList<SpreadsheetCell> olNew = createStringRow(newRowPos, null); // Добавление на место последней строки пустой строки
+		//index++;
+		newRows.add(olNew);
+
+		newGrid.setRows(newRows);
+		ssvTable71.setGrid(newGrid);
+	}
+
+	/**
+	 * Удаляет строку в которой была выделена клетка
+	 * @param event
+	 */
 	@FXML
 	void clickBDelRowT71(ActionEvent event) {
-		int selectedIndex = tvTable71.getSelectionModel().getSelectedIndex();
-		if (selectedIndex >= 0) tvTable71.getItems().remove(selectedIndex);
+		int col = ssvTable71.getSelectionModel().getFocusedCell().getColumn();
+		int row = ssvTable71.getSelectionModel().getFocusedCell().getRow();
+		if (!(row > 3 && row < ssvTable71.getGrid().getRowCount())) return; 
+		//ssvTable71.getSelectionModel().clearSelection(); // убрать фокус совсем
+		GridBase newGrid = new GridBase(ssvTable71.getGrid().getRowCount() - 1, ssvTable71.getGrid().getColumnCount()); // Создадим сетку с -1 строкой
+		ObservableList<ObservableList<SpreadsheetCell>> newRows = setHeaderForT71(newGrid); // по новой инициализируем хедер таблицы
+		
+		for (int i = 4; i < ssvTable71.getGrid().getRowCount(); i++) {
+			if (i == row) continue; // та строка, которую нужно пропустить
+			int k = i;
+			if (i > row) k--; // перешагиваем i-ую строку для createStringRow() 
+			ArrayList<String> lValueOfOldCell = new ArrayList<>();
+			for (int j = 0; j < ssvTable71.getGrid().getColumnCount(); j++) {
+				lValueOfOldCell.add(ssvTable71.getGrid().getRows().get(i).get(j).getText());
+			}
+			ObservableList<SpreadsheetCell> oldRow = createStringRow(k, lValueOfOldCell);
+			newRows.add(oldRow);
+		}
+		newGrid.getColumnHeaders().addAll(ssvTable71.getGrid().getColumnHeaders());
+		newGrid.setRows(newRows);
+		newGrid.spanColumn(newGrid.getColumnCount() - 2, 0, 1); // объединение "Распределение по учебным неделям"
+		newGrid.spanRow(2, 0, 0); // объединение "Виды работ"
+		newGrid.spanRow(2, 0, newGrid.getColumnCount() - 1); // объединение "Итого"
+		newGrid.spanColumn(17, 2, 1); // объединение "M1"
+		newGrid.spanColumn(17, 3, 1); // объединение "P1"
+
+		ssvTable71.setGrid(newGrid);
+		
+		if (row == ssvTable71.getGrid().getRowCount()) { // переставим фокус
+			ssvTable71.getSelectionModel().focus(row - 1, ssvTable71.getColumns().get(col)); // фокус на предыдущую строку, но ту же колонку
+		} else {
+			ssvTable71.getSelectionModel().focus(row, ssvTable71.getColumns().get(col)); // фокус на ту же строку и ту же колонку
+		}
 	}
 
 	@FXML
@@ -687,6 +645,14 @@ public class FXMLCtrlNewTab extends VBox {
 		rowPoCM.setSspNumberOfWeek(tfNoW.getText());
 		olDataOfPoCM.set(tvPoCM.getSelectionModel().getSelectedIndex(), rowPoCM);
 	}
+
+	//*************************************************************************************************************************
+	//*************************************************************************************************************************
+	//**
+	//** Выгрузка в компоненты содержимого БД
+	//**
+	//*************************************************************************************************************************
+	//*************************************************************************************************************************
 
 	/**
 	 * Загрузка по ID версии полей в этой вкладке
@@ -742,6 +708,14 @@ public class FXMLCtrlNewTab extends VBox {
 		System.err.println(currThematicPlan.toString());
 	}
 
+	//*************************************************************************************************************************
+	//*************************************************************************************************************************
+	//**
+	//** Блок инициализации компонентов
+	//**
+	//*************************************************************************************************************************
+	//*************************************************************************************************************************
+
 	/**
 	 * Чтение "config.properties" 
 	 */
@@ -778,13 +752,118 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 	}
 
-	private void initTvT71() { // UNDONE
-		int rowCount = 7;
-		int columnCount = NUMBER_OF_WEEK + 2;
-		GridBase grid = new GridBase(rowCount, columnCount);
+	private void initTvStudyLoad() {
+		Callback<TableColumn<RowSL, String>, TableCell<RowSL, String>> cellFactory =
+			new Callback<TableColumn<RowSL, String>, TableCell<RowSL, String>>() {
+				public TableCell<RowSL, String> call(TableColumn<RowSL, String> p) {
+					return new EditingCell();
+				}
+			};
+		//colTVViewOfStudyLoad.setMinWidth(150.0);
+		colTVViewOfStudyLoad.setCellValueFactory(new PropertyValueFactory<RowSL, String>("viewOfStudyLoad"));
+		//colViewOfStudyLoad.setCellFactory(TextFieldTableCell.forTableColumn());
+		colTVViewOfStudyLoad.setCellFactory(cellFactory);
+		colTVViewOfStudyLoad.setOnEditCommit(
+			new EventHandler<CellEditEvent<RowSL, String>>() {
+				@Override
+				public void handle(CellEditEvent<RowSL, String> t) {
+					((RowSL) t.getTableView().getItems().get(
+						t.getTablePosition().getRow())
+						).setViewOfStudyLoad(t.getNewValue());
+				}
+			}
+		);
+		colTVNumberOfHours.setCellValueFactory(new PropertyValueFactory<RowSL, String>("numberOfHours"));
+		//colNumberOfHours.setCellFactory(TextFieldTableCell.forTableColumn());
+		colTVNumberOfHours.setCellFactory(cellFactory);
+		colTVNumberOfHours.setOnEditCommit(
+			new EventHandler<CellEditEvent<RowSL, String>>() {
+				@Override
+				public void handle(CellEditEvent<RowSL, String> t) {
+					((RowSL) t.getTableView().getItems().get(
+						t.getTablePosition().getRow())
+						).setNumberOfHours(t.getNewValue());
+				}
+			}
+		);
+		colTVLadderpointsUnit.setCellValueFactory(new PropertyValueFactory<RowSL, String>("ladderpointsUnit"));
+		colTVLadderpointsUnit.setCellFactory(cellFactory);
+		//colLadderpointsUnit.setCellFactory(TextFieldTableCell.forTableColumn());
+		colTVLadderpointsUnit.setOnEditCommit(
+			new EventHandler<CellEditEvent<RowSL, String>>() {
+				@Override
+				public void handle(CellEditEvent<RowSL, String> t) {
+					((RowSL) t.getTableView().getItems().get(
+						t.getTablePosition().getRow())
+						).setLadderpointsUnit(t.getNewValue());
+				}
+			}
+		);
 
-		ObservableList<ObservableList<SpreadsheetCell>> rows = FXCollections.observableArrayList();
-		// Заполнение Header'a таблицы // 1-ая строка
+		tvStudyLoad.setItems(olDataOfStudyLoad);  
+	}
+
+	/**
+	 * Инициализация контроллера для TableView из PoCM
+	 */
+	private void initTvPoCM() {
+
+		olDataOfPoCM.addListener(new ListChangeListener<RowPoCM>() {
+
+			@Override
+			public void onChanged(ListChangeListener.Change change) {
+				if (olDataOfPoCM.size() == 0) {
+					tfCM.setDisable(true);
+					tfNoS.setDisable(true);
+					tfNoW.setDisable(true);
+					bSaveRowPoCM.setDisable(true);
+				}
+			}
+		});
+
+		tcCM.setCellValueFactory(cellData -> cellData.getValue().sspCtrlMes);
+		tcCM.setCellFactory(TextFieldTableCell.forTableColumn());
+
+		tcNoS.setCellValueFactory(cellData -> cellData.getValue().sspNuberOfSemester);
+		tcNoS.setCellFactory(TextFieldTableCell.forTableColumn());
+
+		tcNoW.setCellValueFactory(cellData -> cellData.getValue().sspNumberOfWeek);
+		tcNoW.setCellFactory(TextFieldTableCell.forTableColumn());
+
+		tvPoCM.setItems(olDataOfPoCM);
+		tvPoCM.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
+			if (tvPoCM.getSelectionModel().getSelectedItem() != null) {
+				bSaveRowPoCM.setDisable(false);
+				tfCM.setDisable(false);
+				tfNoS.setDisable(false);
+				tfNoW.setDisable(false);
+				tfCM.setText(newValue.getSspCtrlMes());
+				tfNoS.setText(newValue.getSspNuberOfSemester());
+				tfNoW.setText(newValue.getSspNumberOfWeek());
+			} else {
+				bSaveRowPoCM.setDisable(true);
+				tfCM.setDisable(true);
+				tfNoS.setDisable(true);
+				tfNoW.setDisable(true);
+			}
+		});
+		
+		tfCM.setDisable(true);
+		tfNoS.setDisable(true);
+		tfNoW.setDisable(true);
+		bSaveRowPoCM.setDisable(true);
+	};
+
+	/**
+	 * Задаёт header всей таблицы ssvTable71
+	 * @param grid BaseGrid этой таблицы
+	 * @return первые 4 строки
+	 */
+	private ObservableList<ObservableList<SpreadsheetCell>> setHeaderForT71(GridBase grid) {
+		
+		ObservableList<ObservableList<SpreadsheetCell>> rowsHeader = FXCollections.observableArrayList();
+		
+		// 1-ая строка
 		final ObservableList<SpreadsheetCell> lh1 = FXCollections.observableArrayList();
 		lh1.add(SpreadsheetCellType.STRING.createCell(0, 0, 1, 1,"Виды работ"));
 		lh1.add(SpreadsheetCellType.STRING.createCell(0, 1, 1, 1,"Распределение по учебным неделям"));
@@ -794,7 +873,9 @@ public class FXMLCtrlNewTab extends VBox {
 			lh1.add(ssc);
 		}
 		lh1.add(SpreadsheetCellType.STRING.createCell(0, 18, 1, 1,"Итого"));
-		rows.add(lh1); // первая строка заполнена
+		lh1.get(18).getStyleClass().add("span");
+		lh1.get(0).getStyleClass().add("span");
+		rowsHeader.add(lh1); // первая строка заполнена
 
 		// 2-ая строка
 		final ObservableList<SpreadsheetCell> lh2 = FXCollections.observableArrayList();
@@ -803,33 +884,104 @@ public class FXMLCtrlNewTab extends VBox {
 			lh2.add(SpreadsheetCellType.INTEGER.createCell(1, column + 1, 1, 1, column + 1));
 		}
 		lh2.add(SpreadsheetCellType.STRING.createCell(1, 18, 1, 1,""));
-		rows.add(lh2);
-		
+		rowsHeader.add(lh2);
+
 		// 3-ая строка
 		final ObservableList<SpreadsheetCell> lh3 = FXCollections.observableArrayList();
-		lh3.add(SpreadsheetCellType.STRING.createCell(2, 0, 1, 1,"Разделы"));
+		lh3.add(SpreadsheetCellType.STRING.createCell(2, 0, 1, 1,"Модули"));
 		for (int column = 1; column < grid.getColumnCount(); column++) {
 			lh3.add(SpreadsheetCellType.STRING.createCell(2, column, 1, 1, ""));
 		}
-		lh3.get(1).setItem("Р1");
+		lh3.get(1).setItem("М1");
 		lh3.get(1).getStyleClass().add("span");
-		lh3.get(5).setItem("Р2");
-		lh3.get(5).getStyleClass().add("span");
-		lh3.get(9).setItem("Р3");
-		lh3.get(9).getStyleClass().add("span");
-		lh3.get(13).setItem("Р4");
-		lh3.get(13).getStyleClass().add("span");
-		rows.add(lh3);
+		rowsHeader.add(lh3);
 		
-		// остальные строки
-		for (ObservableList<SpreadsheetCell> row : rows) {
+		// 4-ая строка
+		final ObservableList<SpreadsheetCell> lh4 = FXCollections.observableArrayList();
+		lh4.add(SpreadsheetCellType.STRING.createCell(3, 0, 1, 1,"Разделы"));
+		for (int column = 1; column < grid.getColumnCount(); column++) {
+			lh4.add(SpreadsheetCellType.STRING.createCell(3, column, 1, 1, ""));
+		}
+		lh4.get(1).setItem("Р1");
+		lh4.get(1).getStyleClass().add("span");
+		rowsHeader.add(lh4);
+		
+		// запрещает их редактирование
+		for (ObservableList<SpreadsheetCell> row : rowsHeader) {
 			for (SpreadsheetCell cell : row) {
 				cell.setEditable(false);
 			}
 		}
+
+		return rowsHeader;
+	}
+	
+	/**
+	 * Инициализация компонента ssvTable71
+	 */
+	private void initTvT71() { // UNDONE Контроллер на focus
+		int rowCount = 4;
+		int columnCount = NUMBER_OF_WEEK + 2;
+		//index = 4;
+		GridBase grid = new GridBase(rowCount, columnCount);
+
+		ObservableList<ObservableList<SpreadsheetCell>> rows = setHeaderForT71(grid);
+
+		// строка-кнопка для добавления в Модули
+		/*final ObservableList<SpreadsheetCell> lhB = FXCollections.observableArrayList();
+		SpreadsheetCellBase cellB = new SpreadsheetCellBase(4, 0, 1, 1);
+		// http://stackoverflow.com/questions/30125610/how-to-add-a-button-in-the-spreadsheetview-table
+		Button b = new Button("Добавить в модули");
+		b.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+
+				Grid oldGrid = ssvTable71.getGrid(); // Получим сетку
+				int newRowPos = oldGrid.getRowCount(); // и количество строк
+				ObservableList<ObservableList<SpreadsheetCell>> rows = oldGrid.getRows(); // а так же существующие строки
+
+				//rows.remove(newRowPos - 1); // Отчиска последней строки
+				final ObservableList<SpreadsheetCell> olNew = createSimpleRow(newRowPos); // Добавление на место последней строки пустой строки
+				rows.add(newRowPos - 1, olNew); // добавление в список новой строки
+
+				//final ObservableList<SpreadsheetCell> olLast = createButtonRow(newRowPos); // Добавление на место последней строки пустой строки
+				//rows.add(olLast); // добавление в список новой строки
+
+				oldGrid.setRows(rows);
+				ssvTable71.setGrid(oldGrid);
+			}
+
+			private ObservableList<SpreadsheetCell> createButtonRow(int posRow) {
+				final ObservableList<SpreadsheetCell> olRow = FXCollections.observableArrayList();
+				SpreadsheetCellBase cBut = new SpreadsheetCellBase(posRow, 0, 1, 1);
+				Button bR = new Button("Добавить в модули");
+				cBut.setGraphic(b);
+				olRow.add(cBut);
+				for (int column = 1; column < ssvTable71.getGrid().getColumnCount(); column++) {
+					olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, ""));
+				}
+				return olRow;
+			}
+
+			private ObservableList<SpreadsheetCell> createSimpleRow(int posRow) {
+				ObservableList<SpreadsheetCell> olRow = FXCollections.observableArrayList();
+				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, 0, 1, 1,""));
+				for (int column = 1; column < ssvTable71.getGrid().getColumnCount(); column++) {
+					olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, 0));
+				}
+				return olRow;
+			}
+		});
+		cellB.setGraphic(b);
+		lhB.add(cellB);
+		for (int column = 1; column < grid.getColumnCount(); column++) {
+			lhB.add(SpreadsheetCellType.STRING.createCell(4, column, 1, 1, ""));
+		}
+		rows.add(lhB);*/
+
 		// ТЕСТ SpreadsheetCellType.OBJECT.createEditor(ssvTable71);
 		
-		for (int i = 3; i < grid.getRowCount(); i++) {
+		/*for (int i = 3; i < grid.getRowCount(); i++) {
 			ObservableList<SpreadsheetCell> lh = FXCollections.observableArrayList();
 			lh.add(SpreadsheetCellType.STRING.createCell(i, 0, 1, 1, "VALUE"));
 			for (int j = 1; j < grid.getColumnCount(); j++) {
@@ -849,23 +1001,25 @@ public class FXMLCtrlNewTab extends VBox {
 			lh.get(grid.getColumnCount() - 1).setEditable(false); // Запрет на редактирование "Итого"
 			//lh.get(0).setEditable(false);
 			rows.add(lh);
-		}
+		}*/
 
 		grid.setRows(rows);
 		grid.spanColumn(grid.getColumnCount() - 2, 0, 1); // объединение "Распределение по учебным неделям"
 		grid.spanRow(2, 0, 0); // объединение "Виды работ"
 		grid.spanRow(2, 0, grid.getColumnCount() - 1); // объединение "Итого"
-		grid.spanColumn(4, 2, 1); // объединение "P1"
-		grid.spanColumn(4, 2, 5); // объединение "P2"
-		grid.spanColumn(4, 2, 9); // объединение "P3"
-		grid.spanColumn(5, 2, 13); // объединение "P4"
-		
+		grid.spanColumn(17, 3, 1); // объединение "P1"
+		// Вот так выглядит разъединение // grid.spanColumn(1, 3, 1); // разъединение "P1" 
+		grid.spanColumn(17, 2, 1); // объединение "M1"
+		//grid.spanColumn(19, 4, 0); // объединение Добавление в модули
+
 		ssvTable71 = new SpreadsheetView(grid);
 		ssvTable71.getStylesheets().add(getClass().getResource("/SpreadSheetView.css").toExternalForm());
 		ssvTable71.setShowRowHeader(true);
 		ssvTable71.setShowColumnHeader(true);
 		
 		vbT71.getChildren().add(ssvTable71);
+		VBox.setVgrow(ssvTable71, Priority.ALWAYS);
+		VBox.setMargin(ssvTable71, new Insets(0, 10, 5, 10));
 	}
 
 	/**
@@ -900,7 +1054,14 @@ public class FXMLCtrlNewTab extends VBox {
 		cbSection.getSelectionModel().selectFirst();
 	}
 
-	// Методы для работы со вкладкой и её контроллером
+	//*************************************************************************************************************************
+	//*************************************************************************************************************************
+	//**
+	//** Методы для работы со вкладкой и её контроллером
+	//**
+	//*************************************************************************************************************************
+	//*************************************************************************************************************************
+
 	public void setParentCtrl(FXMLCtrlMain fxmlCtrlMain) {
 		this.parentCtrl = fxmlCtrlMain;
 	}
