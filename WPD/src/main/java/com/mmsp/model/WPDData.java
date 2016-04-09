@@ -25,38 +25,38 @@ public class WPDData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "WPD_DATA_ID")
-    private Long id;
-    
-    @Column(name = "WPD_DATA_FIRST_NAME")
-    private String firstName; // Имя
-    
-    @Column(name = "WPD_DATA_LAST_NAME")
-    private String lastName; // Фамилия
-    
-    @Column(name = "WPD_DATA_MIDDLE_NAME")
-    private String middleName; // Отчество
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "WPD_DATA_ID")
+	private Long id;
 
-    @OneToMany(mappedBy = "wpdData") //, cascade = CascadeType.REMOVE)
-    private Set<WPDVersion> versions = new HashSet<WPDVersion>(); // множество версий
+	@Column(name = "WPD_DATA_FIRST_NAME")
+	private String firstName; // Имя
 
-    //private String tableName = "WPD_DATA";
-    
-    public WPDData() {
-    }
-    
-    public Long getId() {
-        return id;
-    }
+	@Column(name = "WPD_DATA_LAST_NAME")
+	private String lastName; // Фамилия
 
-    public Set<WPDVersion> getTeacher() {
-        return versions;
-    }
+	@Column(name = "WPD_DATA_MIDDLE_NAME")
+	private String middleName; // Отчество
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	@OneToMany(mappedBy = "wpdData") //, cascade = CascadeType.REMOVE)
+	private Set<WPDVersion> versions = new HashSet<WPDVersion>(); // множество версий
+
+	//private String tableName = "WPD_DATA";
+
+	public WPDData() {
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public Set<WPDVersion> getTeacher() {
+		return versions;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getFirstName() {
 		return firstName;
@@ -89,7 +89,7 @@ public class WPDData implements Serializable {
 	public void setVersions(Set<WPDVersion> versions) {
 		this.versions = versions;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "\nWPDData: " + this.getClass().getName() + "@" + this.hashCode() +
