@@ -14,8 +14,11 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.controlsfx.control.spreadsheet.GridBase;
+import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
+import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
+import org.controlsfx.control.spreadsheet.SpreadsheetCellType.StringType;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 
 import java.time.Instant;
@@ -23,9 +26,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import com.mmsp.dao.impl.DAO_HandBookDiscipline;
 import com.mmsp.dao.impl.DAO_PoCM;
 import com.mmsp.dao.impl.DAO_ThematicPlan;
 import com.mmsp.dao.impl.DAO_WPDVersion;
+import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.model.PoCM;
 import com.mmsp.model.ThematicPlan;
 import com.mmsp.model.WPDVersion;
@@ -42,14 +47,12 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -284,8 +287,10 @@ public class FXMLCtrlNewTab extends VBox {
 
 	@FXML
 	private Button bDelRowTP;
-	
+
 	private SpreadsheetView ssvTableTP; // Таблица тематического плана
+
+	private EventHandler<GridChange> ehTP; // OnGridChange for TableTP
 
 	// Переменные вкладки "ПКМ"
 
@@ -363,6 +368,8 @@ public class FXMLCtrlNewTab extends VBox {
 	// vs.
 	// https://bitbucket.org/controlsfx/controlsfx
 	private SpreadsheetView ssvTable71; // Замена TableView<?> tvTable71;
+
+	private EventHandler<GridChange> ehT71; // OnGridChange for TableTP
 
 	//private int index; // # строки "Модули" в ssvTableT71
 
@@ -512,6 +519,10 @@ public class FXMLCtrlNewTab extends VBox {
 		// Закрываем вкладку
 		parentCtrl.closeTab(id);
 
+		DAO_HandBookDiscipline dao_hbd = new DAO_HandBookDiscipline();
+		HandbookDiscipline hbd = dao_hbd.getById(new HandbookDiscipline(), currWPDVersion.getHbD().getId());
+		hbd.getVersions().removeIf(p -> p.getId() == id); // FIXME Проверить: удалит или нет?
+		
 		DAO_WPDVersion dao_vers = new DAO_WPDVersion();
 		dao_vers.remove(currWPDVersion);
 
@@ -592,6 +603,7 @@ public class FXMLCtrlNewTab extends VBox {
 
 		newGrid.setRows(newRows);
 		newGrid.setRowHeightCallback(new GridBase.MapBasedRowHeightFactory(generateRowHeight(newGrid.getRowCount())));
+		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehTP);
 		ssvTableTP.setGrid(newGrid);
 	}
 
@@ -643,6 +655,7 @@ public class FXMLCtrlNewTab extends VBox {
 		newGrid.getColumnHeaders().addAll(ssvTableTP.getGrid().getColumnHeaders());
 		newGrid.setRowHeightCallback(new GridBase.MapBasedRowHeightFactory(generateRowHeight(newGrid.getRowCount())));
 		newGrid.setRows(newRows);
+		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehTP);
 
 		ssvTableTP.setGrid(newGrid);
 
@@ -701,6 +714,7 @@ public class FXMLCtrlNewTab extends VBox {
 
 		newGrid.setRows(newRows);
 		ssvTable71.setGrid(newGrid);
+		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehT71);
 	}
 
 	/**
@@ -736,6 +750,7 @@ public class FXMLCtrlNewTab extends VBox {
 		newGrid.spanColumn(17, 3, 1); // объединение "P1"
 
 		ssvTable71.setGrid(newGrid);
+		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehT71);
 		
 		if (row == ssvTable71.getGrid().getRowCount()) { // переставим фокус
 			ssvTable71.getSelectionModel().focus(row - 1, ssvTable71.getColumns().get(col)); // фокус на предыдущую строку, но ту же колонку
@@ -817,7 +832,9 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 
 		newGrid.setRows(newRows);
+		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehTP);
 		newGrid.setRowHeightCallback(new GridBase.MapBasedRowHeightFactory(generateRowHeight(newGrid.getRowCount())));
+
 		ssvTableTP.setGrid(newGrid);
 	}
 
@@ -935,6 +952,10 @@ public class FXMLCtrlNewTab extends VBox {
 		olHeader.add(SpreadsheetCellType.STRING.createCell(0, 7, 1, 1, "КСР"));
 		olHeader.add(SpreadsheetCellType.STRING.createCell(0, 8, 1, 1, "СРС"));
 
+		// запрещает редактирование
+		for (SpreadsheetCell cell : olHeader) {
+			cell.setEditable(false);
+		}
 		rowsHeader.add(olHeader); // первая строка заполнена
 		return rowsHeader;
 	}
@@ -960,6 +981,11 @@ public class FXMLCtrlNewTab extends VBox {
 	// FIXME Необходима ли ещё одна колонка для "Номер темы?"
 	// FIXME СРС должна быть String?
 	{
+		ehTP = new EventHandler<GridChange>() {
+			public void handle(GridChange change) {
+				System.err.println("TEST");
+			}
+		};
 		int rowCount = 1;
 		int columnCount = 9;
 		GridBase grid = new GridBase(rowCount, columnCount);
@@ -969,6 +995,7 @@ public class FXMLCtrlNewTab extends VBox {
 		grid.setRowHeightCallback(new GridBase.MapBasedRowHeightFactory(generateRowHeight(1)));
 		ObservableList<ObservableList<SpreadsheetCell>> rows = setHeaderForTTP(grid);
 		grid.setRows(rows);
+		grid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehTP);
 		ssvTableTP = new SpreadsheetView(grid);
 		ssvTableTP.getStylesheets().add(getClass().getResource("/SpreadSheetView.css").toExternalForm());
 		ssvTableTP.setShowRowHeader(true);
@@ -1147,6 +1174,25 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Инициализация компонента ssvTable71
 	 */
 	private void initTvT71() { // UNDONE Контроллер на focus
+		ehT71 = new EventHandler<GridChange>() {
+			public void handle(GridChange change) {
+				int row = change.getRow();
+				//int col = change.getColumn();
+				// Будем суммировать часы и выводить в итого
+				int summ = 0;
+				for (int i = 1; i < ssvTable71.getGrid().getColumnCount() - 1; i++) {
+					try {
+						summ += Integer.parseInt(ssvTable71.getGrid().getRows().get(row).get(i).getText());
+					} catch (NumberFormatException ex) {
+						continue;
+					}
+				}
+				System.err.println(summ);
+				ssvTable71.getGrid().getRows().get(row).get(ssvTable71.getGrid().getColumnCount() - 1).setEditable(true);
+				ssvTable71.getGrid().setCellValue(row, ssvTable71.getGrid().getColumnCount() - 1, String.valueOf(summ));
+				ssvTable71.getGrid().getRows().get(row).get(ssvTable71.getGrid().getColumnCount() - 1).setEditable(false);
+			}
+		};
 		int rowCount = 4;
 		int columnCount = NUMBER_OF_WEEK + 2;
 		//index = 4;
@@ -1239,7 +1285,7 @@ public class FXMLCtrlNewTab extends VBox {
 		// Вот так выглядит разъединение // grid.spanColumn(1, 3, 1); // разъединение "P1" 
 		grid.spanColumn(17, 2, 1); // объединение "M1"
 		//grid.spanColumn(19, 4, 0); // объединение Добавление в модули
-
+		grid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehT71);
 		ssvTable71 = new SpreadsheetView(grid);
 		ssvTable71.getStylesheets().add(getClass().getResource("/SpreadSheetView.css").toExternalForm());
 		ssvTable71.setShowRowHeader(true);
