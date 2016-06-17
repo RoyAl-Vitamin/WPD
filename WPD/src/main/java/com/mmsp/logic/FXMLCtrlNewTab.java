@@ -520,7 +520,7 @@ public class FXMLCtrlNewTab extends VBox {
 		parentCtrl.closeTab(id);
 
 		DAO_HandBookDiscipline dao_hbd = new DAO_HandBookDiscipline();
-		HandbookDiscipline hbd = dao_hbd.getById(new HandbookDiscipline(), currWPDVersion.getHbD().getId());
+		HandbookDiscipline hbd = dao_hbd.getById(HandbookDiscipline.class, currWPDVersion.getHbD().getId());
 		hbd.getVersions().removeIf(p -> p.getId() == id); // FIXME Проверить: удалит или нет?
 		
 		DAO_WPDVersion dao_vers = new DAO_WPDVersion();
@@ -846,7 +846,7 @@ public class FXMLCtrlNewTab extends VBox {
 		currWPDVersion = new WPDVersion();
 
 		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
-		currWPDVersion = dao_Vers.getById(new WPDVersion(), id_Vers);
+		currWPDVersion = dao_Vers.getById(WPDVersion.class, id_Vers);
 
 		if (currWPDVersion.getThematicPlans() != null) {
 			if (currWPDVersion.getThematicPlans().size() != 0) {

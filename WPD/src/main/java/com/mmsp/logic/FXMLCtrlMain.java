@@ -8,8 +8,10 @@ import java.util.List;
 import org.controlsfx.dialog.Wizard;
 
 import com.mmsp.dao.impl.DAO_HandBookDiscipline;
+import com.mmsp.dao.impl.DAO_WPDData;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.model.HandbookDiscipline;
+import com.mmsp.model.WPDData;
 import com.mmsp.model.WPDVersion;
 import com.mmsp.wpd.WPD;
 
@@ -134,12 +136,24 @@ public class FXMLCtrlMain extends VBox {
 
 	@FXML
 	void clickMIAuth(ActionEvent event) throws IOException {
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Auth.fxml"));
+		Parent root = null;
+		try {
+			root = (Parent) fxmlLoader.load();
+		} catch (IOException e) {
+			System.err.println("Не удалось загрузить форму авторизации");
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+
 		Stage stageAuth = new Stage();
-		stageAuth.initModality(Modality.APPLICATION_MODAL);
-		Scene sceneAuth = new Scene(new FXMLCtrlAuth(stageAuth));
-		stageAuth.setScene(sceneAuth);
+		FXMLCtrlAuth fxmlCtrlAuth = fxmlLoader.getController();
+		fxmlCtrlAuth.init(stageAuth);
+		stageAuth.setScene(scene);
 		stageAuth.setTitle("Auth");
 		stageAuth.getIcons().add(new Image("Logo.png"));
+		stageAuth.initModality(Modality.APPLICATION_MODAL);
+		stageAuth.setResizable(false);
 		stageAuth.showAndWait();
 	}
 
@@ -243,12 +257,16 @@ public class FXMLCtrlMain extends VBox {
 		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
 		hbD = dao_Disc.getByValueAndCode(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
 
-		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();		
+		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
 		WPDVersion wpdVers = new WPDVersion();
 
 		wpdVers.setNumber(hbD.getId()); // Номер версии есть ID Дисциплины
 		wpdVers.setDate(Calendar.getInstance().getTime()); // Используем сегодняшнюю дату при создании WPDVerison
-		wpdVers.setWPDData(WPD.data); // Соединяем WPDVersion с WPDData
+
+		DAO_WPDData dao_WPDData = new DAO_WPDData();
+		WPDData wpdData = (dao_WPDData.getAll()).get(0);
+		wpdVers.setWPDData(wpdData); // Соединяем WPDVersion с WPDData
+
 		wpdVers.setHbD(hbD); // кажется теперь онеи ссылаются друг на друга
 		wpdVers.setId(dao_Vers.add(wpdVers)); // Запоминаем ID, попутно сохранив в БД WPDVerison
 		hbD.addVersions(wpdVers); // Обновляем HandBookDiscipline, т.к. теперь у него зависимость с WDPVersion @OneToMany
@@ -441,7 +459,7 @@ public class FXMLCtrlMain extends VBox {
         assert cbVersion != null : "fx:id=\"cbVersion\" was not injected: check your FXML file 'Main.fxml'.";
 
 		DAO_HandBookDiscipline dao_disc = new DAO_HandBookDiscipline();
-		List<HandbookDiscipline> li = dao_disc.getAll(new HandbookDiscipline());
+		List<HandbookDiscipline> li = dao_disc.getAll(HandbookDiscipline.class);
 		for (int i = 0; i < li.size(); i++) {
 			olDiscipline.add(li.get(i).getValue() + ":" + li.get(i).getCode().intValue());
 		}
@@ -556,7 +574,7 @@ public class FXMLCtrlMain extends VBox {
 	public void updateOlVersion(Long id) {
 		if (id == hbD.getId()) { // То в cbDiscipline содержится та дисциплина, версию которой надо обновить
 			DAO_HandBookDiscipline dao_disc = new DAO_HandBookDiscipline();
-			HandbookDiscipline currHBD = dao_disc.getById(hbD, id);
+			HandbookDiscipline currHBD = dao_disc.getById(HandbookDiscipline.class, id);
 			olVersion.clear();
 			for (WPDVersion wpdVers: currHBD.getVersions()) {
 				olVersion.add(wpdVers.getName());
@@ -611,7 +629,7 @@ public class FXMLCtrlMain extends VBox {
 	 */
 	public void closeTab(Long idVers) {
 		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
-		WPDVersion wpdVers = dao_Vers.getById(new WPDVersion(), idVers); // FIXME NPE видимо не правильно сохраняет 
+		WPDVersion wpdVers = dao_Vers.getById(WPDVersion.class, idVers); // FIXME NPE видимо не правильно сохраняет 
 		if (wpdVers != null) {
 			String sDisc = wpdVers.getHbD().getValue() + ":" + wpdVers.getHbD().getCode(); // Название дисциплины и её код
 			//String sTabName = wpdVers.getHbD().getValue() + ":" + wpdVers.getName(); // Название вкладки
@@ -632,4 +650,5 @@ public class FXMLCtrlMain extends VBox {
 			System.err.println("WARNING: WPDVersion с ID == " + idVers + " не был найден");
 		}
 	}
+
 }

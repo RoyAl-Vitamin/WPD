@@ -17,16 +17,16 @@ public class DAO_WPDVersion implements DAO<WPDVersion> {
 	// provide on request
 	@Override
 	public List<WPDVersion> run(String value) {
-		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();    
+		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();  
 		session.beginTransaction();
 		Query query = session.createQuery(value);
-		List<WPDVersion> objects = query.list();  
-		for(WPDVersion obj_out : objects)  
-		{  
-			System.out.println(obj_out.toString());  
+		List<WPDVersion> objects = query.list();
+		for(WPDVersion obj_out : objects)
+		{
+			System.out.println(obj_out.toString());
 		}
-		session.getTransaction().commit();    
+		session.getTransaction().commit();
 		return objects;
 	}
 	

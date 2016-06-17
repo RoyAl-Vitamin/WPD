@@ -50,12 +50,12 @@ public interface DAO<T> {
 		session.close();
 	}
 
-	default public List<T> getAll(T obj) {
+	default public List<T> getAll(Class<T> obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
 		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
-		Query query = session.createQuery("from " + obj.getClass().getName());
+		Query query = session.createQuery("from " + obj.getName());
 		List<T> objects = query.list();
 		System.out.println("Found ALL Successfully");
 		for(T obj_out : objects)
@@ -68,12 +68,12 @@ public interface DAO<T> {
 		return objects;
 	}
 
-	default public T getById(T obj, Long id) {
+	default public T getById(Class<T> obj, Long id) {
 		T value = null;
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
-		value = (T) session.get(obj.getClass(), id);
+		value = (T) session.get(obj, id);
 		if (value != null)
 			System.out.println("Found by ID Successfully");
 		else

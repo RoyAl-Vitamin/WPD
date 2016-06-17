@@ -54,11 +54,11 @@ public class DAO_PoCM implements DAO<PoCM> {
 	}
 
 	@Override
-	public List<PoCM> getAll(PoCM obj) {
+	public List<PoCM> getAll(Class<PoCM> obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();    
 		Session session = sessionFactory.openSession();  
 		session.beginTransaction();
-		Query query = session.createQuery("from " + obj.getClass().getName());
+		Query query = session.createQuery("from " + obj.getName());
 		List<PoCM> objects = query.list();  
 		for(PoCM obj_out : objects)  
 		{  
