@@ -27,8 +27,6 @@ import javafx.stage.WindowEvent;
 
 public class WPD extends Application {
 
-	private WPDData data = new WPDData();
-
 	private Stage currStage;
 	
 	final Logic core = new Logic();
@@ -63,26 +61,11 @@ public class WPD extends Application {
 
 		if (li.isEmpty()) { // Следим за тем, что бы было не больше 1 WPDData!
 			showDlgAuth();
-			data = (dao_WPDData.getAll(WPDData.class)).get(0);
 		} else {
-			if (li.size() == 1) {
-				data = li.get(0);
-			} else {
-				System.err.println("WARNING: number of WPDData == " + li.size());
-				data = li.get(0);
-
+			if (li.size() > 1)
 				for (int i = 1; i < li.size(); i++)
 					dao_WPDData.remove(li.get(i));
-				/*Alert alert = new Alert(AlertType.ERROR); // Почему не работает? UPD: Update JDK to 8u40
-				alert.setTitle("Ошибка");
-				alert.setHeaderText("К сожалению, ...");
-				alert.setContentText("...возникла ошибка при выборке");
-				alert.showAndWait();*/
-			}
 		}
-
-		// Посмотрим, что он сохранил =_=
-		System.err.println(data.toString());
 
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() { // Работает только на закрытие окна по крестику
 			public void handle(WindowEvent t) {
@@ -91,6 +74,10 @@ public class WPD extends Application {
 		});
 	}
 
+	/**
+	 * Открытие окна авторизации пользователя
+	 * Сохранение происходит в нём же
+	 */
 	private void showDlgAuth() {
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Auth.fxml"));
 		Parent root = null;
@@ -122,6 +109,7 @@ public class WPD extends Application {
 
 	@Override
 	public void stop() { // адекватное закрытие окна
+		// TODO Можно добавить сохранение в *.property открытых вкладок, что б при старте на автомате он их открывал
 		core.closeSessionFactory(); // Закрываем сессию
 		Platform.exit();
 		System.exit(0);

@@ -53,7 +53,7 @@ public class FXMLCtrlMain extends VBox {
 
 	private FXMLCtrlMain fxmlCtrlMain; // контроллер данной вкладки
 
-	public static HandbookDiscipline hbD = new HandbookDiscipline();
+	private HandbookDiscipline hbD;
 
 	private final ObservableList<String> olDiscipline = FXCollections.observableArrayList(); // for cbDiscipline
 
@@ -339,27 +339,37 @@ public class FXMLCtrlMain extends VBox {
 
 	@FXML
     void clickBCreate(ActionEvent event) throws IOException { // "Создать" Дисциплину
+
+		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
+
+		if (hbD == null) hbD = new HandbookDiscipline(); // Если открыл в первый раз
 		hbD.setCode(0);
 		hbD.setValue("");
 		hbD.getVersions().clear(); // почиситм версии при создании
+		hbD.setId(dao_HBD.add(hbD));
+
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Discipline.fxml"));
+		Parent root = null;
+		try {
+			root = (Parent) fxmlLoader.load();
+		} catch (IOException e) {
+			System.err.println("Не удалось загрузить форму авторизации");
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+
 		Stage stageDiscipline = new Stage();
+		FXMLCtrlDiscipline fxmlCtrlDiscipline = fxmlLoader.getController();
+		fxmlCtrlDiscipline.init(stageDiscipline, hbD.getId());
+		stageDiscipline.setScene(scene);
+		stageDiscipline.setTitle("Discipline");
+		stageDiscipline.getIcons().add(new Image("Logo.png"));
 		stageDiscipline.initModality(Modality.APPLICATION_MODAL);
-    	Scene sceneDiscipline = new Scene(new FXMLCtrlDiscipline(stageDiscipline));
-    	stageDiscipline.setScene(sceneDiscipline);
-    	stageDiscipline.setTitle("Create Discipline");
-    	stageDiscipline.getIcons().add(new Image("Logo.png"));
-    	stageDiscipline.setResizable(false);
-    	stageDiscipline.showAndWait();
-    	
-    	if (!(hbD.getValue().equals(""))) { // проверка на отсутствие введённых данных
-    		if (hbD.getCode().intValue() == 0) System.err.println("Код дисциплины == 0, возможно, это была ошибка?");
-    		olDiscipline.add(hbD.getValue() + ":" + hbD.getCode().toString());
-	    	DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
-	    	//dao_Disc.add(hbD);
-	    	hbD.setId(dao_Disc.add(hbD)); // Костыльно выглядит =_=
-    	} else {
-    		System.err.println("Не введено название дисциплины");
-    	}
+		stageDiscipline.setResizable(false);
+		stageDiscipline.showAndWait();
+
+		hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
+		olDiscipline.add(hbD.getValue() + ":" + hbD.getCode().toString());
 
     	lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конце
     	if (olDiscipline.size() == 1) cbDiscipline.getSelectionModel().selectLast();
@@ -373,21 +383,32 @@ public class FXMLCtrlMain extends VBox {
 		boolean b = false;
 		if (lvDiscipline.getSelectionModel().getSelectedIndex() == cbDiscipline.getSelectionModel().getSelectedIndex()) b = true; 
 		
-		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
-		hbD = dao.getByValueAndCode(hbD.getValue(), hbD.getCode());
+		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
+		hbD = dao_HBD.getByValueAndCode(hbD.getValue(), hbD.getCode());
 		if (hbD == null) System.err.println("НЕ НАЙДЕН!!!");
 		
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Discipline.fxml"));
+		Parent root = null;
+		try {
+			root = (Parent) fxmlLoader.load();
+		} catch (IOException e) {
+			System.err.println("Не удалось загрузить форму авторизации");
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+
 		Stage stageDiscipline = new Stage();
+		FXMLCtrlDiscipline fxmlCtrlDiscipline = fxmlLoader.getController();
+		fxmlCtrlDiscipline.init(stageDiscipline, hbD.getId());
+		stageDiscipline.setScene(scene);
+		stageDiscipline.setTitle("Discipline");
+		stageDiscipline.getIcons().add(new Image("Logo.png"));
 		stageDiscipline.initModality(Modality.APPLICATION_MODAL);
-    	Scene sceneDiscipline = new Scene(new FXMLCtrlDiscipline(stageDiscipline));
+		stageDiscipline.setResizable(false);
+		stageDiscipline.showAndWait();
 
-    	stageDiscipline.setScene(sceneDiscipline);
-    	stageDiscipline.setTitle("Change Discipline");
-    	stageDiscipline.getIcons().add(new Image("Logo.png"));
-    	stageDiscipline.showAndWait();
-
-    	dao.update(hbD);
     	System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
+    	hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
     	String res = olDiscipline.set(lvDiscipline.getSelectionModel().getSelectedIndex(), hbD.getValue() + ":" + hbD.getCode());
     	if ((res == null) || (res.equals(""))) System.err.println("Попытка заменить что-то не понятное на сторку");
     	if (b) cbDiscipline.getSelectionModel().select(lvDiscipline.getSelectionModel().getSelectedIndex()); // меняет занчение в cbDisc булевая переменная
