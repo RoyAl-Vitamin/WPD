@@ -1,6 +1,7 @@
 package com.mmsp.logic;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -44,7 +45,10 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.DatePicker;
@@ -57,10 +61,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Priority;
 //import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -761,7 +767,25 @@ public class FXMLCtrlNewTab extends VBox {
 
 	@FXML
 	void clickBSetT71(ActionEvent event) {
-		// UNDONE
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Settings.fxml"));
+		Parent root = null;
+		try {
+			root = (Parent) fxmlLoader.load();
+		} catch (IOException e) {
+			System.err.println("Не удалось загрузить форму настройки таблицы");
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+
+		Stage stageSettings = new Stage();
+		FXMLCtrlSettings fxmlCtrlSettings = fxmlLoader.getController();
+		fxmlCtrlSettings.init(stageSettings);
+		stageSettings.setScene(scene);
+		stageSettings.setTitle("Settings");
+		stageSettings.getIcons().add(new Image("Logo.png"));
+		stageSettings.initModality(Modality.APPLICATION_MODAL);
+		stageSettings.setResizable(false);
+		stageSettings.showAndWait();
 	}
 
 	//*************************************************************************************************************************
@@ -904,15 +928,20 @@ public class FXMLCtrlNewTab extends VBox {
 		Properties prop = new Properties();
 		InputStream input = null;
 		try {
-			//input = new FileInputStream(".\\src\\main\\resources\\config.properties");
-			input = getClass().getClassLoader().getResourceAsStream("config.properties");
+			File propFile = new File("config.properties");
+			if (!propFile.exists()) {// Если этого файла нет, то создаём его
+				propFile.createNewFile();
+			}
+			input = new FileInputStream(propFile);
+			//input = getClass().getClassLoader().getResourceAsStream("config.properties");
 			// load a properties file
 			prop.load(input);
 			// get the property value and print it out
-			NUMBER_OF_SEMESTER = Integer.parseInt(prop.getProperty("numberOfSemester"));
+			throw new IOException();
+			/*NUMBER_OF_SEMESTER = Integer.parseInt(prop.getProperty("numberOfSemester"));
 			NUMBER_OF_MODULE = Integer.parseInt(prop.getProperty("numberOfModule"));
 			NUMBER_OF_SECTION = Integer.parseInt(prop.getProperty("numberOfSection"));
-			NUMBER_OF_WEEK = Integer.parseInt(prop.getProperty("numberOfWeeks"));
+			NUMBER_OF_WEEK = Integer.parseInt(prop.getProperty("numberOfWeeks"));*/
 		} catch (IOException ex) {
 			ex.printStackTrace();
 			// Стандартные значения в случае ошибки
