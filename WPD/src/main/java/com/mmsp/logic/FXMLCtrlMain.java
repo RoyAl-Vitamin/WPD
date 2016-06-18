@@ -338,14 +338,14 @@ public class FXMLCtrlMain extends VBox {
 	}
 
 	@FXML
-    void clickBCreate(ActionEvent event) throws IOException { // "Создать" Дисциплину
+	void clickBCreate(ActionEvent event) throws IOException { // "Создать" Дисциплину
 
 		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
 
 		if (hbD == null) hbD = new HandbookDiscipline(); // Если открыл в первый раз
 		hbD.setCode(0);
 		hbD.setValue("");
-		hbD.getVersions().clear(); // почиситм версии при создании
+		hbD.getVersions().clear(); // почистим версии при создании
 		hbD.setId(dao_HBD.add(hbD));
 
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Discipline.fxml"));
@@ -371,18 +371,18 @@ public class FXMLCtrlMain extends VBox {
 		hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
 		olDiscipline.add(hbD.getValue() + ":" + hbD.getCode().toString());
 
-    	lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конце
-    	if (olDiscipline.size() == 1) cbDiscipline.getSelectionModel().selectLast();
-    	lStatus.setText("Дисциплина создана");
-    }
-	
+		lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конце
+		if (olDiscipline.size() == 1) cbDiscipline.getSelectionModel().selectLast();
+		lStatus.setText("Дисциплина создана");
+	}
+
 	@FXML
-    void clickBChange(ActionEvent event) throws IOException { // Изменить дисциплину
+	void clickBChange(ActionEvent event) throws IOException { // Изменить дисциплину
 
 		// не меняем индекс у cbDisc, если индексы cbDisc and lvDisc совпадали до начала изменения
 		boolean b = false;
 		if (lvDiscipline.getSelectionModel().getSelectedIndex() == cbDiscipline.getSelectionModel().getSelectedIndex()) b = true; 
-		
+
 		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
 		hbD = dao_HBD.getByValueAndCode(hbD.getValue(), hbD.getCode());
 		if (hbD == null) System.err.println("НЕ НАЙДЕН!!!");
@@ -407,20 +407,22 @@ public class FXMLCtrlMain extends VBox {
 		stageDiscipline.setResizable(false);
 		stageDiscipline.showAndWait();
 
-    	System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
-    	hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
-    	String res = olDiscipline.set(lvDiscipline.getSelectionModel().getSelectedIndex(), hbD.getValue() + ":" + hbD.getCode());
-    	if ((res == null) || (res.equals(""))) System.err.println("Попытка заменить что-то не понятное на сторку");
-    	if (b) cbDiscipline.getSelectionModel().select(lvDiscipline.getSelectionModel().getSelectedIndex()); // меняет занчение в cbDisc булевая переменная
-    	lStatus.setText("Изменениея сохранены");
-    }
-	
+		System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
+		hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
+		int pos = lvDiscipline.getSelectionModel().getSelectedIndex();
+		String res = olDiscipline.set(pos, hbD.getValue() + ":" + hbD.getCode());
+		System.err.println("было " + res + "\nстало " + hbD.getValue() + ":" + hbD.getCode());
+		//if ((res == null) || (res.equals(""))) System.err.println("Попытка заменить что-то не понятное на сторку");
+		if (b) cbDiscipline.getSelectionModel().select(pos); // меняет занчение в cbDisc булевая переменная
+		lStatus.setText("Изменениея сохранены");
+	}
+
 	@FXML
-    void clickBDelete(ActionEvent event) {
+	void clickBDelete(ActionEvent event) {
 		// UNDONE Если есть версии, то уточнить у пользователя стоит ли удалять? UPD: Отловить Exception
 		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
 		hbD.setId(dao.getIdByValueAndCode(hbD.getValue(), hbD.getCode())); // FIXME Решить проблему: удаление предметов с одинаковыми параметрами или их добавление
-		
+
 		/*DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
 
 		List<WPDVersion> lWPDVers = dao_Vers.getAllByNumber(hbD.getId());
@@ -435,49 +437,41 @@ public class FXMLCtrlMain extends VBox {
 		}*/
 
 		for (Iterator<WPDVersion> it = hbD.getVersions().iterator(); it.hasNext(); ) {
-	        WPDVersion f = it.next();
-	        closeTab(f.getId());
-	        //for (Ctrl ctrlValue : olCtrl) {
-	        /*for (Iterator<Ctrl> ctrlIter = olCtrl.iterator(); ctrlIter.hasNext(); ) {
-	        	Ctrl ctrl = ctrlIter.next();
-	        	if (f.getId() == ctrl.getId()) {
-	        		closeTab(ctrl.getId()); // FIXME нельзя удалять на ходу в списке olCtrl, с этим даже итератор.ремув не справляется
-	        		//// Скорее всего это из-за того, что в CloseTab() удаляется элемент из olCtrl с помощью remuve();
-	        	}
-			}*/
-	    }
-		
+			WPDVersion f = it.next();
+			closeTab(f.getId());
+		}
+
 		dao.remove(hbD); // удаляем объект из БД
-		
+
 		String strWasRemoved = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // Удаляем объект из списка
 
 		System.out.println("Удалённая строка = " + strWasRemoved);
 		cbDiscipline.getSelectionModel().selectFirst();
 		lStatus.setText("Дисциплина удалена");
-    }
-	
+	}
+
 	public void setStage(Stage stage) {
 		this.stage = stage;
 	}
-	
+
 	public void setController(FXMLCtrlMain fxmlCtrlMain) {
 		this.fxmlCtrlMain = fxmlCtrlMain;
 	}
-	
+
 	@FXML
-    void initialize() {
-        assert miAuth != null : "fx:id=\"miAuth\" was not injected: check your FXML file 'Main.fxml'.";
-        assert cbDiscipline != null : "fx:id=\"cbDiscipline\" was not injected: check your FXML file 'Main.fxml'.";
-        assert lvDiscipline != null : "fx:id=\"lvDiscipline\" was not injected: check your FXML file 'Main.fxml'.";
-        assert bCreate != null : "fx:id=\"bCreate\" was not injected: check your FXML file 'Main.fxml'.";
-        assert bDelete != null : "fx:id=\"bDelete\" was not injected: check your FXML file 'Main.fxml'.";
-        assert mbClose != null : "fx:id=\"mbClose\" was not injected: check your FXML file 'Main.fxml'.";
-        assert tpDiscipline != null : "fx:id=\"tpDiscipline\" was not injected: check your FXML file 'Main.fxml'.";
-        assert bOpenTab != null : "fx:id=\"bOpenTab\" was not injected: check your FXML file 'Main.fxml'.";
-        assert bAddTab != null : "fx:id=\"bAddTab\" was not injected: check your FXML file 'Main.fxml'.";
-        assert bChange != null : "fx:id=\"bChange\" was not injected: check your FXML file 'Main.fxml'.";
-        assert lStatus != null : "fx:id=\"lStatus\" was not injected: check your FXML file 'Main.fxml'.";
-        assert cbVersion != null : "fx:id=\"cbVersion\" was not injected: check your FXML file 'Main.fxml'.";
+	void initialize() {
+		assert miAuth != null : "fx:id=\"miAuth\" was not injected: check your FXML file 'Main.fxml'.";
+		assert cbDiscipline != null : "fx:id=\"cbDiscipline\" was not injected: check your FXML file 'Main.fxml'.";
+		assert lvDiscipline != null : "fx:id=\"lvDiscipline\" was not injected: check your FXML file 'Main.fxml'.";
+		assert bCreate != null : "fx:id=\"bCreate\" was not injected: check your FXML file 'Main.fxml'.";
+		assert bDelete != null : "fx:id=\"bDelete\" was not injected: check your FXML file 'Main.fxml'.";
+		assert mbClose != null : "fx:id=\"mbClose\" was not injected: check your FXML file 'Main.fxml'.";
+		assert tpDiscipline != null : "fx:id=\"tpDiscipline\" was not injected: check your FXML file 'Main.fxml'.";
+		assert bOpenTab != null : "fx:id=\"bOpenTab\" was not injected: check your FXML file 'Main.fxml'.";
+		assert bAddTab != null : "fx:id=\"bAddTab\" was not injected: check your FXML file 'Main.fxml'.";
+		assert bChange != null : "fx:id=\"bChange\" was not injected: check your FXML file 'Main.fxml'.";
+		assert lStatus != null : "fx:id=\"lStatus\" was not injected: check your FXML file 'Main.fxml'.";
+		assert cbVersion != null : "fx:id=\"cbVersion\" was not injected: check your FXML file 'Main.fxml'.";
 
 		DAO_HandBookDiscipline dao_disc = new DAO_HandBookDiscipline();
 		List<HandbookDiscipline> li = dao_disc.getAll(HandbookDiscipline.class);
@@ -501,7 +495,7 @@ public class FXMLCtrlMain extends VBox {
 				}
 			}
 		});*/
-		
+
 		olDiscipline.addListener(new ListChangeListener<String>() {
 
 			@Override
@@ -513,7 +507,7 @@ public class FXMLCtrlMain extends VBox {
 				}
 			}
 		});
-		
+
 		olVersion.addListener(new ListChangeListener<String>() {
 
 			@Override
