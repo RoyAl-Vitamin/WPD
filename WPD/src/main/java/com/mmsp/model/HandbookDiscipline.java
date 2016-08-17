@@ -81,4 +81,12 @@ public class HandbookDiscipline implements Serializable {
     public void setValue(String value) {
         this.value = value;
     }
+
+    /**
+     * remove WPDVersion
+     * @param wpdVers - версия, которую удаляют из HandBookDiscipline
+     */
+	public void remVersion(WPDVersion wpdVers) {
+		if (!versions.remove(wpdVers)) System.err.println("Не была удалена WPDVerion, т.к. данный элемент не содержался в коллекции");
+	}
 }

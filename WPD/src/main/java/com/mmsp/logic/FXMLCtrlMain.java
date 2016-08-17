@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.controlsfx.dialog.Wizard;
 
@@ -272,21 +273,42 @@ public class FXMLCtrlMain extends VBox {
 		hbD.addVersions(wpdVers); // Обновляем HandBookDiscipline, т.к. теперь у него зависимость с WDPVersion @OneToMany
 		dao_Disc.update(hbD);
 
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("VersionName.fxml"));
+		Parent root = null;
+		try {
+			root = (Parent) fxmlLoader.load();
+		} catch (IOException e) {
+			System.err.println("Не удалось загрузить форму ввода имени версии");
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+
 		Stage stageVersionName = new Stage();
-		stageVersionName.initModality(Modality.APPLICATION_MODAL);
-		Scene sceneDiscipline = new Scene(new FXMLCtrlVersionName(stageVersionName, wpdVers));
-		stageVersionName.setScene(sceneDiscipline);
-		stageVersionName.setTitle("Enter name version");
+		FXMLCtrlVersionName fxmlCtrlVersionName = fxmlLoader.getController();
+		fxmlCtrlVersionName.init(stageVersionName, wpdVers.getId());
+		stageVersionName.setScene(scene);
+		stageVersionName.setTitle("Version name");
 		stageVersionName.getIcons().add(new Image("Logo.png"));
+		stageVersionName.initModality(Modality.APPLICATION_MODAL);
 		stageVersionName.setResizable(false);
 		stageVersionName.showAndWait();
 
-		dao_Vers.update(wpdVers); // Обновляем Версию после получения имени версии
+		// FIXME А было ли что-нибудь введено?
+		// Если не было ничего добавлено (т.е. имени версии), то не создавать и не открывать вкладку, и удалить данную WPD_Version?
+
+		wpdVers.setName(dao_Vers.getById(WPDVersion.class, wpdVers.getId()).getName()); // подгрузим изменнённую в FXMLCtrlDiscipline
+		// TODO выше наверное нужна ленивая подгрузка?
+
+		if (wpdVers.getName() == null || wpdVers.getName().equals("")) { // Пользователь передумал вводить/изменять имя версии
+			hbD.remVersion(wpdVers); // Удаляем версию из множества версий в HandBookDiscipline
+			dao_Vers.remove(wpdVers); // Удаляем версию из БД
+			return; // ?
+		}
 
 		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + wpdVers.getName());
 
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
-		Parent root = (Parent) fxmlLoader.load();
+		fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
+		root = (Parent) fxmlLoader.load();
 
 		FXMLCtrlNewTab fxmlCtrlNewTab = fxmlLoader.getController();
 

@@ -81,6 +81,9 @@ public class FXMLCtrlDiscipline extends VBox {
 
 	@FXML
 	void clickBSave(ActionEvent event) {
+
+		// TODO Проверить, а не существует ли точно такой же версии в БД?
+
 		hbD.setValue(tfDisciplineName.getText());
 		hbD.setCode(Integer.valueOf(tfCode.getText()));
 
