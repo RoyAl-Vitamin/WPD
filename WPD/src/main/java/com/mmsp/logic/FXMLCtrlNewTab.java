@@ -2,6 +2,8 @@ package com.mmsp.logic;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -936,13 +938,11 @@ public class FXMLCtrlNewTab extends VBox {
 			//input = getClass().getClassLoader().getResourceAsStream("config.properties");
 			// load a properties file
 			prop.load(input);
-			// get the property value and print it out
-			throw new IOException();
-			/*NUMBER_OF_SEMESTER = Integer.parseInt(prop.getProperty("numberOfSemester"));
+			NUMBER_OF_SEMESTER = Integer.parseInt(prop.getProperty("numberOfSemester"));
 			NUMBER_OF_MODULE = Integer.parseInt(prop.getProperty("numberOfModule"));
 			NUMBER_OF_SECTION = Integer.parseInt(prop.getProperty("numberOfSection"));
-			NUMBER_OF_WEEK = Integer.parseInt(prop.getProperty("numberOfWeeks"));*/
-		} catch (IOException ex) {
+			NUMBER_OF_WEEK = Integer.parseInt(prop.getProperty("numberOfWeeks"));
+		} catch (IOException | NumberFormatException ex) {
 			ex.printStackTrace();
 			// Стандартные значения в случае ошибки
 			NUMBER_OF_SEMESTER = 1;
@@ -950,6 +950,7 @@ public class FXMLCtrlNewTab extends VBox {
 			NUMBER_OF_SECTION = 4;
 			NUMBER_OF_WEEK = 17;
 			parentCtrl.setStatus("Файл \"config.properties\" не удалось найти, загружены вшитые параметры");
+			rewriteProp(prop);
 		} finally {
 			if (input != null) {
 				try {
@@ -958,6 +959,26 @@ public class FXMLCtrlNewTab extends VBox {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+
+	/**
+	 * Записывает все текущие значения в "config.properties"
+	 * @param prop сам файл
+	 */
+	private void rewriteProp(Properties prop) {
+		prop.setProperty("numberOfSemester", String.valueOf(NUMBER_OF_SEMESTER));
+		prop.setProperty("numberOfModule", String.valueOf(NUMBER_OF_MODULE));
+		prop.setProperty("numberOfSection", String.valueOf(NUMBER_OF_SECTION));
+		prop.setProperty("numberOfWeeks", String.valueOf(NUMBER_OF_WEEK));
+		try {
+			prop.store(new FileOutputStream(new File("config.properties")), "");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

@@ -293,16 +293,13 @@ public class FXMLCtrlMain extends VBox {
 		stageVersionName.setResizable(false);
 		stageVersionName.showAndWait();
 
-		// FIXME А было ли что-нибудь введено?
-		// Если не было ничего добавлено (т.е. имени версии), то не создавать и не открывать вкладку, и удалить данную WPD_Version?
-
 		wpdVers.setName(dao_Vers.getById(WPDVersion.class, wpdVers.getId()).getName()); // подгрузим изменнённую в FXMLCtrlDiscipline
 		// TODO выше наверное нужна ленивая подгрузка?
 
 		if (wpdVers.getName() == null || wpdVers.getName().equals("")) { // Пользователь передумал вводить/изменять имя версии
 			hbD.remVersion(wpdVers); // Удаляем версию из множества версий в HandBookDiscipline
 			dao_Vers.remove(wpdVers); // Удаляем версию из БД
-			return; // ?
+			return;
 		}
 
 		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + wpdVers.getName());

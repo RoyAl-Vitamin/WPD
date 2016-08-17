@@ -38,7 +38,6 @@ public class FXMLCtrlVersionName extends VBox {
 
 		DAO_WPDVersion dao_WPDVers = new DAO_WPDVersion(); // Просто обновим запись
 		dao_WPDVers.update(wpdVers);
-		System.err.println("Version have been saved with name == " + wpdVers.getName());
 		stage.close();
 	}
 
