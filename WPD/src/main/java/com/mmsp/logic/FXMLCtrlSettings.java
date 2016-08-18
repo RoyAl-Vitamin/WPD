@@ -7,18 +7,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import com.mmsp.logic.FXMLCtrlNewTab.Semester;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class FXMLCtrlSettings extends VBox {
 
 	private Stage stage;
+
+	private Semester semester;
 
 	@FXML
 	private TextField tfNumberOfWeeks;
@@ -35,11 +41,16 @@ public class FXMLCtrlSettings extends VBox {
 	@FXML
 	private TextField tfNumberOfSemester;
 
-	@FXML
-	private Button bCancel;
-
+	// TODO Убрать выгрузку в config.properties
+	// TODO Проверка на существование семестра с таким же номером
 	@FXML
 	void clickBSave(ActionEvent event) {
+
+		semester.setNUMBER_OF_SEMESTER(Integer.valueOf(tfNumberOfSemester.getText()));
+		semester.setQUANTITY_OF_MODULE(Integer.valueOf(tfNumberOfModule.getText()));
+		semester.setQUANTITY_OF_SECTION(Integer.valueOf(tfNumberOfSection.getText()));
+		semester.setSizeArrWeek(Integer.valueOf(tfNumberOfWeeks.getText()));
+		
 		File propFile = new File("config.properties");
 		if (!propFile.exists())
 			try {
@@ -79,11 +90,6 @@ public class FXMLCtrlSettings extends VBox {
 		stage.close();
 	}
 
-	@FXML
-	void clickBCancel(ActionEvent event) {
-		stage.close();
-	}
-
 	public void init(Stage external_stage) {
 		stage = external_stage;
 
@@ -91,7 +97,22 @@ public class FXMLCtrlSettings extends VBox {
 		ChangeListener<String> cl2 = new ChangeListener<String>() { // http://stackoverflow.com/questions/12956061/javafx-oninputmethodtextchanged-not-called-after-focus-is-lost
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				if (isInteger(tfNumberOfModule.getText()) && isInteger(tfNumberOfSection.getText()) && isInteger(tfNumberOfSemester.getText()) && isInteger(tfNumberOfWeeks.getText())) bSave.setDisable(false); else bSave.setDisable(true);
+				if (allFieldIsInteger() && allFieldNotNull()) bSave.setDisable(false); else bSave.setDisable(true);
+			}
+
+			private boolean allFieldIsInteger() {
+				if (isInteger(tfNumberOfModule.getText()) && isInteger(tfNumberOfSection.getText()) && isInteger(tfNumberOfSemester.getText()) && isInteger(tfNumberOfWeeks.getText()))
+					return true;
+				else
+					return false;
+			}
+
+			private boolean allFieldNotNull() {
+				if (tfNumberOfModule.getText().equals("0")) return false;
+				if (tfNumberOfSection.getText().equals("0")) return false;
+				if (tfNumberOfSemester.getText().equals("0")) return false;
+				if (tfNumberOfWeeks.getText().equals("0")) return false;
+				return true;
 			}
 
 			private boolean isInteger(String sValue) { // проверка на ввод и что б в Integer помещалось
@@ -103,6 +124,17 @@ public class FXMLCtrlSettings extends VBox {
 				}
 			}
 		};
+
+		this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
+			public void handle(WindowEvent event) {
+				semester.setNUMBER_OF_SEMESTER(0);
+				semester.setQUANTITY_OF_MODULE(0);
+				semester.setQUANTITY_OF_SECTION(0);
+				semester.setArrWeek(null);
+				stage.close();
+			}
+		});
 
 		tfNumberOfModule.textProperty().addListener(cl2);
 		tfNumberOfSection.textProperty().addListener(cl2);
@@ -137,7 +169,6 @@ public class FXMLCtrlSettings extends VBox {
 
 		} catch (IOException ex) {
 			ex.printStackTrace();
-			// Стандартные значения в случае ошибки?
 		} finally {
 			if (input != null) {
 				try {
@@ -147,5 +178,9 @@ public class FXMLCtrlSettings extends VBox {
 				}
 			}
 		}
+	}
+
+	public void setSemester(Semester s) {
+		this.semester = s;
 	}
 }

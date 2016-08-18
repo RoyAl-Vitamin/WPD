@@ -53,6 +53,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
@@ -214,6 +215,69 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 	}
 
+	class Semester { // тут хранятся данные одного семестра для таблицы 7.1
+
+		private int NUMBER_OF_SEMESTER; // номер модуля
+
+		private int QUANTITY_OF_MODULE; // количество модулей
+		
+		private int QUANTITY_OF_SECTION; // количество разделов
+
+		private int[] arrWeek;
+
+		public int getNUMBER_OF_SEMESTER() {
+			return NUMBER_OF_SEMESTER;
+		}
+
+		public void setNUMBER_OF_SEMESTER(int nUMBER_OF_SEMESTER) {
+			NUMBER_OF_SEMESTER = nUMBER_OF_SEMESTER;
+		}
+
+		public int getQUANTITY_OF_MODULE() {
+			return QUANTITY_OF_MODULE;
+		}
+
+		public void setQUANTITY_OF_MODULE(int qUANTITY_OF_MODULE) {
+			QUANTITY_OF_MODULE = qUANTITY_OF_MODULE;
+		}
+
+		public int getQUANTITY_OF_SECTION() {
+			return QUANTITY_OF_SECTION;
+		}
+
+		public void setQUANTITY_OF_SECTION(int qUANTITY_OF_SECTION) {
+			QUANTITY_OF_SECTION = qUANTITY_OF_SECTION;
+		}
+
+		public int[] getArrWeek() {
+			return arrWeek;
+		}
+
+		public void setArrWeek(int[] arrWeek) {
+			this.arrWeek = arrWeek;
+		}
+
+		/**
+		 * пересоздание массива недель, при указании размера меньшего, чем было, лишние элементы будут утеряны
+		 * @param size размер нового массива
+		 */
+		public void setSizeArrWeek(int size) {
+			if (arrWeek != null) {
+				arrWeek = new int[size];
+				return;
+			}
+
+			int[] temp = new int[size];
+
+			if (arrWeek != null) { 
+				int minSize = size < arrWeek.length ? size : arrWeek.length;
+				for (int i = 0; i < minSize; i++)
+					temp[i] = arrWeek[i];
+			}
+			arrWeek = temp;
+		}
+	}
+
 	private final ObservableList<RowSL> olDataOfStudyLoad = FXCollections.observableArrayList();
 
 	private final ObservableList<RowPoCM> olDataOfPoCM = FXCollections.observableArrayList();
@@ -364,13 +428,28 @@ public class FXMLCtrlNewTab extends VBox {
 	private VBox vbT71;
 
 	@FXML
-	private Button bAddRowT71;
+	private Button bAddSemT71; // кнопка добавления семестра
 
 	@FXML
-	private Button bDelRowT71;
+	private Button bDelSemT71; // кнопка удаления текущего семестра
 
 	@FXML
-	private Button bSetT71;
+	private Button bSetSemT71; // кнопка настройки текущего семестра
+
+	@FXML
+	private Button bAddRowT71; // кнопка добавления строки в текущий семестр
+
+	@FXML
+	private Button bDelRowT71; // кнопка удаления текущей строки из текущего семестра
+
+	private List<Semester> semesters; // список семестров
+
+	private final ObservableList<String> olSemesters = FXCollections.observableArrayList(); // for cbSemester // список # семестров
+	
+	@FXML
+	private ChoiceBox<String> cbSemesters;
+
+	private Semester currSemester; // текущий семестр
 
 	// https://bitbucket.org/panemu/tiwulfx
 	// vs.
@@ -704,6 +783,113 @@ public class FXMLCtrlNewTab extends VBox {
 	}
 
 	/**
+	 * Добавляет семестр, создавая под него новую таблицу 7.1
+	 * @param event
+	 */
+	@FXML
+	void clickBAddSemT71(ActionEvent event) {
+
+		Semester s = new Semester();
+
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Settings.fxml"));
+		Parent root = null;
+		try {
+			root = (Parent) fxmlLoader.load();
+		} catch (IOException e) {
+			System.err.println("Не удалось загрузить форму настройки таблицы");
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+
+		Stage stageSettings = new Stage();
+		FXMLCtrlSettings fxmlCtrlSettings = fxmlLoader.getController();
+		fxmlCtrlSettings.init(stageSettings);
+		fxmlCtrlSettings.setSemester(s);
+		stageSettings.setScene(scene);
+		stageSettings.setTitle("Settings");
+		stageSettings.getIcons().add(new Image("Logo.png"));
+		stageSettings.initModality(Modality.APPLICATION_MODAL);
+		stageSettings.setResizable(false);
+		stageSettings.showAndWait();
+
+		if (s.getArrWeek() == null) return; // Если пользователь решил не создавать семестр
+		
+		// Пересборка таблицы 7.1
+		//readProperties(); // занесём данные в соответсвующие переменные
+
+		currSemester = s; // покажем, что созданный семестр стал текущим семестром
+		semesters.add(s); // и добавим его в список
+		cbSemesters.getItems().add(String.valueOf(currSemester.NUMBER_OF_SEMESTER));
+
+		createTvT71(currSemester.getArrWeek().length); // Создадим каркас страницы
+
+		if (!vbT71.getChildren().contains(ssvTable71)) {
+			vbT71.getChildren().add(ssvTable71);
+			VBox.setVgrow(ssvTable71, Priority.ALWAYS);
+			VBox.setMargin(ssvTable71, new Insets(0, 15, 0, 0));
+		}
+	}
+
+	/**
+	 * Удаляет текущий семестр
+	 * @param event
+	 */
+	@FXML
+	void clickBDelSemT71(ActionEvent event) {
+		semesters.remove(currSemester);
+		cbSemesters.getItems().remove(String.valueOf(currSemester.NUMBER_OF_SEMESTER));
+		vbT71.getChildren().remove(ssvTable71);
+		ssvTable71 = null; // GC подберёт
+	}
+	
+	/**
+	 * Изменяет текущий семестр создавая под него новую таблицу 7.1
+	 * @param event
+	 */
+	@FXML
+	void clickBSetSemT71(ActionEvent event) { // TODO renamed button
+		
+		Semester s = currSemester;
+
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Settings.fxml"));
+		Parent root = null;
+		try {
+			root = (Parent) fxmlLoader.load();
+		} catch (IOException e) {
+			System.err.println("Не удалось загрузить форму настройки таблицы");
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+
+		Stage stageSettings = new Stage();
+		FXMLCtrlSettings fxmlCtrlSettings = fxmlLoader.getController();
+		fxmlCtrlSettings.init(stageSettings);
+		fxmlCtrlSettings.setSemester(s);
+		stageSettings.setScene(scene);
+		stageSettings.setTitle("Settings");
+		stageSettings.getIcons().add(new Image("Logo.png"));
+		stageSettings.initModality(Modality.APPLICATION_MODAL);
+		stageSettings.setResizable(false);
+		stageSettings.showAndWait();
+
+		//if (s.getArrWeek() == null) return; // Если пользователь решил не создавать семестр
+		
+		// Пересборка таблицы 7.1
+		//readProperties(); // занесём данные в соответсвующие переменные
+
+		//currSemester = s; // покажем, что созданный семестр стал текущим семестром
+		//semesters.add(s); // и добавим его в список
+
+		createTvT71(currSemester.getArrWeek().length); // Создадим каркас страницы
+
+		/*if (!vbT71.getChildren().contains(ssvTable71)) {
+			vbT71.getChildren().add(ssvTable71);
+			VBox.setVgrow(ssvTable71, Priority.ALWAYS);
+			VBox.setMargin(ssvTable71, new Insets(0, 10, 5, 10));
+		}*/
+	}
+
+	/**
 	 * Добавляет строку общего типа в конец таблицы
 	 * @param event
 	 */
@@ -736,7 +922,7 @@ public class FXMLCtrlNewTab extends VBox {
 		if (!(row > 3 && row < ssvTable71.getGrid().getRowCount())) return; 
 		//ssvTable71.getSelectionModel().clearSelection(); // убрать фокус совсем
 		GridBase newGrid = new GridBase(ssvTable71.getGrid().getRowCount() - 1, ssvTable71.getGrid().getColumnCount()); // Создадим сетку с -1 строкой
-		ObservableList<ObservableList<SpreadsheetCell>> newRows = setHeaderForT71(newGrid); // по новой инициализируем хедер таблицы
+		ObservableList<ObservableList<SpreadsheetCell>> newRows = setHeaderForT71(newGrid, currSemester.arrWeek.length); // по новой инициализируем хедер таблицы
 		
 		for (int i = 4; i < ssvTable71.getGrid().getRowCount(); i++) {
 			if (i == row) continue; // та строка, которую нужно пропустить
@@ -754,8 +940,8 @@ public class FXMLCtrlNewTab extends VBox {
 		newGrid.spanColumn(newGrid.getColumnCount() - 2, 0, 1); // объединение "Распределение по учебным неделям"
 		newGrid.spanRow(2, 0, 0); // объединение "Виды работ"
 		newGrid.spanRow(2, 0, newGrid.getColumnCount() - 1); // объединение "Итого"
-		newGrid.spanColumn(17, 2, 1); // объединение "M1"
-		newGrid.spanColumn(17, 3, 1); // объединение "P1"
+		newGrid.spanColumn(currSemester.getArrWeek().length, 2, 1); // объединение "M1"
+		newGrid.spanColumn(currSemester.getArrWeek().length, 3, 1); // объединение "P1"
 
 		ssvTable71.setGrid(newGrid);
 		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehT71);
@@ -765,29 +951,6 @@ public class FXMLCtrlNewTab extends VBox {
 		} else {
 			ssvTable71.getSelectionModel().focus(row, ssvTable71.getColumns().get(col)); // фокус на ту же строку и ту же колонку
 		}
-	}
-
-	@FXML
-	void clickBSetT71(ActionEvent event) {
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Settings.fxml"));
-		Parent root = null;
-		try {
-			root = (Parent) fxmlLoader.load();
-		} catch (IOException e) {
-			System.err.println("Не удалось загрузить форму настройки таблицы");
-			e.printStackTrace();
-		}
-		Scene scene = new Scene(root);
-
-		Stage stageSettings = new Stage();
-		FXMLCtrlSettings fxmlCtrlSettings = fxmlLoader.getController();
-		fxmlCtrlSettings.init(stageSettings);
-		stageSettings.setScene(scene);
-		stageSettings.setTitle("Settings");
-		stageSettings.getIcons().add(new Image("Logo.png"));
-		stageSettings.initModality(Modality.APPLICATION_MODAL);
-		stageSettings.setResizable(false);
-		stageSettings.showAndWait();
 	}
 
 	//*************************************************************************************************************************
@@ -972,7 +1135,7 @@ public class FXMLCtrlNewTab extends VBox {
 		prop.setProperty("numberOfSection", String.valueOf(NUMBER_OF_SECTION));
 		prop.setProperty("numberOfWeeks", String.valueOf(NUMBER_OF_WEEK));
 		try {
-			prop.store(new FileOutputStream(new File("config.properties")), "");
+			prop.store(new FileOutputStream("config.properties"), "Study load");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1161,9 +1324,10 @@ public class FXMLCtrlNewTab extends VBox {
 	/**
 	 * Задаёт header всей таблицы ssvTable71
 	 * @param grid BaseGrid этой таблицы
+	 * @param length количество недель
 	 * @return первые 4 строки
 	 */
-	private ObservableList<ObservableList<SpreadsheetCell>> setHeaderForT71(GridBase grid) {
+	private ObservableList<ObservableList<SpreadsheetCell>> setHeaderForT71(GridBase grid, int length) {
 		
 		ObservableList<ObservableList<SpreadsheetCell>> rowsHeader = FXCollections.observableArrayList();
 		
@@ -1177,7 +1341,7 @@ public class FXMLCtrlNewTab extends VBox {
 			lh1.add(ssc);
 		}
 		lh1.add(SpreadsheetCellType.STRING.createCell(0, 18, 1, 1,"Итого"));
-		lh1.get(18).getStyleClass().add("span");
+		lh1.get(length).getStyleClass().add("span");
 		lh1.get(0).getStyleClass().add("span");
 		rowsHeader.add(lh1); // первая строка заполнена
 
@@ -1221,9 +1385,10 @@ public class FXMLCtrlNewTab extends VBox {
 	}
 	
 	/**
-	 * Инициализация компонента ssvTable71
+	 * Создаёт каркас таблицы
+	 * @param length 
 	 */
-	private void initTvT71() { // UNDONE Контроллер на focus
+	private void createTvT71(int length) { // UNDONE Контроллер на focus, для активаци и деактивации кнопки удалить
 		ehT71 = new EventHandler<GridChange>() {
 			public void handle(GridChange change) {
 				int row = change.getRow();
@@ -1244,11 +1409,11 @@ public class FXMLCtrlNewTab extends VBox {
 			}
 		};
 		int rowCount = 4;
-		int columnCount = NUMBER_OF_WEEK + 2;
+		int columnCount = length + 2;
 		//index = 4;
 		GridBase grid = new GridBase(rowCount, columnCount);
 
-		ObservableList<ObservableList<SpreadsheetCell>> rows = setHeaderForT71(grid);
+		ObservableList<ObservableList<SpreadsheetCell>> rows = setHeaderForT71(grid, length);
 
 		// строка-кнопка для добавления в Модули
 		/*final ObservableList<SpreadsheetCell> lhB = FXCollections.observableArrayList();
@@ -1331,19 +1496,18 @@ public class FXMLCtrlNewTab extends VBox {
 		grid.spanColumn(grid.getColumnCount() - 2, 0, 1); // объединение "Распределение по учебным неделям"
 		grid.spanRow(2, 0, 0); // объединение "Виды работ"
 		grid.spanRow(2, 0, grid.getColumnCount() - 1); // объединение "Итого"
-		grid.spanColumn(17, 3, 1); // объединение "P1"
+		grid.spanColumn(length, 3, 1); // объединение "P1"
 		// Вот так выглядит разъединение // grid.spanColumn(1, 3, 1); // разъединение "P1" 
-		grid.spanColumn(17, 2, 1); // объединение "M1"
+		grid.spanColumn(length, 2, 1); // объединение "M1"
 		//grid.spanColumn(19, 4, 0); // объединение Добавление в модули
 		grid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehT71);
-		ssvTable71 = new SpreadsheetView(grid);
+		if (ssvTable71 != null)
+			ssvTable71.setGrid(grid);
+		else
+			ssvTable71 = new SpreadsheetView(grid);
 		ssvTable71.getStylesheets().add(getClass().getResource("/SpreadSheetView.css").toExternalForm());
 		ssvTable71.setShowRowHeader(true);
 		ssvTable71.setShowColumnHeader(true);
-		
-		vbT71.getChildren().add(ssvTable71);
-		VBox.setVgrow(ssvTable71, Priority.ALWAYS);
-		VBox.setMargin(ssvTable71, new Insets(0, 10, 5, 10));
 	}
 
 	/**
@@ -1354,7 +1518,6 @@ public class FXMLCtrlNewTab extends VBox {
 		initThematicalPlan(); // Инициализация вкладки Тематичеуский план
 		initTvStudyLoad();
 		initTvPoCM();
-		initTvT71();
 	}
 
 	public void init(Long id_Vers) {
@@ -1363,7 +1526,20 @@ public class FXMLCtrlNewTab extends VBox {
 		load(id_Vers); // Загрузка полей
 
 		mbNumberOfSemesters.setText(tsFNOS.toString());
+		
+		semesters = new ArrayList<Semester>();
 
+		olSemesters.addListener(new ListChangeListener<String>() {
+			@Override
+			public void onChanged(ListChangeListener.Change change) {
+				if (olSemesters.size() != 0) {
+					cbSemesters.setDisable(false);
+				} else {
+					cbSemesters.setDisable(true);
+				}
+			}
+		});
+		cbSemesters.setItems(olSemesters);
 	}
 
 	//*************************************************************************************************************************
