@@ -16,6 +16,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.derby.tools.sysinfo;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
@@ -38,6 +39,8 @@ import com.mmsp.model.PoCM;
 import com.mmsp.model.ThematicPlan;
 import com.mmsp.model.WPDVersion;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -62,6 +65,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TableColumn.CellEditEvent;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
@@ -212,69 +216,6 @@ public class FXMLCtrlNewTab extends VBox {
 
 		private String getString() {
 			return getItem() == null ? "" : getItem().toString();
-		}
-	}
-
-	class Semester { // тут хранятся данные одного семестра для таблицы 7.1
-
-		private int NUMBER_OF_SEMESTER; // номер модуля
-
-		private int QUANTITY_OF_MODULE; // количество модулей
-		
-		private int QUANTITY_OF_SECTION; // количество разделов
-
-		private int[] arrWeek;
-
-		public int getNUMBER_OF_SEMESTER() {
-			return NUMBER_OF_SEMESTER;
-		}
-
-		public void setNUMBER_OF_SEMESTER(int nUMBER_OF_SEMESTER) {
-			NUMBER_OF_SEMESTER = nUMBER_OF_SEMESTER;
-		}
-
-		public int getQUANTITY_OF_MODULE() {
-			return QUANTITY_OF_MODULE;
-		}
-
-		public void setQUANTITY_OF_MODULE(int qUANTITY_OF_MODULE) {
-			QUANTITY_OF_MODULE = qUANTITY_OF_MODULE;
-		}
-
-		public int getQUANTITY_OF_SECTION() {
-			return QUANTITY_OF_SECTION;
-		}
-
-		public void setQUANTITY_OF_SECTION(int qUANTITY_OF_SECTION) {
-			QUANTITY_OF_SECTION = qUANTITY_OF_SECTION;
-		}
-
-		public int[] getArrWeek() {
-			return arrWeek;
-		}
-
-		public void setArrWeek(int[] arrWeek) {
-			this.arrWeek = arrWeek;
-		}
-
-		/**
-		 * пересоздание массива недель, при указании размера меньшего, чем было, лишние элементы будут утеряны
-		 * @param size размер нового массива
-		 */
-		public void setSizeArrWeek(int size) {
-			if (arrWeek != null) {
-				arrWeek = new int[size];
-				return;
-			}
-
-			int[] temp = new int[size];
-
-			if (arrWeek != null) { 
-				int minSize = size < arrWeek.length ? size : arrWeek.length;
-				for (int i = 0; i < minSize; i++)
-					temp[i] = arrWeek[i];
-			}
-			arrWeek = temp;
 		}
 	}
 
@@ -598,23 +539,32 @@ public class FXMLCtrlNewTab extends VBox {
 		// TODO Генерация РПД по атомарным данным
 	}
 
+	/**
+	 * Удаление данной версии
+	 * @param event
+	 */
 	@FXML
 	void clickBDelete(ActionEvent event) {
 
-		Long id = currWPDVersion.getNumber();
+		Long id = currWPDVersion.getId();
 
 		// Закрываем вкладку
 		parentCtrl.closeTab(id);
 
 		DAO_HandBookDiscipline dao_hbd = new DAO_HandBookDiscipline();
 		HandbookDiscipline hbd = dao_hbd.getById(HandbookDiscipline.class, currWPDVersion.getHbD().getId());
-		hbd.getVersions().removeIf(p -> p.getId() == id); // FIXME Проверить: удалит или нет?
+		if (!hbd.getVersions().removeIf(p -> p.getId() == id))
+			System.err.println("Не смог удалить версии в hbd");
+		else
+			dao_hbd.update(hbd);
+
+		System.err.println(hbd.toString()); // посмотрим, что там
 		
 		DAO_WPDVersion dao_vers = new DAO_WPDVersion();
 		dao_vers.remove(currWPDVersion);
 
-		// перестал понимать зачем нужен код ниже в этом методе
-		List<WPDVersion> listOfVersion = dao_vers.getAllByNumber(id);
+		// Вывод всех версий, которые ссылаются на данную дисциплину
+		/*List<WPDVersion> listOfVersion = dao_vers.getAllByNumber(id);
 		for (int i = 0; i < listOfVersion.size(); i++) {
 			System.err.println("Name = " + listOfVersion.get(i).getName() + "\nID = " + listOfVersion.get(i).getId().toString());
 			if (listOfVersion.get(i).getPoCM() != null) {
@@ -627,7 +577,7 @@ public class FXMLCtrlNewTab extends VBox {
 						System.err.println("ThematicPlan == " + tp.toString());
 			} else
 				System.err.println("ThematicPlan == null");
-		}
+		}*/
 	}
 
 	//*************************************************************************************************************************
@@ -804,7 +754,7 @@ public class FXMLCtrlNewTab extends VBox {
 		Stage stageSettings = new Stage();
 		FXMLCtrlSettings fxmlCtrlSettings = fxmlLoader.getController();
 		fxmlCtrlSettings.init(stageSettings);
-		fxmlCtrlSettings.setSemester(s);
+		fxmlCtrlSettings.setSemesters(s, semesters);
 		stageSettings.setScene(scene);
 		stageSettings.setTitle("Settings");
 		stageSettings.getIcons().add(new Image("Logo.png"));
@@ -812,16 +762,17 @@ public class FXMLCtrlNewTab extends VBox {
 		stageSettings.setResizable(false);
 		stageSettings.showAndWait();
 
-		if (s.getArrWeek() == null) return; // Если пользователь решил не создавать семестр
+		if (s.getNUMBER_OF_SEMESTER() == 0) return; // Если пользователь решил не создавать семестр
 		
 		// Пересборка таблицы 7.1
 		//readProperties(); // занесём данные в соответсвующие переменные
 
 		currSemester = s; // покажем, что созданный семестр стал текущим семестром
 		semesters.add(s); // и добавим его в список
-		cbSemesters.getItems().add(String.valueOf(currSemester.NUMBER_OF_SEMESTER));
+		cbSemesters.getItems().add(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
+		cbSemesters.getSelectionModel().select(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
 
-		createTvT71(currSemester.getArrWeek().length); // Создадим каркас страницы
+		createTvT71(currSemester.getQUANTITY_OF_WEEK()); // Создадим каркас страницы
 
 		if (!vbT71.getChildren().contains(ssvTable71)) {
 			vbT71.getChildren().add(ssvTable71);
@@ -831,17 +782,29 @@ public class FXMLCtrlNewTab extends VBox {
 	}
 
 	/**
-	 * Удаляет текущий семестр
+	 * Удаляет текущий семестр и делает текщим семестром, первый в списке olSemester
 	 * @param event
 	 */
 	@FXML
 	void clickBDelSemT71(ActionEvent event) {
 		semesters.remove(currSemester);
-		cbSemesters.getItems().remove(String.valueOf(currSemester.NUMBER_OF_SEMESTER));
-		vbT71.getChildren().remove(ssvTable71);
-		ssvTable71 = null; // GC подберёт
+		cbSemesters.getItems().remove(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
+
+		cbSemesters.getSelectionModel().selectFirst();
+		if (!olSemesters.isEmpty()) {
+
+			for (Semester sValue : semesters) {
+				if (sValue.getNUMBER_OF_SEMESTER() == Integer.parseInt(olSemesters.get(0)))
+					currSemester = sValue;
+			}
+
+			loadTvT71();
+		} else {
+			vbT71.getChildren().remove(ssvTable71);
+			ssvTable71 = null; // GC подберёт
+		}
 	}
-	
+
 	/**
 	 * Изменяет текущий семестр создавая под него новую таблицу 7.1
 	 * @param event
@@ -864,7 +827,7 @@ public class FXMLCtrlNewTab extends VBox {
 		Stage stageSettings = new Stage();
 		FXMLCtrlSettings fxmlCtrlSettings = fxmlLoader.getController();
 		fxmlCtrlSettings.init(stageSettings);
-		fxmlCtrlSettings.setSemester(s);
+		fxmlCtrlSettings.setSemesters(s, semesters);
 		stageSettings.setScene(scene);
 		stageSettings.setTitle("Settings");
 		stageSettings.getIcons().add(new Image("Logo.png"));
@@ -880,7 +843,7 @@ public class FXMLCtrlNewTab extends VBox {
 		//currSemester = s; // покажем, что созданный семестр стал текущим семестром
 		//semesters.add(s); // и добавим его в список
 
-		createTvT71(currSemester.getArrWeek().length); // Создадим каркас страницы
+		createTvT71(currSemester.getQUANTITY_OF_WEEK()); // Создадим каркас страницы
 
 		/*if (!vbT71.getChildren().contains(ssvTable71)) {
 			vbT71.getChildren().add(ssvTable71);
@@ -898,17 +861,7 @@ public class FXMLCtrlNewTab extends VBox {
 	// https://bitbucket.org/controlsfx/controlsfx/issues/590/adding-new-rows-to-a-spreadsheetview
 	// https://bitbucket.org/controlsfx/controlsfx/issues/151/dynamic-adding-rows-in-spreadsheetview-at
 	{
-		GridBase newGrid = new GridBase(ssvTable71.getGrid().getRowCount() + 1, ssvTable71.getGrid().getColumnCount()); // Создадим сетку с +1 строкой
-		int newRowPos = ssvTable71.getGrid().getRowCount(); // и количество строк
-
-		ObservableList<ObservableList<SpreadsheetCell>> newRows = ssvTable71.getGrid().getRows(); // а так же существующие строки
-		final ObservableList<SpreadsheetCell> olNew = createStringRow(newRowPos, null); // Добавление на место последней строки пустой строки
-		//index++;
-		newRows.add(olNew);
-
-		newGrid.setRows(newRows);
-		ssvTable71.setGrid(newGrid);
-		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehT71);
+		addRowT71(null); // Создадим пусую строку
 	}
 
 	/**
@@ -922,7 +875,7 @@ public class FXMLCtrlNewTab extends VBox {
 		if (!(row > 3 && row < ssvTable71.getGrid().getRowCount())) return; 
 		//ssvTable71.getSelectionModel().clearSelection(); // убрать фокус совсем
 		GridBase newGrid = new GridBase(ssvTable71.getGrid().getRowCount() - 1, ssvTable71.getGrid().getColumnCount()); // Создадим сетку с -1 строкой
-		ObservableList<ObservableList<SpreadsheetCell>> newRows = setHeaderForT71(newGrid, currSemester.arrWeek.length); // по новой инициализируем хедер таблицы
+		ObservableList<ObservableList<SpreadsheetCell>> newRows = setHeaderForT71(newGrid, currSemester.getQUANTITY_OF_WEEK()); // по новой инициализируем хедер таблицы
 		
 		for (int i = 4; i < ssvTable71.getGrid().getRowCount(); i++) {
 			if (i == row) continue; // та строка, которую нужно пропустить
@@ -940,8 +893,8 @@ public class FXMLCtrlNewTab extends VBox {
 		newGrid.spanColumn(newGrid.getColumnCount() - 2, 0, 1); // объединение "Распределение по учебным неделям"
 		newGrid.spanRow(2, 0, 0); // объединение "Виды работ"
 		newGrid.spanRow(2, 0, newGrid.getColumnCount() - 1); // объединение "Итого"
-		newGrid.spanColumn(currSemester.getArrWeek().length, 2, 1); // объединение "M1"
-		newGrid.spanColumn(currSemester.getArrWeek().length, 3, 1); // объединение "P1"
+		newGrid.spanColumn(currSemester.getQUANTITY_OF_WEEK(), 2, 1); // объединение "M1"
+		newGrid.spanColumn(currSemester.getQUANTITY_OF_WEEK(), 3, 1); // объединение "P1"
 
 		ssvTable71.setGrid(newGrid);
 		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehT71);
@@ -951,6 +904,8 @@ public class FXMLCtrlNewTab extends VBox {
 		} else {
 			ssvTable71.getSelectionModel().focus(row, ssvTable71.getColumns().get(col)); // фокус на ту же строку и ту же колонку
 		}
+		if (ssvTable71.getSelectionModel().getFocusedCell().getRow() < 4)
+			bDelRowT71.setDisable(true);
 	}
 
 	//*************************************************************************************************************************
@@ -1334,15 +1289,15 @@ public class FXMLCtrlNewTab extends VBox {
 		// 1-ая строка
 		final ObservableList<SpreadsheetCell> lh1 = FXCollections.observableArrayList();
 		lh1.add(SpreadsheetCellType.STRING.createCell(0, 0, 1, 1,"Виды работ"));
+		lh1.get(0).getStyleClass().add("span");
 		lh1.add(SpreadsheetCellType.STRING.createCell(0, 1, 1, 1,"Распределение по учебным неделям"));
 		lh1.get(1).getStyleClass().add("span");
 		for (int i = 2; i < grid.getColumnCount() - 1; i++) {
 			SpreadsheetCell ssc = SpreadsheetCellType.STRING.createCell(0, i, 1, 1,"");
 			lh1.add(ssc);
 		}
-		lh1.add(SpreadsheetCellType.STRING.createCell(0, 18, 1, 1,"Итого"));
-		lh1.get(length).getStyleClass().add("span");
-		lh1.get(0).getStyleClass().add("span");
+		lh1.add(SpreadsheetCellType.STRING.createCell(0, length + 1, 1, 1,"Итого"));
+		lh1.get(length + 1).getStyleClass().add("span");
 		rowsHeader.add(lh1); // первая строка заполнена
 
 		// 2-ая строка
@@ -1351,7 +1306,7 @@ public class FXMLCtrlNewTab extends VBox {
 		for (int column = 0; column < grid.getColumnCount() - 2; column++) {
 			lh2.add(SpreadsheetCellType.INTEGER.createCell(1, column + 1, 1, 1, column + 1));
 		}
-		lh2.add(SpreadsheetCellType.STRING.createCell(1, 18, 1, 1,""));
+		lh2.add(SpreadsheetCellType.STRING.createCell(1, length + 1, 1, 1,""));
 		rowsHeader.add(lh2);
 
 		// 3-ая строка
@@ -1383,7 +1338,51 @@ public class FXMLCtrlNewTab extends VBox {
 
 		return rowsHeader;
 	}
-	
+
+	/**
+	 * Загружает данные из currSemester в таблицу 7.1 
+	 * @param currSem
+	 */
+	private void loadTvT71() {
+		createTvT71(currSemester.getQUANTITY_OF_WEEK());
+		pasteIntoTvT71();
+	}
+
+	/**
+	 * Вставляет данные в талбицу 7.1 из currSemester
+	 */
+	private void pasteIntoTvT71() {
+		for (Record row : currSemester.getRowT71())
+			addRowT71(row);
+	}
+
+	/**
+	 * Добавляет строку в таблицу 7.1
+	 * @param record строка из Semester.getRowT71() или null, если хотим заполнить её ""
+	 */
+	private void addRowT71(Record record) {
+		GridBase newGrid = new GridBase(ssvTable71.getGrid().getRowCount() + 1, ssvTable71.getGrid().getColumnCount()); // Создадим сетку с +1 строкой
+		int newRowPos = ssvTable71.getGrid().getRowCount(); // и количество строк
+
+		ObservableList<ObservableList<SpreadsheetCell>> newRows = ssvTable71.getGrid().getRows(); // а так же существующие строки
+
+		ArrayList<String> liRow = null;
+		if (record != null) {
+			liRow = new ArrayList<>();
+			liRow.add(record.getCourseTitle());
+			for (int i = 0; i < record.getArrWeek().length; i++)
+				liRow.add(record.getArrWeek()[i]);
+		}
+
+		final ObservableList<SpreadsheetCell> olNew = createStringRow(newRowPos, liRow); // Добавление на место последней строки пустой строки
+		//index++;
+		newRows.add(olNew);
+
+		newGrid.setRows(newRows);
+		ssvTable71.setGrid(newGrid);
+		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehT71);
+	}
+
 	/**
 	 * Создаёт каркас таблицы
 	 * @param length 
@@ -1393,6 +1392,7 @@ public class FXMLCtrlNewTab extends VBox {
 			public void handle(GridChange change) {
 				int row = change.getRow();
 				//int col = change.getColumn();
+				//System.err.println(" Set Focused == " + row + ":" + col); 
 				// Будем суммировать часы и выводить в итого
 				int summ = 0;
 				for (int i = 1; i < ssvTable71.getGrid().getColumnCount() - 1; i++) {
@@ -1402,12 +1402,12 @@ public class FXMLCtrlNewTab extends VBox {
 						continue;
 					}
 				}
-				System.err.println(summ);
 				ssvTable71.getGrid().getRows().get(row).get(ssvTable71.getGrid().getColumnCount() - 1).setEditable(true);
 				ssvTable71.getGrid().setCellValue(row, ssvTable71.getGrid().getColumnCount() - 1, String.valueOf(summ));
 				ssvTable71.getGrid().getRows().get(row).get(ssvTable71.getGrid().getColumnCount() - 1).setEditable(false);
 			}
 		};
+
 		int rowCount = 4;
 		int columnCount = length + 2;
 		//index = 4;
@@ -1505,9 +1505,30 @@ public class FXMLCtrlNewTab extends VBox {
 			ssvTable71.setGrid(grid);
 		else
 			ssvTable71 = new SpreadsheetView(grid);
+
+		// Задание ширины колонкам
+		ssvTable71.getColumns().get(0).setPrefWidth(150);
+		for (int i = 1; i < ssvTable71.getColumns().size() - 1; i++)
+			ssvTable71.getColumns().get(i).setPrefWidth(35);
+		ssvTable71.getColumns().get(ssvTable71.getColumns().size() - 1).setPrefWidth(140);
+
 		ssvTable71.getStylesheets().add(getClass().getResource("/SpreadSheetView.css").toExternalForm());
 		ssvTable71.setShowRowHeader(true);
 		ssvTable71.setShowColumnHeader(true);
+		ssvTable71.getSelectionModel().getSelectedCells().addListener(new InvalidationListener() {
+
+            @Override
+            public void invalidated(Observable o) {
+                for(TablePosition cell : ssvTable71.getSelectionModel().getSelectedCells()){
+                    System.err.println(cell.getRow()+" / "+cell.getColumn()); // показывает индексы выделенных строк
+                }
+                if (ssvTable71.getSelectionModel().getSelectedCells().size() != 0)
+                if (ssvTable71.getSelectionModel().getSelectedCells().get(ssvTable71.getSelectionModel().getSelectedCells().size() - 1).getRow() > 3)
+                	bDelRowT71.setDisable(false);
+                else
+                	bDelRowT71.setDisable(true);
+            }
+        });
 	}
 
 	/**
@@ -1539,6 +1560,24 @@ public class FXMLCtrlNewTab extends VBox {
 				}
 			}
 		});
+
+		cbSemesters.getSelectionModel().selectedIndexProperty().addListener( // UNDONE сохранение содержимого таблицы в currSemester
+			new ChangeListener<Number>() {
+				public void changed (ObservableValue ov, Number value, Number new_value) {
+					if (new_value.intValue() > -1) {
+						bAddRowT71.setDisable(false);
+						//bDelRowT71.setDisable(false);
+						bDelSemT71.setDisable(false);
+						bSetSemT71.setDisable(false);
+					} else { // если пустое поле
+						bAddRowT71.setDisable(true);
+						//bDelRowT71.setDisable(true);
+						bDelSemT71.setDisable(true);
+						bSetSemT71.setDisable(true);
+					}
+				}
+			}
+		);
 		cbSemesters.setItems(olSemesters);
 	}
 

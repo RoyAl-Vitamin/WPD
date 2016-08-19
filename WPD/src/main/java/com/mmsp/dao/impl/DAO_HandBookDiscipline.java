@@ -25,6 +25,17 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 		session.close();
 		return iValue;
 	}
+
+	public void update(HandbookDiscipline hbdValue) {
+		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();  
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		session.saveOrUpdate(hbdValue);
+		System.out.println("Save or Update Successfully HandbookDiscipline");
+		session.getTransaction().commit();
+		session.flush();
+		session.close();
+	}
 	
 	public List<HandbookDiscipline> getByValue(String value) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
@@ -85,4 +96,5 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 		}
 		return object;
 	}
+
 }

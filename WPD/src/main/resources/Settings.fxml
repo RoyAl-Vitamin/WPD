@@ -5,7 +5,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="242.0" prefWidth="403.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mmsp.logic.FXMLCtrlSettings">
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="242.0" prefWidth="403.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mmsp.logic.FXMLCtrlSettings">
    <children>
       <GridPane hgap="15.0" prefHeight="357.0" prefWidth="392.0" vgap="15.0" VBox.vgrow="ALWAYS">
         <columnConstraints>
@@ -19,7 +19,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Label text="Количество семместров" />
+            <Label text="Номер семместра" />
             <Label text="Количество модулей" GridPane.rowIndex="1" />
             <Label text="Количесвто разделов" GridPane.rowIndex="2" />
             <Label text="Количество недель" GridPane.rowIndex="3" />
@@ -37,11 +37,12 @@
       </GridPane>
       <HBox alignment="CENTER" prefHeight="43.0" prefWidth="600.0" spacing="15.0" VBox.vgrow="NEVER">
          <children>
-            <Button fx:id="bSave" mnemonicParsing="false" onAction="#clickBSave" text="Сохранить" />
+            <Button fx:id="bSave" disable="true" mnemonicParsing="false" onAction="#clickBSave" text="Сохранить" />
          </children>
          <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </padding>
       </HBox>
+      <Label fx:id="lError" />
    </children>
 </VBox>

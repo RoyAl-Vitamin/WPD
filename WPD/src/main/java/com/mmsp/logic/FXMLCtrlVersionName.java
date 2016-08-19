@@ -1,19 +1,13 @@
 package com.mmsp.logic;
 
-import java.io.IOException;
-
-import com.mmsp.dao.impl.DAO_HandBookDiscipline;
 import com.mmsp.dao.impl.DAO_WPDVersion;
-import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.model.WPDVersion;
 
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;

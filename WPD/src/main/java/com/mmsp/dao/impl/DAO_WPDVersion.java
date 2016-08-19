@@ -45,8 +45,12 @@ public class DAO_WPDVersion implements DAO<WPDVersion> {
 		else
 			return null;
 	}
-	
-	// Список всех версий, которые ссылаются на дисциплину с ID = lValue
+
+	/**
+	 * Список всех версий, которые ссылаются на дисциплину с ID = lValue
+	 * @param lValue
+	 * @return
+	 */
 	public List<WPDVersion> getAllByNumber(Long lValue) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();

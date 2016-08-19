@@ -219,12 +219,12 @@
                                     <Tooltip text="Добавить семестр" />
                                  </tooltip>
                               </Button>
-                              <Button fx:id="bDelSemT71" maxHeight="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBDelSemT71" text="-" VBox.vgrow="NEVER">
+                              <Button fx:id="bDelSemT71" disable="true" maxHeight="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBDelSemT71" text="-" VBox.vgrow="NEVER">
                                  <tooltip>
                                     <Tooltip text="Удалить семестр" />
                                  </tooltip>
                               </Button>
-                              <Button fx:id="bSetSemT71" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBSetSemT71" VBox.vgrow="NEVER">
+                              <Button fx:id="bSetSemT71" disable="true" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBSetSemT71" VBox.vgrow="NEVER">
                                  <graphic>
                                     <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
@@ -236,12 +236,12 @@
                                     <Tooltip text="Изменить семестр" />
                                  </tooltip>
                               </Button>
-                              <Button fx:id="bAddRowT71" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBAddRowT71" prefHeight="25.0" prefWidth="25.0" text="+">
+                              <Button fx:id="bAddRowT71" disable="true" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBAddRowT71" prefHeight="25.0" prefWidth="25.0" text="+">
                                  <tooltip>
                                     <Tooltip text="Добавить строчку" />
                                  </tooltip>
                               </Button>
-                              <Button fx:id="bDelRowT71" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBDelRowT71" prefHeight="25.0" prefWidth="25.0" text="-">
+                              <Button fx:id="bDelRowT71" disable="true" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBDelRowT71" prefHeight="25.0" prefWidth="25.0" text="-">
                                  <tooltip>
                                     <Tooltip text="Удалить строчку" />
                                  </tooltip>

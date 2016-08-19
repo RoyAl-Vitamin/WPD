@@ -250,7 +250,11 @@ public class FXMLCtrlMain extends VBox {
 		return tab;
 	}
 
-	// Функция добавления новой версии и открытия для неё вкладки (Tab)
+	/**
+	 * Функция добавления новой версии и открытия для неё вкладки (Tab)
+	 * @param event
+	 * @throws IOException
+	 */
 	@FXML
 	void clickBAddTab(ActionEvent event) throws IOException { // Кнопка "+" Добавление вкладки в вверхнй TabPane
 		Tab t = new Tab();
@@ -356,8 +360,13 @@ public class FXMLCtrlMain extends VBox {
 		return b;
 	}
 
+	/**
+	 * Создание дисциплины
+	 * @param event
+	 * @throws IOException
+	 */
 	@FXML
-	void clickBCreate(ActionEvent event) throws IOException { // "Создать" Дисциплину
+	void clickBCreate(ActionEvent event) throws IOException {
 
 		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
 
@@ -388,15 +397,24 @@ public class FXMLCtrlMain extends VBox {
 		stageDiscipline.showAndWait();
 
 		hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
-		olDiscipline.add(hbD.getValue() + ":" + hbD.getCode().toString());
-
-		lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конце
-		if (olDiscipline.size() == 1) cbDiscipline.getSelectionModel().selectLast();
-		lStatus.setText("Дисциплина создана");
+		if ("".equals(hbD.getValue()) && hbD.getCode() == -1) // Пользователь передумал создавать дисциплину
+			dao_HBD.remove(hbD);
+		else {
+			olDiscipline.add(hbD.getValue() + ":" + hbD.getCode().toString());
+	
+			lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конце
+			if (olDiscipline.size() == 1) cbDiscipline.getSelectionModel().selectLast();
+			lStatus.setText("Дисциплина создана");
+		}
 	}
 
+	/**
+	 * Изменение дисциплины
+	 * @param event
+	 * @throws IOException
+	 */
 	@FXML
-	void clickBChange(ActionEvent event) throws IOException { // Изменить дисциплину
+	void clickBChange(ActionEvent event) throws IOException {
 
 		// не меняем индекс у cbDisc, если индексы cbDisc and lvDisc совпадали до начала изменения
 		boolean b = false;
@@ -436,11 +454,15 @@ public class FXMLCtrlMain extends VBox {
 		lStatus.setText("Изменениея сохранены");
 	}
 
+	/**
+	 * Удаление дисциплины
+	 * @param event
+	 */
 	@FXML
 	void clickBDelete(ActionEvent event) {
 		// UNDONE Если есть версии, то уточнить у пользователя стоит ли удалять? UPD: Отловить Exception
-		DAO_HandBookDiscipline dao = new DAO_HandBookDiscipline();
-		hbD.setId(dao.getIdByValueAndCode(hbD.getValue(), hbD.getCode())); // FIXME Решить проблему: удаление предметов с одинаковыми параметрами или их добавление
+		DAO_HandBookDiscipline dao_hbd = new DAO_HandBookDiscipline();
+		hbD = dao_hbd.getByValueAndCode(hbD.getValue(), hbD.getCode()); // Обновим содержимое hbD
 
 		/*DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
 
@@ -448,19 +470,19 @@ public class FXMLCtrlMain extends VBox {
 		if (!lWPDVers.isEmpty()) {
 			System.err.println("Будет удалено " + lWPDVers.size() + " версий данной дисциплины");
 			
-			// FIXME Возможно стоит пересмотреть связь между Handbook'ом и Version???? OneToMany?? Тогда можно будет каскадно удалять
+			// TODO Возможно стоит пересмотреть связь между Handbook'ом и Version???? OneToMany?? Тогда можно будет каскадно удалять
 			// UPD: Связь есть, настроить Cascade
 			
 			for (int i = 0; i < lWPDVers.size(); i++)
 				dao_Vers.remove(lWPDVers.get(i));
 		}*/
 
-		for (Iterator<WPDVersion> it = hbD.getVersions().iterator(); it.hasNext(); ) {
+		for (Iterator<WPDVersion> it = hbD.getVersions().iterator(); it.hasNext(); ) { // Если были открыты вкладки (например, когда версия не была заранее удалена), то закроем эти вкладки
 			WPDVersion f = it.next();
 			closeTab(f.getId());
 		}
 
-		dao.remove(hbD); // удаляем объект из БД
+		dao_hbd.remove(hbD); // удаляем объект из БД // FIXME Удаление дисциплины с созданной версией приводит к Caused by: org.hibernate.StaleStateException: Batch update returned unexpected row count from update [0]; actual row count: 0; expected: 1
 
 		String strWasRemoved = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // Удаляем объект из списка
 

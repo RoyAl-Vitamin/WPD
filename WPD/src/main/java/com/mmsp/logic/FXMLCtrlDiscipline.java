@@ -37,6 +37,9 @@ public class FXMLCtrlDiscipline extends VBox {
 		this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
 			public void handle(WindowEvent event) {
+				hbD.setValue("");
+				hbD.setCode(-1);
+				dao_HBD.update(hbD);
 				stage.close();
 			}
 		});

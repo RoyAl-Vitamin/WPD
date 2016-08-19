@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
+//import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -174,12 +174,12 @@ public class WPDVersion implements Serializable {
 	@Override
 	public String toString() {
 		String s = "WPDVers: " + this.getClass().getName() + "@" + this.hashCode() +
-		"\nID == " + this.getId().toString() +
-		"\nname == " + this.getName() +
-		"\ntemplate name == " + this.getTemplateName() +
-		"\ndate == " + this.getDate().toString() +
-		"\nHANDBOOKDISCIPLINE == " + this.getHbD().toString() +
-		"\nPoCM == " + this.getPoCM().getClass().getName() + "@" + this.getPoCM().hashCode();
+				"\nID == " + this.getId().toString() +
+				"\nname == " + this.getName() +
+				"\ntemplate name == " + this.getTemplateName() +
+				"\ndate == " + this.getDate().toString() +
+				"\nHANDBOOKDISCIPLINE == " + this.getHbD().toString() +
+				"\nPoCM == " + this.getPoCM().getClass().getName() + "@" + this.getPoCM().hashCode();
 		for (ThematicPlan t : this.getThematicPlans()) {
 			s += "\nThematicPlan == " + t.getClass().getName() + "@" + this.getThematicPlans().hashCode();
 		}

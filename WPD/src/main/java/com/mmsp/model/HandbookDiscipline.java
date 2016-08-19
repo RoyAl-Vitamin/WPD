@@ -89,4 +89,16 @@ public class HandbookDiscipline implements Serializable {
 	public void remVersion(WPDVersion wpdVers) {
 		if (!versions.remove(wpdVers)) System.err.println("Не была удалена WPDVerion, т.к. данный элемент не содержался в коллекции");
 	}
+
+	@Override
+	public String toString() {
+		String s = "HandbookDiscipline: " + this.getClass().getName() + "@" + this.hashCode() +
+				"\nID == " + this.getId().toString() +
+				"\ncode == " + this.getCode() +
+				"\nvalue == " + this.getValue();
+		for (WPDVersion t : this.getVersions()) {
+			s += "\nWPDVersion == " + t.getClass().getName() + "@" + this.getVersions().hashCode();
+		}
+		return s;
+	}
 }

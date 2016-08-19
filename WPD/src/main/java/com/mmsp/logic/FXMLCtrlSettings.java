@@ -5,9 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
-
-import com.mmsp.logic.FXMLCtrlNewTab.Semester;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -15,6 +14,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -25,6 +25,8 @@ public class FXMLCtrlSettings extends VBox {
 	private Stage stage;
 
 	private Semester semester;
+
+	private List<Semester> semesters;
 
 	@FXML
 	private TextField tfNumberOfWeeks;
@@ -41,15 +43,17 @@ public class FXMLCtrlSettings extends VBox {
 	@FXML
 	private TextField tfNumberOfSemester;
 
+	@FXML
+	private Label lError;
+
 	// TODO Убрать выгрузку в config.properties
-	// TODO Проверка на существование семестра с таким же номером
 	@FXML
 	void clickBSave(ActionEvent event) {
 
-		semester.setNUMBER_OF_SEMESTER(Integer.valueOf(tfNumberOfSemester.getText()));
-		semester.setQUANTITY_OF_MODULE(Integer.valueOf(tfNumberOfModule.getText()));
-		semester.setQUANTITY_OF_SECTION(Integer.valueOf(tfNumberOfSection.getText()));
-		semester.setSizeArrWeek(Integer.valueOf(tfNumberOfWeeks.getText()));
+		semester.setNUMBER_OF_SEMESTER(Integer.parseInt(tfNumberOfSemester.getText()));
+		semester.setQUANTITY_OF_MODULE(Integer.parseInt(tfNumberOfModule.getText()));
+		semester.setQUANTITY_OF_SECTION(Integer.parseInt(tfNumberOfSection.getText()));
+		semester.setQUANTITY_OF_WEEK(Integer.parseInt(tfNumberOfWeeks.getText()));
 		
 		File propFile = new File("config.properties");
 		if (!propFile.exists())
@@ -97,22 +101,48 @@ public class FXMLCtrlSettings extends VBox {
 		ChangeListener<String> cl2 = new ChangeListener<String>() { // http://stackoverflow.com/questions/12956061/javafx-oninputmethodtextchanged-not-called-after-focus-is-lost
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				if (allFieldIsInteger() && allFieldNotNull()) bSave.setDisable(false); else bSave.setDisable(true);
+				if (allFieldNotNull() && allFieldIsInteger() && semesterNotFound()) bSave.setDisable(false); else bSave.setDisable(true);
+			}
+
+			/**
+			 * Проверяет, есть ли семестр с таким же номером
+			 * @return если семестр с таким номером не найден, то true, иначе false
+			 */
+			private boolean semesterNotFound() {
+				if (semesters == null) {
+					lError.setText("");
+					return true;
+				}
+				int num = Integer.parseInt(tfNumberOfSemester.getText());
+				for (Semester sTemp : semesters) {
+					if (sTemp.getNUMBER_OF_SEMESTER() == num) {
+						lError.setText("Семестр с таки номером уже существует");
+						return false;
+					}
+				}
+
+				lError.setText("");
+				return true;
 			}
 
 			private boolean allFieldIsInteger() {
-				if (isInteger(tfNumberOfModule.getText()) && isInteger(tfNumberOfSection.getText()) && isInteger(tfNumberOfSemester.getText()) && isInteger(tfNumberOfWeeks.getText()))
+				if (isInteger(tfNumberOfModule.getText()) && isInteger(tfNumberOfSection.getText()) && isInteger(tfNumberOfSemester.getText()) && isInteger(tfNumberOfWeeks.getText())) {
+					lError.setText("");
 					return true;
-				else
+				} else {
+					lError.setText("Введите не число");
 					return false;
+				}
 			}
 
 			private boolean allFieldNotNull() {
-				if (tfNumberOfModule.getText().equals("0")) return false;
-				if (tfNumberOfSection.getText().equals("0")) return false;
-				if (tfNumberOfSemester.getText().equals("0")) return false;
-				if (tfNumberOfWeeks.getText().equals("0")) return false;
-				return true;
+				boolean b = true;
+				if (tfNumberOfModule.getText().equals("0")) b = false;
+				if (tfNumberOfSection.getText().equals("0")) b = false;
+				if (tfNumberOfSemester.getText().equals("0")) b = false;
+				if (tfNumberOfWeeks.getText().equals("0")) b = false;
+				if (b) lError.setText(""); else lError.setText("Данные значения должны быть больше 0");
+				return b;
 			}
 
 			private boolean isInteger(String sValue) { // проверка на ввод и что б в Integer помещалось
@@ -131,7 +161,7 @@ public class FXMLCtrlSettings extends VBox {
 				semester.setNUMBER_OF_SEMESTER(0);
 				semester.setQUANTITY_OF_MODULE(0);
 				semester.setQUANTITY_OF_SECTION(0);
-				semester.setArrWeek(null);
+				semester.setQUANTITY_OF_WEEK(0);
 				stage.close();
 			}
 		});
@@ -180,7 +210,8 @@ public class FXMLCtrlSettings extends VBox {
 		}
 	}
 
-	public void setSemester(Semester s) {
+	public void setSemesters(Semester s, List<Semester> semesters) {
 		this.semester = s;
+		this.semesters = semesters;
 	}
 }
