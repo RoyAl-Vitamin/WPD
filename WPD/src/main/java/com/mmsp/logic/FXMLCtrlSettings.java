@@ -47,6 +47,7 @@ public class FXMLCtrlSettings extends VBox {
 	private Label lError;
 
 	// TODO Убрать выгрузку в config.properties
+	// FIXME Предусмотреть просто изменение номера семестра и его отображения в cbSemesters
 	@FXML
 	void clickBSave(ActionEvent event) {
 
@@ -109,7 +110,7 @@ public class FXMLCtrlSettings extends VBox {
 			 * @return если семестр с таким номером не найден, то true, иначе false
 			 */
 			private boolean semesterNotFound() {
-				if (semesters == null) {
+				if (semesters == null || semester.getNUMBER_OF_SEMESTER() > 0) {
 					lError.setText("");
 					return true;
 				}
@@ -130,7 +131,7 @@ public class FXMLCtrlSettings extends VBox {
 					lError.setText("");
 					return true;
 				} else {
-					lError.setText("Введите не число");
+					lError.setText("Введите число");
 					return false;
 				}
 			}
