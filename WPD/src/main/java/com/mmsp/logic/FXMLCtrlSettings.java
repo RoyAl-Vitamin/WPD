@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+//import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
@@ -29,32 +29,30 @@ public class FXMLCtrlSettings extends VBox {
 	private List<Semester> semesters;
 
 	@FXML
-	private TextField tfNumberOfWeeks;
+	private TextField tfNumberOfSemester;
+
+	@FXML
+	private TextField tfQuantityOfWeeks;
+
+	@FXML
+	private TextField tfQuantityOfSection;
+
+	@FXML
+	private TextField tfQuantityOfModule;
 
 	@FXML
 	private Button bSave;
 
 	@FXML
-	private TextField tfNumberOfSection;
-
-	@FXML
-	private TextField tfNumberOfModule;
-
-	@FXML
-	private TextField tfNumberOfSemester;
-
-	@FXML
 	private Label lError;
 
-	// TODO Убрать выгрузку в config.properties
-	// FIXME Предусмотреть просто изменение номера семестра и его отображения в cbSemesters
 	@FXML
 	void clickBSave(ActionEvent event) {
 
 		semester.setNUMBER_OF_SEMESTER(Integer.parseInt(tfNumberOfSemester.getText()));
-		semester.setQUANTITY_OF_MODULE(Integer.parseInt(tfNumberOfModule.getText()));
-		semester.setQUANTITY_OF_SECTION(Integer.parseInt(tfNumberOfSection.getText()));
-		semester.setQUANTITY_OF_WEEK(Integer.parseInt(tfNumberOfWeeks.getText()));
+		semester.setQUANTITY_OF_MODULE(Integer.parseInt(tfQuantityOfModule.getText()));
+		semester.setQUANTITY_OF_SECTION(Integer.parseInt(tfQuantityOfSection.getText()));
+		semester.setQUANTITY_OF_WEEK(Integer.parseInt(tfQuantityOfWeeks.getText()));
 		
 		File propFile = new File("config.properties");
 		if (!propFile.exists())
@@ -73,11 +71,11 @@ public class FXMLCtrlSettings extends VBox {
 			if (!tfNumberOfSemester.getText().equals(""))
 				properties.setProperty("numberOfSemester", tfNumberOfSemester.getText()); // запись в конфигурационный файл
 			if (!tfNumberOfSemester.getText().equals(""))
-				properties.setProperty("numberOfModule", tfNumberOfModule.getText()); // запись в конфигурационный файл
+				properties.setProperty("numberOfModule", tfQuantityOfModule.getText()); // запись в конфигурационный файл
 			if (!tfNumberOfSemester.getText().equals(""))
-				properties.setProperty("numberOfSection", tfNumberOfSection.getText()); // запись в конфигурационный файл
+				properties.setProperty("numberOfSection", tfQuantityOfSection.getText()); // запись в конфигурационный файл
 			if (!tfNumberOfSemester.getText().equals(""))
-				properties.setProperty("numberOfWeeks", tfNumberOfWeeks.getText()); // запись в конфигурационный файл
+				properties.setProperty("numberOfWeeks", tfQuantityOfWeeks.getText()); // запись в конфигурационный файл
 			fos = new FileOutputStream("config.properties");
 			properties.store(fos, "Study load");
 		} catch (Exception e) {
@@ -110,14 +108,14 @@ public class FXMLCtrlSettings extends VBox {
 			 * @return если семестр с таким номером не найден, то true, иначе false
 			 */
 			private boolean semesterNotFound() {
-				if (semesters == null || semester.getNUMBER_OF_SEMESTER() > 0) {
+				if (semesters == null) {
 					lError.setText("");
 					return true;
 				}
 				int num = Integer.parseInt(tfNumberOfSemester.getText());
 				for (Semester sTemp : semesters) {
-					if (sTemp.getNUMBER_OF_SEMESTER() == num) {
-						lError.setText("Семестр с таки номером уже существует");
+					if (sTemp.getNUMBER_OF_SEMESTER() == num && sTemp != semester) {
+						lError.setText("Семестр с таким номером уже существует");
 						return false;
 					}
 				}
@@ -127,7 +125,7 @@ public class FXMLCtrlSettings extends VBox {
 			}
 
 			private boolean allFieldIsInteger() {
-				if (isInteger(tfNumberOfModule.getText()) && isInteger(tfNumberOfSection.getText()) && isInteger(tfNumberOfSemester.getText()) && isInteger(tfNumberOfWeeks.getText())) {
+				if (isInteger(tfQuantityOfModule.getText()) && isInteger(tfQuantityOfSection.getText()) && isInteger(tfNumberOfSemester.getText()) && isInteger(tfQuantityOfWeeks.getText())) {
 					lError.setText("");
 					return true;
 				} else {
@@ -138,10 +136,10 @@ public class FXMLCtrlSettings extends VBox {
 
 			private boolean allFieldNotNull() {
 				boolean b = true;
-				if (tfNumberOfModule.getText().equals("0")) b = false;
-				if (tfNumberOfSection.getText().equals("0")) b = false;
+				if (tfQuantityOfModule.getText().equals("0")) b = false;
+				if (tfQuantityOfSection.getText().equals("0")) b = false;
 				if (tfNumberOfSemester.getText().equals("0")) b = false;
-				if (tfNumberOfWeeks.getText().equals("0")) b = false;
+				if (tfQuantityOfWeeks.getText().equals("0")) b = false;
 				if (b) lError.setText(""); else lError.setText("Данные значения должны быть больше 0");
 				return b;
 			}
@@ -159,20 +157,20 @@ public class FXMLCtrlSettings extends VBox {
 		this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
 			public void handle(WindowEvent event) {
-				semester.setNUMBER_OF_SEMESTER(0);
+				/*semester.setNUMBER_OF_SEMESTER(0);
 				semester.setQUANTITY_OF_MODULE(0);
 				semester.setQUANTITY_OF_SECTION(0);
-				semester.setQUANTITY_OF_WEEK(0);
+				semester.setQUANTITY_OF_WEEK(0);*/
 				stage.close();
 			}
 		});
 
-		tfNumberOfModule.textProperty().addListener(cl2);
-		tfNumberOfSection.textProperty().addListener(cl2);
+		tfQuantityOfModule.textProperty().addListener(cl2);
+		tfQuantityOfSection.textProperty().addListener(cl2);
 		tfNumberOfSemester.textProperty().addListener(cl2);
-		tfNumberOfWeeks.textProperty().addListener(cl2);
+		tfQuantityOfWeeks.textProperty().addListener(cl2);
 
-		Properties prop = new Properties();
+		/*Properties prop = new Properties();
 		InputStream input = null;
 		try {
 			File propFile = new File("config.properties");
@@ -208,11 +206,18 @@ public class FXMLCtrlSettings extends VBox {
 					e.printStackTrace();
 				}
 			}
-		}
+		}*/
 	}
 
 	public void setSemesters(Semester s, List<Semester> semesters) {
 		this.semester = s;
 		this.semesters = semesters;
+
+		if (this.semester != null) {
+			tfNumberOfSemester.setText(String.valueOf(this.semester.getNUMBER_OF_SEMESTER()));
+			tfQuantityOfModule.setText(String.valueOf(this.semester.getQUANTITY_OF_MODULE()));
+			tfQuantityOfSection.setText(String.valueOf(this.semester.getQUANTITY_OF_SECTION()));
+			tfQuantityOfWeeks.setText(String.valueOf(this.semester.getQUANTITY_OF_WEEK()));
+		}
 	}
 }

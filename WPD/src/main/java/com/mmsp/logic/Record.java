@@ -10,6 +10,13 @@ class Record {
 
 	private String[] arrWeek; // распределение часов/плюсов по неделям
 
+	private int pos; // позиция строки в таблице (нужна, что бы не промахнуться с удалением)
+
+	Record(int size, int currPos) {
+		arrWeek = new String[size];
+		pos = currPos;
+	}
+
 	public String getCourseTitle() {
 		return courseTitle;
 	}
@@ -24,6 +31,14 @@ class Record {
 
 	public void setArrWeek(String[] arrWeek) {
 		this.arrWeek = arrWeek;
+	}
+
+	public int getPos() {
+		return pos;
+	}
+
+	public void setPos(int pos) {
+		this.pos = pos;
 	}
 
 	/**

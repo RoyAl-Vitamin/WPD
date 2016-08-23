@@ -1,5 +1,6 @@
 package com.mmsp.logic;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +18,14 @@ class Semester {
 	private int QUANTITY_OF_WEEK; // количество недель
 
 	private List<Record> rowT71; // сами записи в таблице 7.1, как { имя предмета и распределение часов или плюсов по неделям}
+
+	Semester() {
+		rowT71 = new ArrayList<Record>();
+		/*NUMBER_OF_SEMESTER = 0;
+		QUANTITY_OF_MODULE = 0;
+		QUANTITY_OF_SECTION = 0;
+		QUANTITY_OF_WEEK = 0;*/
+	}
 
 	public int getNUMBER_OF_SEMESTER() {
 		return NUMBER_OF_SEMESTER;
@@ -56,6 +65,13 @@ class Semester {
 
 	public void setRowT71(List<Record> rowT71) {
 		this.rowT71 = rowT71;
+	}
+
+	public Record getRecord(int pos) {
+		for (Record rec : rowT71) {
+			if (rec.getPos() == pos) return rec;
+		}
+		return null;
 	}
 
 }

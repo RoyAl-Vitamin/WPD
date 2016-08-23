@@ -16,13 +16,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.derby.tools.sysinfo;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
-import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
+//import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
-import org.controlsfx.control.spreadsheet.SpreadsheetCellType.StringType;
+//import org.controlsfx.control.spreadsheet.SpreadsheetCellType.StringType;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 
 import java.time.Instant;
@@ -723,11 +722,18 @@ public class FXMLCtrlNewTab extends VBox {
 			for (int column = 0; column < ssvTable71.getGrid().getColumnCount(); column++) {
 				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1,""));
 			}
-		} else {
-			for (int column = 0; column < ssvTable71.getGrid().getColumnCount(); column++) {
-				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, lValueOfOldCell.get(column)));
+		} else
+			try {
+				if (ssvTable71.getGrid().getColumnCount() != lValueOfOldCell.size())				
+					throw new Exception("Количество столбцов не совпадает с размером переданного списка");
+
+				for (int column = 0; column < ssvTable71.getGrid().getColumnCount(); column++) {
+					olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, lValueOfOldCell.get(column)));
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		}
+		
 		olRow.get(olRow.size() - 1).setEditable(false); // Последняя строка не доступна для редактирования
 		return olRow;
 	}
@@ -763,16 +769,13 @@ public class FXMLCtrlNewTab extends VBox {
 		stageSettings.showAndWait();
 
 		if (s.getNUMBER_OF_SEMESTER() == 0) return; // Если пользователь решил не создавать семестр
-		
-		// Пересборка таблицы 7.1
-		//readProperties(); // занесём данные в соответсвующие переменные
 
 		currSemester = s; // покажем, что созданный семестр стал текущим семестром
 		semesters.add(s); // и добавим его в список
 		cbSemesters.getItems().add(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
 		cbSemesters.getSelectionModel().select(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
 
-		createTvT71(currSemester.getQUANTITY_OF_WEEK()); // Создадим каркас страницы
+		createTvT71(currSemester); // Создадим каркас страницы
 
 		if (!vbT71.getChildren().contains(ssvTable71)) {
 			vbT71.getChildren().add(ssvTable71);
@@ -843,7 +846,11 @@ public class FXMLCtrlNewTab extends VBox {
 		//currSemester = s; // покажем, что созданный семестр стал текущим семестром
 		//semesters.add(s); // и добавим его в список
 
-		createTvT71(currSemester.getQUANTITY_OF_WEEK()); // Создадим каркас страницы
+		int selectedIndex = cbSemesters.getSelectionModel().getSelectedIndex();
+		olSemesters.set(selectedIndex, String.valueOf(s.getNUMBER_OF_SEMESTER()));
+		cbSemesters.getSelectionModel().select(olSemesters.get(selectedIndex));
+		
+		createTvT71(currSemester); // Создадим каркас страницы
 
 		/*if (!vbT71.getChildren().contains(ssvTable71)) {
 			vbT71.getChildren().add(ssvTable71);
@@ -861,6 +868,8 @@ public class FXMLCtrlNewTab extends VBox {
 	// https://bitbucket.org/controlsfx/controlsfx/issues/590/adding-new-rows-to-a-spreadsheetview
 	// https://bitbucket.org/controlsfx/controlsfx/issues/151/dynamic-adding-rows-in-spreadsheetview-at
 	{
+		Record rec = new Record(currSemester.getQUANTITY_OF_WEEK(), ssvTable71.getGrid().getRowCount());
+		currSemester.getRowT71().add(rec);
 		addRowT71(null); // Создадим пусую строку
 	}
 
@@ -870,8 +879,16 @@ public class FXMLCtrlNewTab extends VBox {
 	 */
 	@FXML
 	void clickBDelRowT71(ActionEvent event) {
-		int col = ssvTable71.getSelectionModel().getFocusedCell().getColumn();
+		int col = ssvTable71.getSelectionModel().getFocusedCell().getColumn(); // получение фокуса
 		int row = ssvTable71.getSelectionModel().getFocusedCell().getRow();
+
+		for (Record rec : currSemester.getRowT71()) { // удаление из массива записей
+			if (rec.getPos() == row) {
+				currSemester.getRowT71().remove(rec);
+				break;
+			}
+		}
+
 		if (!(row > 3 && row < ssvTable71.getGrid().getRowCount())) return; 
 		//ssvTable71.getSelectionModel().clearSelection(); // убрать фокус совсем
 		GridBase newGrid = new GridBase(ssvTable71.getGrid().getRowCount() - 1, ssvTable71.getGrid().getColumnCount()); // Создадим сетку с -1 строкой
@@ -1344,7 +1361,7 @@ public class FXMLCtrlNewTab extends VBox {
 	 * @param currSem
 	 */
 	private void loadTvT71() {
-		createTvT71(currSemester.getQUANTITY_OF_WEEK());
+		createTvT71(currSemester);
 		pasteIntoTvT71();
 	}
 
@@ -1369,12 +1386,13 @@ public class FXMLCtrlNewTab extends VBox {
 		ArrayList<String> liRow = null;
 		if (record != null) {
 			liRow = new ArrayList<>();
-			liRow.add(record.getCourseTitle());
-			for (int i = 0; i < record.getArrWeek().length; i++)
+			liRow.add(record.getCourseTitle()); // Скопируем навзавние предмета
+			for (int i = 0; i < record.getArrWeek().length; i++) // Скоппируем содержимое массива распределения часов
 				liRow.add(record.getArrWeek()[i]);
+			liRow.add(""); // Заполняем последнюю строку столбца итого
 		}
 
-		final ObservableList<SpreadsheetCell> olNew = createStringRow(newRowPos, liRow); // Добавление на место последней строки пустой строки
+		final ObservableList<SpreadsheetCell> olNew = createStringRow(newRowPos, liRow); // Добавление строки на место последней строки
 		//index++;
 		newRows.add(olNew);
 
@@ -1387,11 +1405,12 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Создаёт каркас таблицы
 	 * @param length 
 	 */
-	private void createTvT71(int length) { // UNDONE Контроллер на focus, для активаци и деактивации кнопки удалить
+	private void createTvT71(Semester sem) { // UNDONE Контроллер на focus, для активаци и деактивации кнопки удалить
+		int length = sem.getQUANTITY_OF_WEEK();
 		ehT71 = new EventHandler<GridChange>() {
 			public void handle(GridChange change) {
 				int row = change.getRow();
-				//int col = change.getColumn();
+				int col = change.getColumn();
 				//System.err.println(" Set Focused == " + row + ":" + col); 
 				// Будем суммировать часы и выводить в итого
 				int summ = 0;
@@ -1405,6 +1424,14 @@ public class FXMLCtrlNewTab extends VBox {
 				ssvTable71.getGrid().getRows().get(row).get(ssvTable71.getGrid().getColumnCount() - 1).setEditable(true);
 				ssvTable71.getGrid().setCellValue(row, ssvTable71.getGrid().getColumnCount() - 1, String.valueOf(summ));
 				ssvTable71.getGrid().getRows().get(row).get(ssvTable71.getGrid().getColumnCount() - 1).setEditable(false);
+
+				// TODO Сохранение изменений в semesters
+				Record rec = currSemester.getRecord(row);
+				if (rec != null) {
+					System.err.println("NEW VALUE == " + (String) change.getNewValue() + " ON CELL( " + row + " : " + col +")");
+					if (col == 0) rec.setCourseTitle((String) change.getNewValue());
+					if (col > 0 && col <= rec.getArrWeek().length) rec.getArrWeek()[col - 1] = (String) change.getNewValue();
+				}
 			}
 		};
 
@@ -1529,6 +1556,10 @@ public class FXMLCtrlNewTab extends VBox {
                 	bDelRowT71.setDisable(true);
             }
         });
+		if (sem.getRowT71() != null && sem.getRowT71().size() != 0) {
+			for (Record rec : sem.getRowT71())
+				addRowT71(rec);
+		}
 	}
 
 	/**
@@ -1569,9 +1600,19 @@ public class FXMLCtrlNewTab extends VBox {
 						//bDelRowT71.setDisable(false);
 						bDelSemT71.setDisable(false);
 						bSetSemT71.setDisable(false);
+
+						// TODO подгрузка нового выбранного семестра
+						int iValue = Integer.parseInt(olSemesters.get((int) new_value));
+						for (Semester sem : semesters) {
+							if (sem.getNUMBER_OF_SEMESTER() == iValue) {
+								currSemester = sem;
+								createTvT71(currSemester);
+								break;
+							}
+						}
 					} else { // если пустое поле
 						bAddRowT71.setDisable(true);
-						//bDelRowT71.setDisable(true);
+						bDelRowT71.setDisable(true);
 						bDelSemT71.setDisable(true);
 						bSetSemT71.setDisable(true);
 					}
