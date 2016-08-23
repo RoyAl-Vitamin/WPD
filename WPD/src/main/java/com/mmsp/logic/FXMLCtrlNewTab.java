@@ -23,6 +23,8 @@ import org.controlsfx.control.spreadsheet.SpreadsheetCell;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
 //import org.controlsfx.control.spreadsheet.SpreadsheetCellType.StringType;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -68,6 +70,7 @@ import javafx.scene.control.TablePosition;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 //import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
@@ -263,7 +266,7 @@ public class FXMLCtrlNewTab extends VBox {
 	private Button bDelete;
 
 	@FXML
-	private TextField tfPath;
+	private TextField tfPath; // Путь до шаблона
 
 	@FXML
 	private Button bCallFileChooser;
@@ -399,6 +402,11 @@ public class FXMLCtrlNewTab extends VBox {
 	private EventHandler<GridChange> ehT71; // OnGridChange for TableTP
 
 	//private int index; // # строки "Модули" в ssvTableT71
+	
+	// Переменные вкладки "Замена тематического плана"
+
+	@FXML
+	private HBox hbReplacementThematicalPlan;
 
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
@@ -533,9 +541,31 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 	}
 
+	/**
+	 * Генерация по шаблону
+	 * @param event
+	 */
 	@FXML
 	void clickBGenerate(ActionEvent event) {
-		// TODO Генерация РПД по атомарным данным
+		String pathToTemplateFile = tfPath.getText(); // путь до шаблона
+		File fInput = new File(pathToTemplateFile);
+		WordprocessingMLPackage wordMLPackage = null;
+		try {
+			wordMLPackage = WordprocessingMLPackage.load(fInput);
+		} catch (Docx4JException e) {
+			System.err.println("Не удалось найти шаблон");
+			e.printStackTrace();
+		}
+
+		// TODO Запилить хотя бы простую генерацию
+		String pathToGenFile = pathToTemplateFile.substring(0, pathToTemplateFile.lastIndexOf(".")) + "_gen" + pathToTemplateFile.substring(pathToTemplateFile.lastIndexOf(".")); // путь до сгенерированного файла
+		File fOutput = new File(pathToGenFile);
+		try {
+			wordMLPackage.save(fOutput);
+		} catch (Docx4JException e) {
+			System.err.println("Не удалось сохранить сгенирированый файл");
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -813,7 +843,7 @@ public class FXMLCtrlNewTab extends VBox {
 	 * @param event
 	 */
 	@FXML
-	void clickBSetSemT71(ActionEvent event) { // TODO renamed button
+	void clickBSetSemT71(ActionEvent event) {
 		
 		Semester s = currSemester;
 
@@ -980,7 +1010,7 @@ public class FXMLCtrlNewTab extends VBox {
 			ArrayList<String> alRow = new ArrayList<>();
 			alRow.add(tp.getTitle());
 			alRow.add(tp.getDescription());
-			//alRow.add(String.valueOf(tp.getBelongingToTheSemester())); // FIXME
+			//alRow.add(String.valueOf(tp.getBelongingToTheSemester()));
 			alRow.add(String.valueOf( tp.getBelongingToTheModule() == null? "0" : tp.getBelongingToTheModule() ));
 			alRow.add(String.valueOf( tp.getBelongingToTheSection() == null? "0" : tp.getBelongingToTheSection() ));
 			alRow.add(String.valueOf( tp.getL() == null ? "0" : tp.getL() ));
@@ -1109,10 +1139,8 @@ public class FXMLCtrlNewTab extends VBox {
 		try {
 			prop.store(new FileOutputStream("config.properties"), "Study load");
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -1189,6 +1217,10 @@ public class FXMLCtrlNewTab extends VBox {
 		vbThematicalPlan.getChildren().add(ssvTableTP);
 		VBox.setVgrow(ssvTableTP, Priority.ALWAYS);
 		VBox.setMargin(ssvTableTP, new Insets(0, 10, 5, 10));
+
+		hbReplacementThematicalPlan.getChildren().add(ssvTableTP); // FIXME USE MasterDetailPane
+		HBox.setHgrow(ssvTableTP, Priority.ALWAYS);
+		HBox.setMargin(ssvTableTP, new Insets(15, 10, 15, 10));
 	}
 
 	private void initTvStudyLoad() {
@@ -1405,7 +1437,7 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Создаёт каркас таблицы
 	 * @param length 
 	 */
-	private void createTvT71(Semester sem) { // UNDONE Контроллер на focus, для активаци и деактивации кнопки удалить
+	private void createTvT71(Semester sem) {
 		int length = sem.getQUANTITY_OF_WEEK();
 		ehT71 = new EventHandler<GridChange>() {
 			public void handle(GridChange change) {
@@ -1425,7 +1457,6 @@ public class FXMLCtrlNewTab extends VBox {
 				ssvTable71.getGrid().setCellValue(row, ssvTable71.getGrid().getColumnCount() - 1, String.valueOf(summ));
 				ssvTable71.getGrid().getRows().get(row).get(ssvTable71.getGrid().getColumnCount() - 1).setEditable(false);
 
-				// TODO Сохранение изменений в semesters
 				Record rec = currSemester.getRecord(row);
 				if (rec != null) {
 					System.err.println("NEW VALUE == " + (String) change.getNewValue() + " ON CELL( " + row + " : " + col +")");
@@ -1566,8 +1597,8 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Описание методов поведения TableView, TreeTableView, а так же выделение памяти и установление связей
 	 */
 	private void initT() {
-		readProperties();
-		initThematicalPlan(); // Инициализация вкладки Тематичеуский план
+		//readProperties();
+		initThematicalPlan(); // Инициализация вкладки Тематический план
 		initTvStudyLoad();
 		initTvPoCM();
 	}
@@ -1592,7 +1623,7 @@ public class FXMLCtrlNewTab extends VBox {
 			}
 		});
 
-		cbSemesters.getSelectionModel().selectedIndexProperty().addListener( // UNDONE сохранение содержимого таблицы в currSemester
+		cbSemesters.getSelectionModel().selectedIndexProperty().addListener(
 			new ChangeListener<Number>() {
 				public void changed (ObservableValue ov, Number value, Number new_value) {
 					if (new_value.intValue() > -1) {
@@ -1601,7 +1632,6 @@ public class FXMLCtrlNewTab extends VBox {
 						bDelSemT71.setDisable(false);
 						bSetSemT71.setDisable(false);
 
-						// TODO подгрузка нового выбранного семестра
 						int iValue = Integer.parseInt(olSemesters.get((int) new_value));
 						for (Semester sem : semesters) {
 							if (sem.getNUMBER_OF_SEMESTER() == iValue) {

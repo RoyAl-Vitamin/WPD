@@ -278,6 +278,48 @@
                   </HBox>
                </content>
             </Tab>
+            <Tab text="Замена тематическому плану">
+               <content>
+                  <HBox fx:id="hbReplacementThematicalPlan" alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <VBox alignment="TOP_CENTER" spacing="15.0">
+                           <children>
+                              <Button minHeight="25.0" minWidth="25.0" mnemonicParsing="false" text="+" VBox.vgrow="NEVER">
+                                 <tooltip>
+                                    <Tooltip text="Добавить объект" />
+                                 </tooltip>
+                              </Button>
+                              <Button disable="true" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false">
+                                 <graphic>
+                                    <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@Settings.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                                 <tooltip>
+                                    <Tooltip text="Изменить выбранный пункт" />
+                                 </tooltip>
+                              </Button>
+                              <Button disable="true" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" text="-" VBox.vgrow="NEVER">
+                                 <tooltip>
+                                    <Tooltip text="Удалить выбранный объект" />
+                                 </tooltip>
+                              </Button>
+                           </children>
+                           <padding>
+                              <Insets bottom="15.0" left="10.0" right="10.0" top="15.0" />
+                           </padding>
+                        </VBox>
+                        <TreeTableView fixedCellSize="1.0" prefHeight="576.0" prefWidth="232.0">
+                           <HBox.margin>
+                              <Insets bottom="15.0" left="10.0" right="10.0" top="15.0" />
+                           </HBox.margin>
+                        </TreeTableView>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
          </tabs>
       </TabPane>
    </children>
