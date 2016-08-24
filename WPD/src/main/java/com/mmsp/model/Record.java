@@ -1,10 +1,10 @@
-package com.mmsp.logic;
+package com.mmsp.model;
 
 /**
  * класс одной записи в таблице 7.1
  * @author rav
  */
-class Record {
+public class Record {
 
 	private String courseTitle; // название дисциплины
 
@@ -12,7 +12,7 @@ class Record {
 
 	private int pos; // позиция строки в таблице (нужна, что бы не промахнуться с удалением)
 
-	Record(int size, int currPos) {
+	public Record(int size, int currPos) {
 		arrWeek = new String[size];
 		pos = currPos;
 	}

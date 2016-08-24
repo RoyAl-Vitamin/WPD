@@ -32,8 +32,8 @@ public class ThematicPlan implements Serializable {
 	@Column(name = "THEMATIC_PLAN_DESCRIPTION")
 	private String description; // описание темы
 
-	//@Column(name = "THEMATIC_PLAN_NUMBER")
-	//private Integer number; // номер темы
+	@Column(name = "THEMATIC_PLAN_NUMBER")
+	private Integer number; // номер темы
 
 	@Column(name = "THEMATIC_PLAN_L")
 	private Integer L; // Л
@@ -163,6 +163,14 @@ public class ThematicPlan implements Serializable {
 
 	public void setBelongingToTheSection(Integer value) {
 		this.belongingToTheModule = value;
+	}
+
+	public Integer getNumber() {
+		return number;
+	}
+
+	public void setNumber(Integer number) {
+		this.number = number;
 	}
 
 	@Override

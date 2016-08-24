@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,7 +38,10 @@ import com.mmsp.dao.impl.DAO_ThematicPlan;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.model.PoCM;
+import com.mmsp.model.Record;
+import com.mmsp.model.Semester;
 import com.mmsp.model.ThematicPlan;
+import com.mmsp.model.Module;
 import com.mmsp.model.WPDVersion;
 
 import javafx.beans.InvalidationListener;
@@ -65,6 +69,8 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableView;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -120,6 +126,7 @@ public class FXMLCtrlNewTab extends VBox {
 	}
 
 	public class RowPoCM { // Класс строки компонента tableView вкладки "ПКМ"
+
 		private final SimpleStringProperty sspCtrlMes; // Контрольное мероприятие
 		private final SimpleStringProperty sspNuberOfSemester; // Номер семестра
 		private final SimpleStringProperty sspNumberOfWeek; // Номер недели
@@ -407,6 +414,26 @@ public class FXMLCtrlNewTab extends VBox {
 
 	@FXML
 	private HBox hbReplacementThematicalPlan;
+
+	@FXML
+	private TreeTableView<Module> ttvRoot;
+
+	final TreeItem<Module> rootElement = new TreeItem<>(new Module());
+
+	@FXML
+	private Button bAddElement;
+
+	@FXML
+	private Button bSetElement;
+
+	@FXML
+	private Button bDelElement;
+
+	private Set<Module> treeRoot = new TreeSet<Module>(new Comparator<Module>() { // Дерево модулей для отображения в ttvRoot
+		public int compare(Module o1, Module o2) {
+			return o1.getNumber() - o2.getNumber();
+		}
+	});
 
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
@@ -958,6 +985,48 @@ public class FXMLCtrlNewTab extends VBox {
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
 	//**
+	//** Вкладка "Замена Тематическому плану"
+	//**
+	//*************************************************************************************************************************
+	//*************************************************************************************************************************
+
+	@FXML
+	void clickBAddElement(ActionEvent event) {
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("ModalThematicalPlan.fxml"));
+		Parent root = null;
+		try {
+			root = (Parent) fxmlLoader.load();
+		} catch (IOException e) {
+			System.err.println("Не удалось загрузить форму настройки таблицы тематического плана");
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+
+		Stage stageModalThematicalPlan = new Stage();
+		FXMLCtrlModalThematicalPlan fxmlCtrlModalThematicalPlan = fxmlLoader.getController();
+		fxmlCtrlModalThematicalPlan.init(stageModalThematicalPlan);
+		fxmlCtrlModalThematicalPlan.setRoot(treeRoot, 0);
+		stageModalThematicalPlan.setScene(scene);
+		stageModalThematicalPlan.setTitle("Settings");
+		stageModalThematicalPlan.getIcons().add(new Image("Logo.png"));
+		stageModalThematicalPlan.initModality(Modality.APPLICATION_MODAL);
+		//stageModalThematicalPlan.setResizable(false);
+		stageModalThematicalPlan.showAndWait();
+	}
+
+	@FXML
+	void clickBSetElement(ActionEvent event) {
+		// передача выбранного пункта
+	}
+
+	@FXML
+	void clickBDelElement(ActionEvent event) {
+		System.err.println("OK!");
+	}
+
+	//*************************************************************************************************************************
+	//*************************************************************************************************************************
+	//**
 	//** Контроллеры вкладки "ПКМ"
 	//**
 	//*************************************************************************************************************************
@@ -1221,6 +1290,9 @@ public class FXMLCtrlNewTab extends VBox {
 		hbReplacementThematicalPlan.getChildren().add(ssvTableTP); // FIXME USE MasterDetailPane
 		HBox.setHgrow(ssvTableTP, Priority.ALWAYS);
 		HBox.setMargin(ssvTableTP, new Insets(15, 10, 15, 10));
+
+		ttvRoot.setRoot(rootElement);
+		ttvRoot.setShowRoot(false);
 	}
 
 	private void initTvStudyLoad() {

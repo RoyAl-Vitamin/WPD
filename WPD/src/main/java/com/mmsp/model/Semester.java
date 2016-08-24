@@ -1,4 +1,4 @@
-package com.mmsp.logic;
+package com.mmsp.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.List;
  * Класс данных одного семестра
  * @author rav
  */
-class Semester {
+public class Semester {
 
 	private int NUMBER_OF_SEMESTER; // номер модуля
 
@@ -19,7 +19,7 @@ class Semester {
 
 	private List<Record> rowT71; // сами записи в таблице 7.1, как { имя предмета и распределение часов или плюсов по неделям}
 
-	Semester() {
+	public Semester() {
 		rowT71 = new ArrayList<Record>();
 		/*NUMBER_OF_SEMESTER = 0;
 		QUANTITY_OF_MODULE = 0;

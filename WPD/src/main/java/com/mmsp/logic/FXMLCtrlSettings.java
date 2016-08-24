@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
+import com.mmsp.model.Semester;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
