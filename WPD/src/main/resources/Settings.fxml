@@ -19,7 +19,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Label text="Номер семместра" />
+            <Label text="Номер семестра" />
             <Label text="Количество модулей" GridPane.rowIndex="1" />
             <Label text="Количесвто разделов" GridPane.rowIndex="2" />
             <Label text="Количество недель" GridPane.rowIndex="3" />

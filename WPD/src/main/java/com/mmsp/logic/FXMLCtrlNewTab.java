@@ -395,7 +395,18 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private Button bDelRowT71; // кнопка удаления текущей строки из текущего семестра
 
-	private List<Semester> semesters; // список семестров
+	private Set<Semester> treeRoot = new TreeSet<Semester>((Semester o1, Semester o2) -> o1.getNUMBER_OF_SEMESTER() - o2.getNUMBER_OF_SEMESTER());
+	/*
+	 * Now with LAMBDA!! 
+	 * 
+	 * OLD VERSION
+	 * = new TreeSet<Semester>(new Comparator<Semester>() { // Дерево семестров
+			public int compare(Semester o1, Semester o2) {
+				return o1.getNUMBER_OF_SEMESTER() - o2.getNUMBER_OF_SEMESTER();
+			}
+		});
+	 */
+
 
 	private final ObservableList<String> olSemesters = FXCollections.observableArrayList(); // for cbSemester // список # семестров
 	
@@ -432,12 +443,6 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private Button bDelElement;
 
-	private Set<Module> treeRoot = new TreeSet<Module>(new Comparator<Module>() { // Дерево модулей для отображения в ttvRoot
-		public int compare(Module o1, Module o2) {
-			return o1.getNumber() - o2.getNumber();
-		}
-	});
-
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
 	//**
@@ -458,7 +463,12 @@ public class FXMLCtrlNewTab extends VBox {
 
 	@FXML
 	void ccmi1(ActionEvent event) {
-		if (cmi1.isSelected()) tsFNOS.add(1); else tsFNOS.remove(1);
+		if (cmi1.isSelected()) {
+			tsFNOS.add(1);
+			//treeRoot.add(e);
+		} else {
+			tsFNOS.remove(1);
+		}
 		mbNumberOfSemesters.setText(tsFNOS.toString());
 	}
 
@@ -688,7 +698,7 @@ public class FXMLCtrlNewTab extends VBox {
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
 
-	@FXML
+	/*@FXML
 	void clickBAddRowTP(ActionEvent event) {
 		GridBase newGrid = new GridBase(ssvTableTP.getGrid().getRowCount() + 1, ssvTableTP.getGrid().getColumnCount()); // Создадим сетку с +1 строкой
 		int newRowPos = ssvTableTP.getGrid().getRowCount(); // и количество строк
@@ -701,35 +711,9 @@ public class FXMLCtrlNewTab extends VBox {
 		newGrid.setRowHeightCallback(new GridBase.MapBasedRowHeightFactory(generateRowHeight(newGrid.getRowCount())));
 		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehTP);
 		ssvTableTP.setGrid(newGrid);
-	}
+	}*/
 
-	/**
-	 * Создаёт строку для указанной позиции
-	 * @param posRow позиция для новой строки
-	 * @param lValueOfOldCell список значений ячеек.
-	 * @return строку
-	 */
-	private ObservableList<SpreadsheetCell> createRowForTTP(int posRow, ArrayList<String> lValueOfOldCell) {
-		ObservableList<SpreadsheetCell> olRow = FXCollections.observableArrayList();
-		if (lValueOfOldCell == null) { // Используется для создания новой строки
-			for (int column = 0; column < 2; column++) {
-				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1,""));
-			}
-			for (int column = 2; column < ssvTableTP.getGrid().getColumnCount(); column++) {
-				olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, 0));
-			}
-		} else { // Используется при удалении строки и переносе значений на строку выше
-			for (int column = 0; column < 2; column++) {
-				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, lValueOfOldCell.get(column)));
-			}
-			for (int column = 2; column < ssvTableTP.getGrid().getColumnCount(); column++) {
-				olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, Integer.parseInt(lValueOfOldCell.get(column))));
-			}
-		}
-		return olRow;
-	}
-
-	@FXML
+	/*@FXML
 	void clickBDelRowTP(ActionEvent event) {
 		int col = ssvTableTP.getSelectionModel().getFocusedCell().getColumn();
 		int row = ssvTableTP.getSelectionModel().getFocusedCell().getRow();
@@ -760,7 +744,7 @@ public class FXMLCtrlNewTab extends VBox {
 		} else {
 			ssvTableTP.getSelectionModel().focus(row, ssvTableTP.getColumns().get(col)); // фокус на ту же строку и ту же колонку
 		}
-	}
+	}*/
 
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
@@ -820,7 +804,7 @@ public class FXMLCtrlNewTab extends VBox {
 		Stage stageSettings = new Stage();
 		FXMLCtrlSettings fxmlCtrlSettings = fxmlLoader.getController();
 		fxmlCtrlSettings.init(stageSettings, tsFNOS);
-		fxmlCtrlSettings.setSemesters(s, semesters);
+		fxmlCtrlSettings.setSemesters(s, treeRoot);
 		stageSettings.setScene(scene);
 		stageSettings.setTitle("Settings");
 		stageSettings.getIcons().add(new Image("Logo.png"));
@@ -831,7 +815,7 @@ public class FXMLCtrlNewTab extends VBox {
 		if (s.getNUMBER_OF_SEMESTER() == 0) return; // Если пользователь решил не создавать семестр
 
 		currSemester = s; // покажем, что созданный семестр стал текущим семестром
-		semesters.add(s); // и добавим его в список
+		treeRoot.add(s); // и добавим его в список
 		cbSemesters.getItems().add(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
 		cbSemesters.getSelectionModel().select(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
 
@@ -850,13 +834,13 @@ public class FXMLCtrlNewTab extends VBox {
 	 */
 	@FXML
 	void clickBDelSemT71(ActionEvent event) {
-		semesters.remove(currSemester);
+		treeRoot.remove(currSemester);
 		cbSemesters.getItems().remove(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
 
 		cbSemesters.getSelectionModel().selectFirst();
 		if (!olSemesters.isEmpty()) {
 
-			for (Semester sValue : semesters) {
+			for (Semester sValue : treeRoot) {
 				if (sValue.getNUMBER_OF_SEMESTER() == Integer.parseInt(olSemesters.get(0)))
 					currSemester = sValue;
 			}
@@ -890,7 +874,7 @@ public class FXMLCtrlNewTab extends VBox {
 		Stage stageSettings = new Stage();
 		FXMLCtrlSettings fxmlCtrlSettings = fxmlLoader.getController();
 		fxmlCtrlSettings.init(stageSettings, tsFNOS);
-		fxmlCtrlSettings.setSemesters(s, semesters);
+		fxmlCtrlSettings.setSemesters(s, treeRoot);
 		stageSettings.setScene(scene);
 		stageSettings.setTitle("Settings");
 		stageSettings.getIcons().add(new Image("Logo.png"));
@@ -988,7 +972,7 @@ public class FXMLCtrlNewTab extends VBox {
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
 	//**
-	//** Вкладка "Замена Тематическому плану"
+	//** Вкладка "Тематический план"
 	//**
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
@@ -1070,6 +1054,43 @@ public class FXMLCtrlNewTab extends VBox {
 	//**
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
+
+	/**
+	 * Создаёт строку для указанной позиции
+	 * @param posRow позиция для новой строки
+	 * @param lValueOfOldCell список значений ячеек.
+	 * @return строку
+	 */
+	// FIXME переписать
+	private ObservableList<SpreadsheetCell> createRowForTTP(int posRow, ArrayList<String> lValueOfOldCell) {
+		ObservableList<SpreadsheetCell> olRow = FXCollections.observableArrayList();
+		if (lValueOfOldCell == null) { // Используется для создания новой строки
+			for (int column = 0; column < 4; column++) {
+				SpreadsheetCell ssC = SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, 0);
+				ssC.setEditable(false);
+				olRow.add(ssC);
+			}
+			for (int column = 4; column < 6; column++) {
+				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, ""));
+			}
+			for (int column = 6; column < ssvTableTP.getGrid().getColumnCount(); column++) {
+				olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, 0));
+			}
+		} else { // Используется при удалении строки и переносе значений на строку выше
+			for (int column = 0; column < 4; column++) {
+				SpreadsheetCell ssC = SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, Integer.parseInt(lValueOfOldCell.get(column)));
+				ssC.setEditable(false);
+				olRow.add(ssC);
+			}
+			for (int column = 4; column < 6; column++) {
+				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, lValueOfOldCell.get(column)));
+			}
+			for (int column = 6; column < ssvTableTP.getGrid().getColumnCount(); column++) {
+				olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, Integer.parseInt(lValueOfOldCell.get(column))));
+			}
+		}
+		return olRow;
+	}
 
 	private void addSetToTTP (Set<ThematicPlan> sThematicPlan) {
 		//if (sThematicPlan.size() == 0) return;
@@ -1288,10 +1309,6 @@ public class FXMLCtrlNewTab extends VBox {
 		ssvTableTP.setShowRowHeader(true);
 		ssvTableTP.setShowColumnHeader(true);
 
-		vbThematicalPlan.getChildren().add(ssvTableTP);
-		VBox.setVgrow(ssvTableTP, Priority.ALWAYS);
-		VBox.setMargin(ssvTableTP, new Insets(0, 10, 5, 10));
-
 		hbReplacementThematicalPlan.getChildren().add(ssvTableTP); // FIXME USE MasterDetailPane
 		HBox.setHgrow(ssvTableTP, Priority.ALWAYS);
 		HBox.setMargin(ssvTableTP, new Insets(15, 10, 15, 10));
@@ -1422,18 +1439,23 @@ public class FXMLCtrlNewTab extends VBox {
 	 * отрисовка дерева в tvRoot
 	 */
 	private void createTree() {
-		for (Module module : treeRoot) {
-			TreeItem<String> nodeModule = new TreeItem<String>("Модуль " + module.getNumber());
-			nodeModule.setExpanded(true);
-			rootElement.getChildren().add(nodeModule);
-			for (Section section : module.getSetSection()) {
-				TreeItem<String> nodeSection = new TreeItem<String>("Раздел " + section.getNumber());
-				nodeSection.setExpanded(true);
-				nodeModule.getChildren().add(nodeSection);
-				for (ThematicPlan theme : section.getSetTheme()) {
-					TreeItem<String> nodeTheme = new TreeItem<String>("Тема " + theme.getNumber());
-					nodeTheme.setExpanded(false);
-					nodeSection.getChildren().add(nodeTheme);
+		for (Semester semester : treeRoot) {
+			TreeItem<String> nodeSemester = new TreeItem<String>("Семестр " + semester.getNUMBER_OF_SEMESTER());
+			nodeSemester.setExpanded(true);
+			rootElement.getChildren().add(nodeSemester);
+			for (Module module : semester.getTreeModule()) {
+				TreeItem<String> nodeModule = new TreeItem<String>("Модуль " + module.getNumber());
+				nodeModule.setExpanded(true);
+				nodeSemester.getChildren().add(nodeModule);
+				for (Section section : module.getSetSection()) {
+					TreeItem<String> nodeSection = new TreeItem<String>("Раздел " + section.getNumber());
+					nodeSection.setExpanded(true);
+					nodeModule.getChildren().add(nodeSection);
+					for (ThematicPlan theme : section.getSetTheme()) {
+						TreeItem<String> nodeTheme = new TreeItem<String>("Тема " + theme.getNumber());
+						nodeTheme.setExpanded(false);
+						nodeSection.getChildren().add(nodeTheme);
+					}
 				}
 			}
 		}
@@ -1754,8 +1776,6 @@ public class FXMLCtrlNewTab extends VBox {
 		load(id_Vers); // Загрузка полей
 
 		mbNumberOfSemesters.setText(tsFNOS.toString());
-		
-		semesters = new ArrayList<Semester>();
 
 		olSemesters.addListener(new ListChangeListener<String>() {
 			@Override
@@ -1778,7 +1798,7 @@ public class FXMLCtrlNewTab extends VBox {
 						bSetSemT71.setDisable(false);
 
 						int iValue = Integer.parseInt(olSemesters.get((int) new_value));
-						for (Semester sem : semesters) {
+						for (Semester sem : treeRoot) {
 							if (sem.getNUMBER_OF_SEMESTER() == iValue) {
 								currSemester = sem;
 								createTvT71(currSemester);

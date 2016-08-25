@@ -4,9 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-//import java.io.InputStream;
-import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 
 import com.mmsp.model.Semester;
@@ -34,7 +33,7 @@ public class FXMLCtrlSettings extends VBox {
 	
 	private final ObservableList<String> olAviableSemester = FXCollections.observableArrayList(); // Список выбранных семестров
 
-	private List<Semester> semesters;
+	private Set<Semester> semesters; // все семестры, которые есть
 
 	@FXML
 	private ChoiceBox<String> cbNumberOfSemester;
@@ -171,9 +170,9 @@ public class FXMLCtrlSettings extends VBox {
 		tfQuantityOfWeeks.textProperty().addListener(cl2);
 	}
 
-	public void setSemesters(Semester s, List<Semester> semesters) {
+	public void setSemesters(Semester s, Set<Semester> treeRoot) {
 		this.semester = s;
-		this.semesters = semesters;
+		this.semesters = treeRoot;
 
 		if (this.semester != null) {
 			if (olAviableSemester.indexOf(String.valueOf(semester.getNUMBER_OF_SEMESTER())) != -1)

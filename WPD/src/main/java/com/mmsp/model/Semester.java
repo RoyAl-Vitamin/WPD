@@ -1,7 +1,10 @@
 package com.mmsp.model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Класс данных одного семестра
@@ -18,6 +21,12 @@ public class Semester {
 	private int QUANTITY_OF_WEEK; // количество недель
 
 	private List<Record> rowT71; // сами записи в таблице 7.1, как { имя предмета и распределение часов или плюсов по неделям}
+
+	private Set<Module> treeModule = new TreeSet<Module>(new Comparator<Module>() { // Дерево модулей для отображения в ttvRoot
+		public int compare(Module o1, Module o2) {
+			return o1.getNumber() - o2.getNumber();
+		}
+	});
 
 	public Semester() {
 		rowT71 = new ArrayList<Record>();
@@ -67,11 +76,18 @@ public class Semester {
 		this.rowT71 = rowT71;
 	}
 
+	public Set<Module> getTreeModule() {
+		return treeModule;
+	}
+
+	public void setTreeModule(Set<Module> treeModule) {
+		this.treeModule = treeModule;
+	}
+
 	public Record getRecord(int pos) {
 		for (Record rec : rowT71) {
 			if (rec.getPos() == pos) return rec;
 		}
 		return null;
 	}
-
 }

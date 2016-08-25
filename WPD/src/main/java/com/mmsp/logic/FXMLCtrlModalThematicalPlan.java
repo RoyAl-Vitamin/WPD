@@ -5,6 +5,7 @@ import java.util.TreeSet;
 
 import com.mmsp.model.Module;
 import com.mmsp.model.Section;
+import com.mmsp.model.Semester;
 import com.mmsp.model.ThematicPlan;
 
 import javafx.beans.value.ChangeListener;
@@ -29,7 +30,7 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 
 	private Stage stage;
 
-	private Set<Module> root;
+	private Set<Semester> root;
 
 	private final ObservableList<String> olSelectElement = FXCollections.observableArrayList("Модуль", "Раздел", "Тему");
 
@@ -48,6 +49,9 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 	 * 1 - изменение
 	 */
 	private int mod;
+
+	@FXML
+	private ChoiceBox<String> cbSemester;
 
 	@FXML
 	private VBox vbForComponents;
@@ -154,11 +158,11 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 
 	/**
 	 * инициализация Set
-	 * @param root Set всех модулей
+	 * @param treeRoot Set всех семестров
 	 * @param mod 0 - добавление, 1 - изменение
 	 */
-	public void setRoot(Set<Module> root, int mod) {
-		this.root = root;
+	public void setRoot(Set<Semester> treeRoot, int mod) {
+		this.root = treeRoot;
 		this.mod = mod;
 
 		switch (this.mod) {
