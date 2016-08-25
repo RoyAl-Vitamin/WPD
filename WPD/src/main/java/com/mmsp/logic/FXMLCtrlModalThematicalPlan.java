@@ -1,6 +1,7 @@
 package com.mmsp.logic;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 import com.mmsp.model.Module;
 import com.mmsp.model.Section;
@@ -31,6 +32,9 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 	private Set<Module> root;
 
 	private final ObservableList<String> olSelectElement = FXCollections.observableArrayList("Модуль", "Раздел", "Тему");
+
+	// TODO реализовать принадлежность к компонентам ChoiseBox
+	private final ObservableList<String> olAviableSemester = FXCollections.observableArrayList(); // Список выбранных семестров
 
 	/**
 	 * 0 - добаление/изменение модуля
@@ -69,9 +73,12 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 
 	private ThematicPlan theme;
 
-	public void init(Stage stageAuth) {
+	public void init(Stage stageAuth, TreeSet<Integer> tsFNOS) {
 
 		this.stage = stageAuth;
+
+		for (Integer integer : tsFNOS)
+			olAviableSemester.add(integer.toString());
 
 		vbForComponents.getChildren().clear();
 
@@ -101,7 +108,7 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 		
 		cbSelectElement.getSelectionModel().selectedIndexProperty().addListener(
 			new ChangeListener<Number>() {
-				public void changed (ObservableValue ov, Number value, Number new_value) {
+				public void changed (ObservableValue<? extends Number> ov, Number value, Number new_value) {
 					key = (int) new_value;
 					open();
 					bSave.setDisable(false);
@@ -119,7 +126,6 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 			}
 		);
 		cbSelectElement.setItems(olSelectElement);
-
 	}
 
 	/**
@@ -128,7 +134,7 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 	private void open() {
 		vbForComponents.getChildren().clear();
 		stage.setWidth(400.0);
-		stage.setResizable(true);
+		//stage.setResizable(true);
 		switch (key) {
 		case 0:
 			vbForComponents.getChildren().add(vbForModule);
@@ -140,8 +146,8 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 			break;
 		case 2:
 			vbForComponents.getChildren().add(vbForTheme);
-			stage.setHeight(230.0);
-			stage.setResizable(false);
+			stage.setHeight(400.0);
+			//stage.setResizable(false);
 			break;
 		}
 	}
