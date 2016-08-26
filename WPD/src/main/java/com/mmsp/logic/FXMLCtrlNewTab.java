@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,14 +57,14 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
-import javafx.scene.control.MenuButton;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -258,9 +257,6 @@ public class FXMLCtrlNewTab extends VBox {
 	// шапка текущей вкладки
 
 	@FXML
-	private MenuButton mbNumberOfSemesters;
-
-	@FXML
 	private TextField tfVersion;
 
 	@FXML
@@ -270,43 +266,22 @@ public class FXMLCtrlNewTab extends VBox {
 	private DatePicker dpDateOfCreate;
 
 	@FXML
-	private Button bGenerate;
-
-	@FXML
-	private Button bDelete;
-
-	@FXML
 	private TextField tfPath; // Путь до шаблона
 
 	@FXML
 	private Button bCallFileChooser;
 
 	@FXML
+	private Button bSemester;
+
+	@FXML
 	private Button bSave;
 
 	@FXML
-	private CheckMenuItem cmi1;
+	private Button bGenerate;
 
 	@FXML
-	private CheckMenuItem cmi2;
-
-	@FXML
-	private CheckMenuItem cmi3;
-
-	@FXML
-	private CheckMenuItem cmi4;
-
-	@FXML
-	private CheckMenuItem cmi5;
-
-	@FXML
-	private CheckMenuItem cmi6;
-
-	@FXML
-	private CheckMenuItem cmi7;
-
-	@FXML
-	private CheckMenuItem cmi8;
+	private Button bDelete;
 
 	// Вкладка "Общие"
 
@@ -381,35 +356,15 @@ public class FXMLCtrlNewTab extends VBox {
 	private VBox vbT71;
 
 	@FXML
-	private Button bAddSemT71; // кнопка добавления семестра
-
-	@FXML
-	private Button bDelSemT71; // кнопка удаления текущего семестра
-
-	@FXML
-	private Button bSetSemT71; // кнопка настройки текущего семестра
-
-	@FXML
 	private Button bAddRowT71; // кнопка добавления строки в текущий семестр
 
 	@FXML
 	private Button bDelRowT71; // кнопка удаления текущей строки из текущего семестра
 
 	private Set<Semester> treeRoot = new TreeSet<Semester>((Semester o1, Semester o2) -> o1.getNUMBER_OF_SEMESTER() - o2.getNUMBER_OF_SEMESTER());
-	/*
-	 * Now with LAMBDA!! 
-	 * 
-	 * OLD VERSION
-	 * = new TreeSet<Semester>(new Comparator<Semester>() { // Дерево семестров
-			public int compare(Semester o1, Semester o2) {
-				return o1.getNUMBER_OF_SEMESTER() - o2.getNUMBER_OF_SEMESTER();
-			}
-		});
-	 */
-
 
 	private final ObservableList<String> olSemesters = FXCollections.observableArrayList(); // for cbSemester // список # семестров
-	
+
 	@FXML
 	private ChoiceBox<String> cbSemesters;
 
@@ -422,8 +377,6 @@ public class FXMLCtrlNewTab extends VBox {
 
 	private EventHandler<GridChange> ehT71; // OnGridChange for TableTP
 
-	//private int index; // # строки "Модули" в ssvTableT71
-	
 	// Переменные вкладки "Замена тематического плана"
 
 	@FXML
@@ -451,6 +404,168 @@ public class FXMLCtrlNewTab extends VBox {
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
 
+	/**
+	 * Создаёт окно со списком ( № семестров ; количество недель )
+	 * @param event
+	 */
+	@FXML
+	// TODO move to Pop-over on ControlsFX
+	// FIXME Написать проверку на ввод
+	// FIXME Проследить уникальность номеров семестров
+	void clickBSemester(ActionEvent event) {
+		VBox vbForSemester = new VBox(5);
+		vbForSemester.setAlignment(Pos.CENTER);
+		for (Semester sem : treeRoot) {
+			HBox hbForSem = new HBox(5);
+			hbForSem.setAlignment(Pos.CENTER);
+
+			hbForSem.setId(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
+
+			TextField tfForNumber = new TextField(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
+			tfForNumber.setId("numOfSem " + sem.getNUMBER_OF_SEMESTER());
+			TextField tfForQuantity = new TextField(String.valueOf(sem.getQUANTITY_OF_WEEK()));
+			tfForQuantity.setId("quaOfWeek " + sem.getNUMBER_OF_SEMESTER());
+			Button bRemoveSem = new Button("-");
+
+			bRemoveSem.setId(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
+			bRemoveSem.setOnAction(e -> clickRemoveSemester(e));
+
+			hbForSem.getChildren().addAll(tfForNumber, tfForQuantity, bRemoveSem);
+			hbForSem.setId(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
+			VBox.setMargin(hbForSem, new Insets(0, 15, 0, 15));
+			vbForSemester.getChildren().add(hbForSem);
+		}
+
+		Button bAddSemester = new Button("Добавить семестр");
+		bAddSemester.setOnAction(e -> {
+			HBox hbForSem = new HBox(5);
+			hbForSem.setAlignment(Pos.CENTER);
+
+			TextField tfForNumber = new TextField();
+			tfForNumber.setId("numOfSem");
+			TextField tfForQuantity = new TextField();
+			tfForQuantity.setId("quaOfWeek");
+			Button bRemoveSem = new Button("-");
+			bRemoveSem.setOnAction(ev -> clickRemoveSemester(ev));
+
+			hbForSem.getChildren().addAll(tfForNumber, tfForQuantity, bRemoveSem);
+			hbForSem.setId("");
+			VBox.setMargin(hbForSem, new Insets(0, 15, 0, 15));
+			vbForSemester.getChildren().add(vbForSemester.getChildren().size() - 2, hbForSem);
+		});
+		vbForSemester.getChildren().add(bAddSemester);
+
+		Button bSaveSemester = new Button("Сохранить");
+		bSaveSemester.setOnAction(e -> clickBSaveSemester(e));
+		vbForSemester.getChildren().add(bSaveSemester);
+		Scene scene = new Scene(vbForSemester, 300, 350);
+		Stage stageForSemester = new Stage();
+		stageForSemester.setScene(scene);
+		stageForSemester.initModality(Modality.APPLICATION_MODAL);
+		stageForSemester.setOnCloseRequest(e -> {
+			if (treeRoot.size() != 0) bSemester.setText(toString(treeRoot));
+			else bSemester.setText("Добавить");
+			stageForSemester.close();
+		});
+		stageForSemester.setTitle("Изменить семестры");
+		stageForSemester.getIcons().add(new Image("Logo.png"));
+		stageForSemester.showAndWait();
+	}
+
+	/**
+	 * Сохраняет текущее содержание семестров и удаляет из treeRoot удалённые из этого окна 
+	 * @param e
+	 */
+	private void clickBSaveSemester(ActionEvent e) {
+		VBox vbForSemester = (VBox) ((Button) e.getSource()).getParent();
+		List<Semester> liSemForDelete = new ArrayList<>(); // список на  удаление
+		for (Semester semesterTemp : treeRoot) {
+			boolean delete = true;
+			for (Node nodeTemp : vbForSemester.getChildren()) {
+				if (nodeTemp instanceof HBox) {
+					if (nodeTemp.getId().equals(String.valueOf(semesterTemp.getNUMBER_OF_SEMESTER()))) { // Изменить существующий
+						semesterTemp.setNUMBER_OF_SEMESTER(getNumberOfSemester((HBox) nodeTemp));
+						semesterTemp.setQUANTITY_OF_WEEK(getQuantityOfWeek((HBox) nodeTemp));
+						delete = false;
+					}
+				}
+			}
+			if (delete) liSemForDelete.add(semesterTemp);
+		}
+
+		treeRoot.removeAll(liSemForDelete);
+
+		for (Node nodeTemp : vbForSemester.getChildren()) { // Добаение новых узлов
+			if (nodeTemp instanceof HBox) {
+				if ("".equals(nodeTemp.getId())) {// Добавить семестр
+					Semester newSem = new Semester();
+					newSem.setNUMBER_OF_SEMESTER(getNumberOfSemester((HBox) nodeTemp));
+					newSem.setQUANTITY_OF_WEEK(getQuantityOfWeek((HBox) nodeTemp));
+					treeRoot.add(newSem);
+					for (Node node : ((HBox) nodeTemp).getChildren()) { // раздадим id новым полям нового семестра
+						if (node instanceof TextField) {
+							if ("numOfSem".equals(node.getId()))
+								node.setId("numOfSem " + newSem.getNUMBER_OF_SEMESTER());
+							if ("quaOfWeek".equals(node.getId()))
+								node.setId("quaOfWeek " + newSem.getNUMBER_OF_SEMESTER());
+						}
+					}
+					nodeTemp.setId(String.valueOf(newSem.getNUMBER_OF_SEMESTER()));
+				}
+			}
+		}
+
+		olSemesters.clear();
+		for (Semester sem : treeRoot) {
+			olSemesters.add(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
+		}
+		cbSemesters.getSelectionModel().selectFirst();
+		loadTvT71();
+	}
+
+	/**
+	 * Достаёт из нужного TextField количество недель
+	 * @param nodeTemp
+	 * @return
+	 */
+	private int getQuantityOfWeek(HBox hboxTemp) {
+		for (Node node : hboxTemp.getChildren()) {
+			if (node instanceof TextField && node.getId().contains("quaOfWeek")) {
+				return Integer.parseInt(((TextField) node).getText());
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * Достаёт из нужного TextField номер семестра
+	 * @param hboxTemp
+	 * @return
+	 */
+	private int getNumberOfSemester(HBox hboxTemp) {
+		for (Node node : hboxTemp.getChildren()) {
+			if (node instanceof TextField && node.getId().contains("numOfSem")) {
+				return Integer.parseInt(((TextField) node).getText());
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * Удаляет HBox на кнопку рядом с ним
+	 * @param e
+	 */
+	private void clickRemoveSemester(ActionEvent e) {
+		// Приводим к VBox                            // к hbForSem // к vbForSemester
+		VBox vbForSemester = (VBox) ((Button) e.getSource()).getParent().getParent();
+		for (Node nodeTemp : vbForSemester.getChildren()) {
+			if (nodeTemp instanceof HBox && ((Button) e.getSource()).getId().equals(nodeTemp.getId())) {
+				vbForSemester.getChildren().remove(nodeTemp);
+				break;
+			}
+		}
+	}
+
 	@FXML
 	void clickBFileChooser(ActionEvent event) {
 		FileChooser fileChooser = new FileChooser();
@@ -459,59 +574,6 @@ public class FXMLCtrlNewTab extends VBox {
 		if (file != null) {
 			tfPath.setText(file.getPath());
 		}
-	}
-
-	@FXML
-	void ccmi1(ActionEvent event) {
-		if (cmi1.isSelected()) {
-			tsFNOS.add(1);
-			//treeRoot.add(e);
-		} else {
-			tsFNOS.remove(1);
-		}
-		mbNumberOfSemesters.setText(tsFNOS.toString());
-	}
-
-	@FXML
-	void ccmi2(ActionEvent event) {
-		if (cmi2.isSelected()) tsFNOS.add(2); else tsFNOS.remove(2);
-		mbNumberOfSemesters.setText(tsFNOS.toString());
-	}
-
-	@FXML
-	void ccmi3(ActionEvent event) {
-		if (cmi3.isSelected()) tsFNOS.add(3); else tsFNOS.remove(3);
-		mbNumberOfSemesters.setText(tsFNOS.toString());
-	}
-
-	@FXML
-	void ccmi4(ActionEvent event) {
-		if (cmi4.isSelected()) tsFNOS.add(4); else tsFNOS.remove(4);
-		mbNumberOfSemesters.setText(tsFNOS.toString());
-	}
-
-	@FXML
-	void ccmi5(ActionEvent event) {
-		if (cmi5.isSelected()) tsFNOS.add(5); else tsFNOS.remove(5);
-		mbNumberOfSemesters.setText(tsFNOS.toString());
-	}
-
-	@FXML
-	void ccmi6(ActionEvent event) {
-		if (cmi6.isSelected()) tsFNOS.add(6); else tsFNOS.remove(6);
-		mbNumberOfSemesters.setText(tsFNOS.toString());
-	}
-
-	@FXML
-	void ccmi7(ActionEvent event) {
-		if (cmi7.isSelected()) tsFNOS.add(7);  else tsFNOS.remove(7);
-		mbNumberOfSemesters.setText(tsFNOS.toString());
-	}
-
-	@FXML
-	void ccmi8(ActionEvent event) {
-		if (cmi8.isSelected()) tsFNOS.add(8); else tsFNOS.remove(8);
-		mbNumberOfSemesters.setText(tsFNOS.toString());
 	}
 
 	@FXML
@@ -780,127 +842,6 @@ public class FXMLCtrlNewTab extends VBox {
 		
 		olRow.get(olRow.size() - 1).setEditable(false); // Последняя строка не доступна для редактирования
 		return olRow;
-	}
-
-	/**
-	 * Создаёт под выбранный позже семестр новую таблицу 7.1
-	 * @param event
-	 */
-	@FXML
-	void clickBAddSemT71(ActionEvent event) {
-
-		Semester s = new Semester();
-
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Settings.fxml"));
-		Parent root = null;
-		try {
-			root = (Parent) fxmlLoader.load();
-		} catch (IOException e) {
-			System.err.println("Не удалось загрузить форму настройки таблицы");
-			e.printStackTrace();
-		}
-		Scene scene = new Scene(root);
-
-		Stage stageSettings = new Stage();
-		FXMLCtrlSettings fxmlCtrlSettings = fxmlLoader.getController();
-		fxmlCtrlSettings.init(stageSettings, tsFNOS);
-		fxmlCtrlSettings.setSemesters(s, treeRoot);
-		stageSettings.setScene(scene);
-		stageSettings.setTitle("Settings");
-		stageSettings.getIcons().add(new Image("Logo.png"));
-		stageSettings.initModality(Modality.APPLICATION_MODAL);
-		stageSettings.setResizable(false);
-		stageSettings.showAndWait();
-
-		if (s.getNUMBER_OF_SEMESTER() == 0) return; // Если пользователь решил не создавать семестр
-
-		currSemester = s; // покажем, что созданный семестр стал текущим семестром
-		treeRoot.add(s); // и добавим его в список
-		cbSemesters.getItems().add(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
-		cbSemesters.getSelectionModel().select(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
-
-		createTvT71(currSemester); // Создадим каркас страницы
-
-		if (!vbT71.getChildren().contains(ssvTable71)) {
-			vbT71.getChildren().add(ssvTable71);
-			VBox.setVgrow(ssvTable71, Priority.ALWAYS);
-			VBox.setMargin(ssvTable71, new Insets(0, 15, 0, 0));
-		}
-	}
-
-	/**
-	 * Удаляет текущий семестр и делает текщим семестром, первый в списке olSemester
-	 * @param event
-	 */
-	@FXML
-	void clickBDelSemT71(ActionEvent event) {
-		treeRoot.remove(currSemester);
-		cbSemesters.getItems().remove(String.valueOf(currSemester.getNUMBER_OF_SEMESTER()));
-
-		cbSemesters.getSelectionModel().selectFirst();
-		if (!olSemesters.isEmpty()) {
-
-			for (Semester sValue : treeRoot) {
-				if (sValue.getNUMBER_OF_SEMESTER() == Integer.parseInt(olSemesters.get(0)))
-					currSemester = sValue;
-			}
-
-			loadTvT71();
-		} else {
-			vbT71.getChildren().remove(ssvTable71);
-			ssvTable71 = null; // GC подберёт
-		}
-	}
-
-	/**
-	 * Изменяет текущий семестр создавая под него новую таблицу 7.1
-	 * @param event
-	 */
-	@FXML
-	void clickBSetSemT71(ActionEvent event) {
-		
-		Semester s = currSemester;
-
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Settings.fxml"));
-		Parent root = null;
-		try {
-			root = (Parent) fxmlLoader.load();
-		} catch (IOException e) {
-			System.err.println("Не удалось загрузить форму настройки таблицы");
-			e.printStackTrace();
-		}
-		Scene scene = new Scene(root);
-
-		Stage stageSettings = new Stage();
-		FXMLCtrlSettings fxmlCtrlSettings = fxmlLoader.getController();
-		fxmlCtrlSettings.init(stageSettings, tsFNOS);
-		fxmlCtrlSettings.setSemesters(s, treeRoot);
-		stageSettings.setScene(scene);
-		stageSettings.setTitle("Settings");
-		stageSettings.getIcons().add(new Image("Logo.png"));
-		stageSettings.initModality(Modality.APPLICATION_MODAL);
-		stageSettings.setResizable(false);
-		stageSettings.showAndWait();
-
-		//if (s.getArrWeek() == null) return; // Если пользователь решил не создавать семестр
-		
-		// Пересборка таблицы 7.1
-		//readProperties(); // занесём данные в соответсвующие переменные
-
-		//currSemester = s; // покажем, что созданный семестр стал текущим семестром
-		//semesters.add(s); // и добавим его в список
-
-		int selectedIndex = cbSemesters.getSelectionModel().getSelectedIndex();
-		olSemesters.set(selectedIndex, String.valueOf(s.getNUMBER_OF_SEMESTER()));
-		cbSemesters.getSelectionModel().select(olSemesters.get(selectedIndex));
-		
-		createTvT71(currSemester); // Создадим каркас страницы
-
-		/*if (!vbT71.getChildren().contains(ssvTable71)) {
-			vbT71.getChildren().add(ssvTable71);
-			VBox.setVgrow(ssvTable71, Priority.ALWAYS);
-			VBox.setMargin(ssvTable71, new Insets(0, 10, 5, 10));
-		}*/
 	}
 
 	/**
@@ -1638,15 +1579,22 @@ public class FXMLCtrlNewTab extends VBox {
 	 * @param currSem
 	 */
 	private void loadTvT71() {
-		createTvT71(currSemester);
-		pasteIntoTvT71();
+		createTvT71(currSemester); // Создание каркаса
+		pasteIntoTvT71(currSemester); // Подгрузка в ячейки данных
+
+		if (!vbT71.getChildren().contains(ssvTable71)) { // отображение, если ещё не отображено
+			vbT71.getChildren().add(ssvTable71);
+			VBox.setVgrow(ssvTable71, Priority.ALWAYS);
+			VBox.setMargin(ssvTable71, new Insets(0, 15, 0, 0));
+		}
 	}
 
 	/**
 	 * Вставляет данные в талбицу 7.1 из currSemester
+	 * @param currSem
 	 */
-	private void pasteIntoTvT71() {
-		for (Record row : currSemester.getRowT71())
+	private void pasteIntoTvT71(Semester currSem) {
+		for (Record row : currSem.getRowT71())
 			addRowT71(row);
 	}
 
@@ -1775,7 +1723,8 @@ public class FXMLCtrlNewTab extends VBox {
 
 		load(id_Vers); // Загрузка полей
 
-		mbNumberOfSemesters.setText(tsFNOS.toString());
+		//mbNumberOfSemesters.setText(tsFNOS.toString());
+		bSemester.setText( treeRoot.size() != 0 ? toString(treeRoot) : "" );
 
 		olSemesters.addListener(new ListChangeListener<String>() {
 			@Override
@@ -1794,27 +1743,25 @@ public class FXMLCtrlNewTab extends VBox {
 					if (new_value.intValue() > -1) {
 						bAddRowT71.setDisable(false);
 						//bDelRowT71.setDisable(false);
-						bDelSemT71.setDisable(false);
-						bSetSemT71.setDisable(false);
 
 						int iValue = Integer.parseInt(olSemesters.get((int) new_value));
 						for (Semester sem : treeRoot) {
 							if (sem.getNUMBER_OF_SEMESTER() == iValue) {
 								currSemester = sem;
-								createTvT71(currSemester);
+								loadTvT71();
 								break;
 							}
 						}
 					} else { // если пустое поле
 						bAddRowT71.setDisable(true);
 						bDelRowT71.setDisable(true);
-						bDelSemT71.setDisable(true);
-						bSetSemT71.setDisable(true);
 					}
 				}
 			}
 		);
 		cbSemesters.setItems(olSemesters);
+		if (treeRoot.size() != 0) bSemester.setText(toString(treeRoot));
+		else bSemester.setText("Добавить");
 	}
 
 	//*************************************************************************************************************************
@@ -1824,6 +1771,17 @@ public class FXMLCtrlNewTab extends VBox {
 	//**
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
+
+	private String toString(Set<Semester> tR) {
+		String s = "";
+		for (Semester sem : tR) {
+			s += "," + sem.getNUMBER_OF_SEMESTER();
+		}
+		if (s.length() != 0) {
+			return s.substring(1);
+		}
+		return null;
+	}
 
 	public void setParentCtrl(FXMLCtrlMain fxmlCtrlMain) {
 		this.parentCtrl = fxmlCtrlMain;

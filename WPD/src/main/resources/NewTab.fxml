@@ -24,18 +24,10 @@
                   <Label alignment="BASELINE_CENTER" minWidth="60.0" text="Семестры:" GridPane.columnIndex="4" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                   <DatePicker fx:id="dpDateOfCreate" editable="false" prefWidth="250.0" promptText="26.10.2001" style="-fx-background-color: #3333;" GridPane.columnIndex="3" GridPane.columnSpan="3" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                   <Label alignment="BASELINE_CENTER" contentDisplay="CENTER" text="Шаблон:" textAlignment="CENTER" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
-                  <MenuButton fx:id="mbNumberOfSemesters" alignment="BASELINE_LEFT" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" mnemonicParsing="false" GridPane.columnIndex="5" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
-                     <items>
-                        <CheckMenuItem fx:id="cmi1" mnemonicParsing="false" onAction="#ccmi1" text="1" />
-                        <CheckMenuItem fx:id="cmi2" mnemonicParsing="false" onAction="#ccmi2" text="2" />
-                        <CheckMenuItem fx:id="cmi3" mnemonicParsing="false" onAction="#ccmi3" text="3" />
-                        <CheckMenuItem fx:id="cmi4" mnemonicParsing="false" onAction="#ccmi4" text="4" />
-                        <CheckMenuItem fx:id="cmi5" mnemonicParsing="false" onAction="#ccmi5" text="5" />
-                        <CheckMenuItem fx:id="cmi6" mnemonicParsing="false" onAction="#ccmi6" text="6" />
-                        <CheckMenuItem fx:id="cmi7" mnemonicParsing="false" onAction="#ccmi7" text="7" />
-                        <CheckMenuItem fx:id="cmi8" mnemonicParsing="false" onAction="#ccmi8" text="8" />
-                     </items>
-                  </MenuButton>
+                  <Button fx:id="bSemester" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#clickBSemester" text="Добавить" GridPane.columnIndex="5" GridPane.rowIndex="1">
+                     <tooltip>
+                        <Tooltip text="Добавить / изменить семестры" />
+                     </tooltip></Button>
                </children>
                <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" maxWidth="578.0" minWidth="10.0" prefWidth="92.0" />
@@ -235,28 +227,6 @@
                      <children>
                         <VBox alignment="TOP_CENTER" spacing="15.0" HBox.hgrow="NEVER">
                            <children>
-                              <Button fx:id="bAddSemT71" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBAddSemT71" text="+" VBox.vgrow="NEVER">
-                                 <tooltip>
-                                    <Tooltip text="Добавить семестр" />
-                                 </tooltip>
-                              </Button>
-                              <Button fx:id="bDelSemT71" disable="true" maxHeight="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBDelSemT71" text="-" VBox.vgrow="NEVER">
-                                 <tooltip>
-                                    <Tooltip text="Удалить семестр" />
-                                 </tooltip>
-                              </Button>
-                              <Button fx:id="bSetSemT71" disable="true" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBSetSemT71" VBox.vgrow="NEVER">
-                                 <graphic>
-                                    <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@Settings.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                                 <tooltip>
-                                    <Tooltip text="Изменить семестр" />
-                                 </tooltip>
-                              </Button>
                               <Button fx:id="bAddRowT71" disable="true" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBAddRowT71" prefHeight="25.0" prefWidth="25.0" text="+">
                                  <tooltip>
                                     <Tooltip text="Добавить строчку" />
@@ -269,7 +239,7 @@
                               </Button>
                            </children>
                            <padding>
-                              <Insets bottom="15.0" left="10.0" right="10.0" top="15.0" />
+                              <Insets bottom="15.0" left="10.0" right="10.0" top="60.0" />
                            </padding>
                            <HBox.margin>
                               <Insets />
