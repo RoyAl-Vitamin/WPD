@@ -1,11 +1,14 @@
 package com.mmsp.logic;
 
 import java.util.Set;
+
+import com.mmsp.dao.impl.DAO_ThematicPlan;
 import com.mmsp.model.Module;
 import com.mmsp.model.MyTreeSet;
 import com.mmsp.model.Section;
 import com.mmsp.model.Semester;
 import com.mmsp.model.ThematicPlan;
+import com.mmsp.model.WPDVersion;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -38,6 +41,8 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 	private final ObservableList<String> olAviableSemester = FXCollections.observableArrayList(); // Список доступных семестров
 
 	private final ObservableList<String> olAviableModule = FXCollections.observableArrayList(); // Список доступных модулей
+
+	private final ObservableList<String> olAviableSection = FXCollections.observableArrayList(); // Список доступных модулей
 
 	private FXMLCtrlNewTab fxmlCtrlParnetTab; // Контроллер этой вкладки
 
@@ -98,6 +103,18 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 	@FXML
 	private ChoiceBox<String> cbSelectModuleAT; // выбор модуля в добавлении и изменении темы
 
+	@FXML
+	private ChoiceBox<String> cbSelectSection;
+
+	@FXML
+	private TextField tfTitleOfTheme;
+
+	@FXML
+	private TextField tfNumberOfTheme;
+
+	@FXML
+	private TextArea taDescOfTheme;
+
 	//
 
 	@FXML
@@ -108,6 +125,8 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 	private Section section;
 
 	private ThematicPlan theme;
+
+	private WPDVersion wpdVers;
 
 	public void init(Stage stageAuth) {
 
@@ -159,6 +178,27 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 		cbSelectElement.setItems(olSelectElement);
 
 		cbSelectSemester.getSelectionModel().selectedIndexProperty().addListener( // Выбор семестра
+			new ChangeListener<Number>() {
+				public void changed (ObservableValue<? extends Number> ov, Number value, Number new_value) {
+					int curr = (int) new_value; // индекс выбранного семестра
+					if (curr < 0) {
+						bSave.setDisable(true);
+						cbSelectSemester.setDisable(true);
+						return;
+					}
+					int numSem = Integer.parseInt(olAviableSemester.get(cbSelectSemester.getSelectionModel().getSelectedIndex()));
+					for (Module mod : ((MyTreeSet) root).getSemester(numSem).getTreeModule())
+						olAviableModule.add(String.valueOf(mod.getNumber()));
+					cbSelectModuleAM.setItems(olAviableModule);
+					cbSelectModuleAT.setItems(olAviableModule);
+					open();
+					bSave.setDisable(false);
+					cbSelectSemester.setDisable(false);
+				}
+			}
+		);
+
+		cbSelectModuleAT.getSelectionModel().selectedIndexProperty().addListener( // Выбор семестра
 				new ChangeListener<Number>() {
 					public void changed (ObservableValue<? extends Number> ov, Number value, Number new_value) {
 						int curr = (int) new_value; // индекс выбранного семестра
@@ -168,11 +208,10 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 							return;
 						}
 						int numSem = Integer.parseInt(olAviableSemester.get(cbSelectSemester.getSelectionModel().getSelectedIndex()));
-						//int numMod = Integer.parseInt(olAviableSemester.get(cbSelectModuleAM.getSelectionModel().getSelectedIndex()));
-						for (Module mod : ((MyTreeSet) root).getSemester(numSem).getTreeModule())
-							olAviableModule.add(String.valueOf(mod.getNumber()));
-						cbSelectModuleAM.setItems(olAviableModule);
-						open();
+						int numMod = Integer.parseInt(olAviableModule.get(cbSelectModuleAT.getSelectionModel().getSelectedIndex()));
+						for (Section sec : ((MyTreeSet) root).getSemester(numSem).getModule(numMod).getTreeSection())
+							olAviableSection.add(String.valueOf(sec.getNumber()));
+						cbSelectSection.setItems(olAviableSection);
 						bSave.setDisable(false);
 						cbSelectSemester.setDisable(false);
 					}
@@ -190,18 +229,15 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 		switch (key) {
 		case 0:
 			vbForComponents.getChildren().add(vbForModule);
-			stage.setHeight(410.0);
 			break;
 		case 1:
 			vbForComponents.getChildren().add(vbForSection);
-			stage.setHeight(470.0);
 			break;
 		case 2:
 			vbForComponents.getChildren().add(vbForTheme);
-			stage.setHeight(400.0);
-			//stage.setResizable(false);
 			break;
 		}
+		stage.sizeToScene();
 	}
 
 	/**
@@ -252,6 +288,7 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 			case 0: // Добавление
 				int numSem; // номер семестра в который добавляем/изменяем
 				int numMod; // номер модуля в который добавляем/изменяем
+				int numSec; // номер секции в которую добавляем/изменяем
 				switch (num) {
 				case 0: // сохраняем модуль
 					numSem = Integer.parseInt(cbSelectSemester.getSelectionModel().getSelectedItem());
@@ -263,12 +300,31 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 				case 1: // сохраняем раздел
 					numSem = Integer.parseInt(cbSelectSemester.getSelectionModel().getSelectedItem());
 					numMod = Integer.parseInt(cbSelectModuleAM.getSelectionModel().getSelectedItem());
-					Section section = new Section();
+					section = new Section();
 					section.setNumber(Integer.parseInt(tfNumberOfSection.getText()));
 					section.setName(taDescOfSection.getText());
-					((MyTreeSet) root).getSemester(numSem).getModule(numMod).getSetSection().add(section);
+					((MyTreeSet) root).getSemester(numSem).getModule(numMod).getTreeSection().add(section);
 					break;
 				case 2: // сохраняем тему
+					numSem = Integer.parseInt(cbSelectSemester.getSelectionModel().getSelectedItem());
+					numMod = Integer.parseInt(cbSelectModuleAT.getSelectionModel().getSelectedItem());
+					numSec = Integer.parseInt(cbSelectSection.getSelectionModel().getSelectedItem());
+
+					theme = new ThematicPlan();
+					theme.setNumber(Integer.parseInt(tfNumberOfTheme.getText()));
+					theme.setTitle(tfTitleOfTheme.getText());
+					theme.setDescription(taDescOfTheme.getText());
+					theme.setBelongingToTheSemester(numSem);
+					theme.setBelongingToTheModule(numMod);
+					theme.setBelongingToTheSection(new Integer(numSec));
+					theme.setWPDVerion(wpdVers);
+
+					System.err.println("Number of Section == " + numSec);
+					System.err.println("Belonging of section == " + theme.getBelongingToTheSection());
+
+					DAO_ThematicPlan dao_tp = new DAO_ThematicPlan();
+					dao_tp.add(theme);
+					((MyTreeSet) root).getSemester(numSem).getModule(numMod).getSection(numSec).getTreeTheme().add(theme);
 					break;
 				}
 				break;
@@ -288,6 +344,10 @@ public class FXMLCtrlModalThematicalPlan extends VBox {
 
 	public void setController(FXMLCtrlNewTab fxmlCtrlCurrTab) {
 		this.fxmlCtrlParnetTab = fxmlCtrlCurrTab;
+	}
+
+	public void setWPDVersion(WPDVersion currWPDVersion) {
+		this.wpdVers = currWPDVersion;
 	}
 
 }

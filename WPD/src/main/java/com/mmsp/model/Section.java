@@ -32,11 +32,11 @@ public class Section {
 		this.name = name;
 	}
 
-	public Set<ThematicPlan> getSetTheme() {
+	public Set<ThematicPlan> getTreeTheme() {
 		return treeTheme;
 	}
 
-	public void setSetTheme(Set<ThematicPlan> setTheme) {
+	public void setTreeTheme(Set<ThematicPlan> setTheme) {
 		this.treeTheme = setTheme;
 	}
 

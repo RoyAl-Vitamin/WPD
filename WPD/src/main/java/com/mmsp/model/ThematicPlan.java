@@ -162,7 +162,7 @@ public class ThematicPlan implements Serializable {
 	}
 
 	public void setBelongingToTheSection(Integer value) {
-		this.belongingToTheModule = value;
+		this.belongingToTheSection = value;
 	}
 
 	public Integer getNumber() {

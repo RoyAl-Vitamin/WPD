@@ -42,10 +42,10 @@ public class MyTreeSet extends TreeSet<Semester> implements Comparator<Semester>
 			for (Module mod : sem.getTreeModule()) {
 				System.err.println(" + ");
 				System.err.println(" +++> " + "Модуль № " + mod.getNumber() + " и его название " + mod.getName());
-				for (Section sec : mod.getSetSection()) {
+				for (Section sec : mod.getTreeSection()) {
 					System.err.println(" + ");
 					System.err.println(" ++++> " + "Секция № " + sec.getNumber() + " и её название " + sec.getName());
-					for (ThematicPlan theme : sec.getSetTheme()) {
+					for (ThematicPlan theme : sec.getTreeTheme()) {
 						System.err.println(" + ");
 						System.err.println(" +++++> " + " тема № " + theme.getNumber() + " и её название " + theme.getTitle());
 					}

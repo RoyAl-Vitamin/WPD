@@ -42,11 +42,11 @@ public class Module {
 		this.name = name;
 	}
 
-	public Set<Section> getSetSection() {
+	public Set<Section> getTreeSection() {
 		return treeSection;
 	}
 
-	public void setSetSection(Set<Section> setSection) {
+	public void setTreeSection(Set<Section> setSection) {
 		this.treeSection = setSection;
 	}
 

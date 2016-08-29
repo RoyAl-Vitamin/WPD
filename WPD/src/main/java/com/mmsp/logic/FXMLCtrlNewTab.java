@@ -937,8 +937,10 @@ public class FXMLCtrlNewTab extends VBox {
 		Stage stageModalThematicalPlan = new Stage();
 		FXMLCtrlModalThematicalPlan fxmlCtrlModalThematicalPlan = fxmlLoader.getController();
 		fxmlCtrlModalThematicalPlan.init(stageModalThematicalPlan);
+		stageModalThematicalPlan.setResizable(false);
 		fxmlCtrlModalThematicalPlan.setController(fxmlCtrlCurrTab); // Запомним контроллер новой вкладки для перерсовки
 		fxmlCtrlModalThematicalPlan.setRoot(treeRoot, 0);
+		fxmlCtrlModalThematicalPlan.setWPDVersion(currWPDVersion);
 		stageModalThematicalPlan.setScene(scene);
 		stageModalThematicalPlan.setTitle("Settings");
 		stageModalThematicalPlan.getIcons().add(new Image("Logo.png"));
@@ -1008,7 +1010,7 @@ public class FXMLCtrlNewTab extends VBox {
 	 * @return строку
 	 */
 	// FIXME переписать
-	private ObservableList<SpreadsheetCell> createRowForTTP(int posRow, ArrayList<String> lValueOfOldCell) {
+	private ObservableList<SpreadsheetCell> createRowForTTP(int posRow, List<String> lValueOfOldCell) {
 		ObservableList<SpreadsheetCell> olRow = FXCollections.observableArrayList();
 		if (lValueOfOldCell == null) { // Используется для создания новой строки
 			for (int column = 0; column < 4; column++) {
@@ -1022,9 +1024,12 @@ public class FXMLCtrlNewTab extends VBox {
 			for (int column = 6; column < ssvTableTP.getGrid().getColumnCount(); column++) {
 				olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, 0));
 			}
-		} else { // Используется при удалении строки и переносе значений на строку выше
+		} else { // Используется при удалении строки и переносе значений на строку выше, и вставки строки
 			for (int column = 0; column < 4; column++) {
-				SpreadsheetCell ssC = SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, Integer.parseInt(lValueOfOldCell.get(column)));
+				int temp = 0;
+				if (!lValueOfOldCell.get(column).equals("null"))
+					 temp = Integer.parseInt(lValueOfOldCell.get(column));
+				SpreadsheetCell ssC = SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, temp);
 				ssC.setEditable(false);
 				olRow.add(ssC);
 			}
@@ -1032,7 +1037,10 @@ public class FXMLCtrlNewTab extends VBox {
 				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, lValueOfOldCell.get(column)));
 			}
 			for (int column = 6; column < ssvTableTP.getGrid().getColumnCount(); column++) {
-				olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, Integer.parseInt(lValueOfOldCell.get(column))));
+				int temp = 0;
+				if (!lValueOfOldCell.get(column).equals("null"))
+					 temp = Integer.parseInt(lValueOfOldCell.get(column));
+				olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, temp));
 			}
 		}
 		return olRow;
@@ -1129,7 +1137,7 @@ public class FXMLCtrlNewTab extends VBox {
 	/**
 	 * Чтение "config.properties" 
 	 */
-	private void readProperties() {
+	/*private void readProperties() {
 
 		Properties prop = new Properties();
 		InputStream input = null;
@@ -1164,13 +1172,13 @@ public class FXMLCtrlNewTab extends VBox {
 				}
 			}
 		}
-	}
+	}*/
 
 	/**
 	 * Записывает все текущие значения в "config.properties"
 	 * @param prop сам файл
 	 */
-	private void rewriteProp(Properties prop) {
+	/*private void rewriteProp(Properties prop) {
 		prop.setProperty("numberOfSemester", String.valueOf(NUMBER_OF_SEMESTER));
 		prop.setProperty("numberOfModule", String.valueOf(NUMBER_OF_MODULE));
 		prop.setProperty("numberOfSection", String.valueOf(NUMBER_OF_SECTION));
@@ -1182,7 +1190,7 @@ public class FXMLCtrlNewTab extends VBox {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 
 	/**
 	 * Задаёт header всей таблицы ssvTableTP
@@ -1307,21 +1315,29 @@ public class FXMLCtrlNewTab extends VBox {
 	 * перерисовывает содержимое ssvTableTP для выбранного в tvRoot элемента, будь то модуль или раздел, или тема (тематический план)
 	 * @param temp массив int, первое число определяет № модуля, 2-ое - № раздела, 3-е № темы
 	 */
-	private void repaintSSVTableTP(int... temp) { // TODO Отрисовка всех тем в данном модуле в таблицу ssvTableTP
+	private void repaintSSVTableTP(int... temp) {
+
+		createSSVTableTP();
+
 		List<ThematicPlan> liTheme = new ArrayList<>();
 		try {
 			switch (temp.length) {
 			case 1:
-				// UNDONE выгрузка из treeRoot всех тем
+				for (Module module : treeRoot.getSemester(temp[0]).getTreeModule()) {
+					Set<Section> setSection = module.getTreeSection();
+					for (Section section : setSection) {
+						liTheme.addAll(section.getTreeTheme());
+					}
+				}
 				break;
 			case 2:
-				Set<Section> setSection = treeRoot.getSemester(temp[0]).getModule(temp[1]).getSetSection();
+				Set<Section> setSection = treeRoot.getSemester(temp[0]).getModule(temp[1]).getTreeSection();
 				for (Section section : setSection) {
-					liTheme.addAll(section.getSetTheme()); // скопируем у каждой секции
+					liTheme.addAll(section.getTreeTheme()); // скопируем у каждой секции
 				}
 				break;
 			case 3:
-				liTheme.addAll(treeRoot.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getSetTheme());
+				liTheme.addAll(treeRoot.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTreeTheme());
 				break;
 			case 4:
 				liTheme.add(treeRoot.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTheme(temp[3]));
@@ -1339,8 +1355,12 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Вставляет данные в ssvTableTP из liTheme
 	 */
 	private void pasteIntoSSVTableTP(List<ThematicPlan> liTheme) {
-		for (ThematicPlan theme : liTheme)
-			addRowSSVTableTP(theme);
+		DAO_ThematicPlan dao_theme = new DAO_ThematicPlan();
+		for (ThematicPlan theme : liTheme) {
+			dao_theme = new DAO_ThematicPlan();
+			ThematicPlan thematicPlan = dao_theme.getById(ThematicPlan.class, theme.getId());
+			addRowSSVTableTP(thematicPlan);
+		}
 	}
 
 	/**
@@ -1353,7 +1373,21 @@ public class FXMLCtrlNewTab extends VBox {
 		int newRowPos = ssvTableTP.getGrid().getRowCount(); // и количество строк
 
 		ObservableList<ObservableList<SpreadsheetCell>> newRows = ssvTableTP.getGrid().getRows(); // а так же существующие строки
-		final ObservableList<SpreadsheetCell> olNew = createRowForTTP(newRowPos, null); // Добавление на место последней строки пустой строки
+
+		List<String> liValueOftheme = new ArrayList<String>();
+		liValueOftheme.add(String.valueOf(theme.getBelongingToTheSemester()));
+		liValueOftheme.add(String.valueOf(theme.getBelongingToTheModule()));
+		liValueOftheme.add(String.valueOf(theme.getBelongingToTheSection()));
+		liValueOftheme.add(String.valueOf(theme.getNumber()));
+		liValueOftheme.add(theme.getTitle());
+		liValueOftheme.add(theme.getDescription());
+		liValueOftheme.add(String.valueOf(theme.getL()));
+		liValueOftheme.add(String.valueOf(theme.getPZ()));
+		liValueOftheme.add(String.valueOf(theme.getLR()));
+		liValueOftheme.add(String.valueOf(theme.getKSR()));
+		liValueOftheme.add(String.valueOf(theme.getSRS()));
+
+		final ObservableList<SpreadsheetCell> olNew = createRowForTTP(newRowPos, liValueOftheme); // Добавление на место последней строки пустой строки
 		newRows.add(olNew);
 
 		newGrid.setRows(newRows);
@@ -1376,11 +1410,11 @@ public class FXMLCtrlNewTab extends VBox {
 				TreeItem<String> nodeModule = new TreeItem<String>("Модуль " + module.getNumber());
 				nodeModule.setExpanded(true);
 				nodeSemester.getChildren().add(nodeModule);
-				for (Section section : module.getSetSection()) {
+				for (Section section : module.getTreeSection()) {
 					TreeItem<String> nodeSection = new TreeItem<String>("Раздел " + section.getNumber());
 					nodeSection.setExpanded(true);
 					nodeModule.getChildren().add(nodeSection);
-					for (ThematicPlan theme : section.getSetTheme()) {
+					for (ThematicPlan theme : section.getTreeTheme()) {
 						TreeItem<String> nodeTheme = new TreeItem<String>("Тема " + theme.getNumber());
 						nodeTheme.setExpanded(false);
 						nodeSection.getChildren().add(nodeTheme);
@@ -1394,12 +1428,31 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Создаёт каркас таблицы ssvTableTP
 	 */
 	private void createSSVTableTP() {
-		try {
-			throw new MethodNotSupportedException("не реализован");
-		} catch (MethodNotSupportedException e) {
-			// UNDONE
-			e.printStackTrace();
-		}
+
+		int rowCount = 1;
+		int columnCount = 11;
+		GridBase grid = new GridBase(rowCount, columnCount);
+
+		ObservableList<ObservableList<SpreadsheetCell>> rows = setHeaderForTTP(grid);
+
+		grid.setRows(rows);
+
+		grid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehTP);
+
+		// Задание ширины колонкам
+		ssvTableTP.getColumns().get(0).setPrefWidth(75);
+		ssvTableTP.getColumns().get(1).setPrefWidth(65);
+		ssvTableTP.getColumns().get(2).setPrefWidth(70);
+		ssvTableTP.getColumns().get(3).setPrefWidth(55);
+		ssvTableTP.getColumns().get(4).setPrefWidth(200);
+		ssvTableTP.getColumns().get(5).setPrefWidth(100);
+		for (int i = 6; i < ssvTable71.getColumns().size() - 1; i++)
+			ssvTable71.getColumns().get(i).setPrefWidth(25);
+
+		ssvTableTP.setGrid(grid);
+		ssvTableTP.setShowRowHeader(true);
+		ssvTableTP.setShowColumnHeader(true);
+
 	}
 
 	private void initTvStudyLoad() {
@@ -1621,7 +1674,6 @@ public class FXMLCtrlNewTab extends VBox {
 
 	/**
 	 * Создаёт каркас таблицы
-	 * @param length 
 	 */
 	private void createTvT71(Semester sem) {
 		int length = sem.getQUANTITY_OF_WEEK();

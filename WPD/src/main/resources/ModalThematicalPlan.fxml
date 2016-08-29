@@ -72,7 +72,7 @@
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
             </VBox>
-            <VBox fx:id="vbForTheme" alignment="CENTER" spacing="15.0">
+            <VBox fx:id="vbForTheme" alignment="CENTER_LEFT" spacing="15.0">
                <children>
                   <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="15.0">
                      <children>
@@ -86,7 +86,7 @@
                   <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="15.0">
                      <children>
                         <Label text="Принадлежность к разделу" />
-                        <ChoiceBox prefWidth="150.0" />
+                        <ChoiceBox fx:id="cbSelectSection" prefWidth="150.0" />
                      </children>
                      <padding>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -95,12 +95,23 @@
                   <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="15.0">
                      <children>
                         <Label text="# темы" />
-                        <TextField maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                        <TextField fx:id="tfNumberOfTheme" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
                      </children>
                      <padding>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </padding>
                   </HBox>
+                  <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="15.0">
+                     <children>
+                        <Label text="Название темы" />
+                        <TextField fx:id="tfTitleOfTheme" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                     </children>
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                  </HBox>
+                  <Label text="Описание:" VBox.vgrow="NEVER" />
+                  <TextArea fx:id="taDescOfTheme" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
                </children>
                <padding>
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
