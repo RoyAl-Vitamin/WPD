@@ -10,7 +10,7 @@ public class Section {
 
 	private String name; // описание раздела
 
-	private Set<ThematicPlan> setTheme = new TreeSet<ThematicPlan>(new Comparator<ThematicPlan>() { // Множество тем
+	private Set<ThematicPlan> treeTheme = new TreeSet<ThematicPlan>(new Comparator<ThematicPlan>() { // Множество тем
 		public int compare(ThematicPlan o1, ThematicPlan o2) {
 			return o1.getNumber() - o2.getNumber();
 		}
@@ -33,10 +33,21 @@ public class Section {
 	}
 
 	public Set<ThematicPlan> getSetTheme() {
-		return setTheme;
+		return treeTheme;
 	}
 
 	public void setSetTheme(Set<ThematicPlan> setTheme) {
-		this.setTheme = setTheme;
+		this.treeTheme = setTheme;
+	}
+
+	/**
+	 * Возвращает тему по её номеру или null, если тема не найдена
+	 * @param number номер темы
+	 * @return @ThematicPlan or null
+	 */
+	public ThematicPlan getTheme(int number) {
+		for (ThematicPlan theme : treeTheme)
+			if (theme.getNumber().equals(Integer.valueOf(number))) return theme;
+		return null;
 	}
 }

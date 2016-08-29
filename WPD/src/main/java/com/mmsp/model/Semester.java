@@ -10,7 +10,7 @@ import java.util.TreeSet;
  * Класс данных одного семестра
  * @author rav
  */
-public class Semester {
+public class Semester implements Comparable<Semester> {
 
 	private int NUMBER_OF_SEMESTER; // номер модуля
 
@@ -84,10 +84,26 @@ public class Semester {
 		this.treeModule = treeModule;
 	}
 
+	/**
+	 * Возвращает модуль по его номеру или null, если модуль не найден
+	 * @param number номер модуля
+	 * @return @Module or null
+	 */
+	public Module getModule(int number) {
+		for (Module mod : treeModule)
+			if (mod.getNumber() == number) return mod;
+		return null;
+	}
+
 	public Record getRecord(int pos) {
 		for (Record rec : rowT71) {
 			if (rec.getPos() == pos) return rec;
 		}
 		return null;
+	}
+
+	@Override
+	public int compareTo(Semester o) {
+		return this.NUMBER_OF_SEMESTER - o.NUMBER_OF_SEMESTER;
 	}
 }

@@ -16,6 +16,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.swing.table.TableCellEditor;
+
+import org.apache.http.MethodNotSupportedException;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
@@ -42,6 +45,7 @@ import com.mmsp.model.Section;
 import com.mmsp.model.Semester;
 import com.mmsp.model.ThematicPlan;
 import com.mmsp.model.Module;
+import com.mmsp.model.MyTreeSet;
 import com.mmsp.model.WPDVersion;
 
 import javafx.beans.InvalidationListener;
@@ -232,8 +236,6 @@ public class FXMLCtrlNewTab extends VBox {
 
 	private final ObservableList<RowPoCM> olDataOfPoCM = FXCollections.observableArrayList();
 
-	private TreeSet<Integer> tsFNOS = new TreeSet<Integer>(); // список выбранных семестров
-
 	private Stage stage;
 
 	private FXMLCtrlNewTab fxmlCtrlCurrTab; // Контроллер этой вкладки
@@ -313,10 +315,27 @@ public class FXMLCtrlNewTab extends VBox {
 
 	@FXML
 	private Button bDelRowTP;
+	
+	@FXML
+	private HBox hbReplacementThematicalPlan;
+
+	@FXML
+	private TreeView<String> tvRoot;
+
+	final TreeItem<String> rootElement = new TreeItem<String>("Создать модуль");
 
 	private SpreadsheetView ssvTableTP; // Таблица тематического плана
 
 	private EventHandler<GridChange> ehTP; // OnGridChange for TableTP
+	
+	@FXML
+	private Button bAddElement;
+
+	@FXML
+	private Button bSetElement;
+
+	@FXML
+	private Button bDelElement;
 
 	// Переменные вкладки "ПКМ"
 
@@ -361,7 +380,7 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private Button bDelRowT71; // кнопка удаления текущей строки из текущего семестра
 
-	private Set<Semester> treeRoot = new TreeSet<Semester>((Semester o1, Semester o2) -> o1.getNUMBER_OF_SEMESTER() - o2.getNUMBER_OF_SEMESTER());
+	private MyTreeSet treeRoot = new MyTreeSet(); // как за*бало всё переписывать
 
 	private final ObservableList<String> olSemesters = FXCollections.observableArrayList(); // for cbSemester // список # семестров
 
@@ -376,25 +395,6 @@ public class FXMLCtrlNewTab extends VBox {
 	private SpreadsheetView ssvTable71; // Замена TableView<?> tvTable71;
 
 	private EventHandler<GridChange> ehT71; // OnGridChange for TableTP
-
-	// Переменные вкладки "Замена тематического плана"
-
-	@FXML
-	private HBox hbReplacementThematicalPlan;
-
-	@FXML
-	private TreeView<String> tvRoot;
-
-	final TreeItem<String> rootElement = new TreeItem<String>("Создать модуль");
-
-	@FXML
-	private Button bAddElement;
-
-	@FXML
-	private Button bSetElement;
-
-	@FXML
-	private Button bDelElement;
 
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
@@ -918,6 +918,10 @@ public class FXMLCtrlNewTab extends VBox {
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
 
+	/**
+	 * Добавить элемент в TreeView
+	 * @param event
+	 */
 	@FXML
 	void clickBAddElement(ActionEvent event) {
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("ModalThematicalPlan.fxml"));
@@ -932,7 +936,8 @@ public class FXMLCtrlNewTab extends VBox {
 
 		Stage stageModalThematicalPlan = new Stage();
 		FXMLCtrlModalThematicalPlan fxmlCtrlModalThematicalPlan = fxmlLoader.getController();
-		fxmlCtrlModalThematicalPlan.init(stageModalThematicalPlan, tsFNOS);
+		fxmlCtrlModalThematicalPlan.init(stageModalThematicalPlan);
+		fxmlCtrlModalThematicalPlan.setController(fxmlCtrlCurrTab); // Запомним контроллер новой вкладки для перерсовки
 		fxmlCtrlModalThematicalPlan.setRoot(treeRoot, 0);
 		stageModalThematicalPlan.setScene(scene);
 		stageModalThematicalPlan.setTitle("Settings");
@@ -1260,24 +1265,33 @@ public class FXMLCtrlNewTab extends VBox {
 
 			@Override
 			public void changed(ObservableValue<? extends TreeItem<String>> observable, TreeItem<String> old_val, TreeItem<String> new_val) {
+				if (new_val == null) return;
 				// Поиск выбранного элемента в treeRoot
-				if (new_val.getValue().split(" ")[0].equals("Модуль")) {
-					// getModuleByNumber(Integer.parseInt(new_val.getValue().split(" ")[1]))
+				//System.err.println("AHTUNG new_value == " + new_val); 
+				if (new_val.getValue().split(" ")[0].equals("Семестр")) {
 					repaintSSVTableTP(
-							Integer.parseInt(new_val.getValue().split(" ")[1])
+							Integer.parseInt(new_val.getValue().split(" ")[1]) // берём № семестра
+					);
+				}
+				if (new_val.getValue().split(" ")[0].equals("Модуль")) {
+					repaintSSVTableTP(
+							Integer.parseInt(new_val.getParent().getValue().split(" ")[1]), // берём № семестра
+							Integer.parseInt(new_val.getValue().split(" ")[1]) // берём № модуля
 					);
 				}
 				if (new_val.getValue().split(" ")[0].equals("Раздел")) {
 					repaintSSVTableTP(
-							Integer.parseInt(new_val.getParent().getValue().split(" ")[1]),
-							Integer.parseInt(new_val.getValue().split(" ")[1])
+							Integer.parseInt(new_val.getParent().getParent().getValue().split(" ")[1]), // берём № семестра
+							Integer.parseInt(new_val.getParent().getValue().split(" ")[1]), // берём № модуля
+							Integer.parseInt(new_val.getValue().split(" ")[1]) // берём № раздела
 					);
 				}
 				if (new_val.getValue().split(" ")[0].equals("Тема")) {
 					repaintSSVTableTP(
-							Integer.parseInt(new_val.getParent().getParent().getValue().split(" ")[1]),
-							Integer.parseInt(new_val.getParent().getValue().split(" ")[1]),
-							Integer.parseInt(new_val.getValue().split(" ")[1])
+							Integer.parseInt(new_val.getParent().getParent().getParent().getValue().split(" ")[1]), // берём № семестра
+							Integer.parseInt(new_val.getParent().getParent().getValue().split(" ")[1]), // берём № модуля
+							Integer.parseInt(new_val.getParent().getValue().split(" ")[1]), // берём № раздела
+							Integer.parseInt(new_val.getValue().split(" ")[1]) // берём № темы
 					);
 				}
             }
@@ -1287,38 +1301,7 @@ public class FXMLCtrlNewTab extends VBox {
 		createTree();
 	}
 
-	/**
-	 * Достаёт из treeRoot Module по его номеру
-	 * @param numberOfModule
-	 * @return
-	 * @throws Exception при недостаточном или избыточном количестве аргументов
-	 */
-	private Module getModuleByNumber(int[] arr) throws Exception { // FIXME Проверить хранятся ли они упорядоченно
-		if (arr.length != 1) throw new Exception("недостаточное/избыточное количество аргументов");
-		return (Module) treeRoot.toArray()[arr[0]];
-	}
 
-	/**
-	 * Достаёт из treeRoot Section по номам Module и Section
-	 * @param numberOfModule
-	 * @return
-	 * @throws Exception при недостаточном или избыточном количестве аргументов
-	 */
-	private Section getSectionByNumber(int[] arr) throws Exception { // Проверить хранятся ли они упорядоченно
-		if (arr.length != 2) throw new Exception("недостаточное/избыточное количество аргументов");
-		return (Section) ((Module) treeRoot.toArray()[arr[0]]).getSetSection().toArray()[arr[1]];
-	}
-
-	/**
-	 * Достаёт из treeRoot Section по номам Module и Section
-	 * @param numberOfModule
-	 * @return
-	 * @throws Exception при недостаточном или избыточном количестве аргументов
-	 */
-	private ThematicPlan getThemeByNumber(int[] arr) throws Exception { // Проверить хранятся ли они упорядоченно
-		if (arr.length != 3) throw new Exception("недостаточное/избыточное количество аргументов");
-		return (ThematicPlan) ((Section) ((Module) treeRoot.toArray()[arr[0]]).getSetSection().toArray()[arr[1]]).getSetTheme().toArray()[arr[2]];
-	}
 
 	/**
 	 * перерисовывает содержимое ssvTableTP для выбранного в tvRoot элемента, будь то модуль или раздел, или тема (тематический план)
@@ -1329,16 +1312,19 @@ public class FXMLCtrlNewTab extends VBox {
 		try {
 			switch (temp.length) {
 			case 1:
-				Set<Section> setSection = getModuleByNumber(temp).getSetSection();
+				// UNDONE выгрузка из treeRoot всех тем
+				break;
+			case 2:
+				Set<Section> setSection = treeRoot.getSemester(temp[0]).getModule(temp[1]).getSetSection();
 				for (Section section : setSection) {
 					liTheme.addAll(section.getSetTheme()); // скопируем у каждой секции
 				}
 				break;
-			case 2:
-				liTheme.addAll(getSectionByNumber(temp).getSetTheme());
-				break;
 			case 3:
-				liTheme.add(getThemeByNumber(temp));
+				liTheme.addAll(treeRoot.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getSetTheme());
+				break;
+			case 4:
+				liTheme.add(treeRoot.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTheme(temp[3]));
 				break;
 			default:
 				throw new Exception("нет аргументов у массива тематического плана");
@@ -1379,7 +1365,9 @@ public class FXMLCtrlNewTab extends VBox {
 	/**
 	 * отрисовка дерева в tvRoot
 	 */
-	private void createTree() {
+	public void createTree() {
+		tvRoot.getSelectionModel().clearSelection();
+		rootElement.getChildren().clear();
 		for (Semester semester : treeRoot) {
 			TreeItem<String> nodeSemester = new TreeItem<String>("Семестр " + semester.getNUMBER_OF_SEMESTER());
 			nodeSemester.setExpanded(true);
@@ -1406,7 +1394,12 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Создаёт каркас таблицы ssvTableTP
 	 */
 	private void createSSVTableTP() {
-		
+		try {
+			throw new MethodNotSupportedException("не реализован");
+		} catch (MethodNotSupportedException e) {
+			// UNDONE
+			e.printStackTrace();
+		}
 	}
 
 	private void initTvStudyLoad() {

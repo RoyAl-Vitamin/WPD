@@ -38,16 +38,16 @@ public class MyTreeSet extends TreeSet<Semester> implements Comparator<Semester>
 		System.err.println();
 		for (Semester sem : this) {
 			System.err.println(" + ");
-			System.err.println(" +> Семестр № " + sem.getNUMBER_OF_SEMESTER() + " количество недель в нём == " + sem.getQUANTITY_OF_WEEK());
+			System.err.println(" ++> " + "Семестр № " + sem.getNUMBER_OF_SEMESTER() + " количество недель в нём == " + sem.getQUANTITY_OF_WEEK());
 			for (Module mod : sem.getTreeModule()) {
 				System.err.println(" + ");
-				System.err.println(" ++> " + "модуль № " + mod.getNumber() + " и его название " + mod.getName());
+				System.err.println(" +++> " + "Модуль № " + mod.getNumber() + " и его название " + mod.getName());
 				for (Section sec : mod.getSetSection()) {
 					System.err.println(" + ");
-					System.err.println(" ++++>  + " + " секция № " + sec.getNumber() + " и её название " + sec.getName());
+					System.err.println(" ++++> " + "Секция № " + sec.getNumber() + " и её название " + sec.getName());
 					for (ThematicPlan theme : sec.getSetTheme()) {
 						System.err.println(" + ");
-						System.err.println(" ++++++> " + " тема № " + theme.getNumber() + " и её название " + theme.getTitle());
+						System.err.println(" +++++> " + " тема № " + theme.getNumber() + " и её название " + theme.getTitle());
 					}
 				}
 			}
