@@ -47,7 +47,7 @@ public class MyTreeSet extends TreeSet<Semester> implements Comparator<Semester>
 					System.err.println(" ++++> " + "Секция № " + sec.getNumber() + " и её название " + sec.getName());
 					for (ThematicPlan theme : sec.getTreeTheme()) {
 						System.err.println(" + ");
-						System.err.println(" +++++> " + " тема № " + theme.getNumber() + " и её название " + theme.getTitle());
+						System.err.println(" +++++> " + " Тема № " + theme.getNumber() + " и её название " + theme.getTitle());
 					}
 				}
 			}

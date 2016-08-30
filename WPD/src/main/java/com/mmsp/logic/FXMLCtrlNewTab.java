@@ -1,24 +1,15 @@
 package com.mmsp.logic;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 
-import javax.swing.table.TableCellEditor;
-
-import org.apache.http.MethodNotSupportedException;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
@@ -67,8 +58,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -80,6 +73,8 @@ import javafx.scene.control.TablePosition;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 //import javafx.scene.control.cell.TextFieldTableCell;
@@ -244,14 +239,6 @@ public class FXMLCtrlNewTab extends VBox {
 	
 	private String tabName; // здесь полное название вкладки, возможно стоило хранить только название версии, т.к. название дисциплины пока не менятся
 
-	private int NUMBER_OF_SEMESTER; // количество семестров
-
-	private int NUMBER_OF_MODULE; // количество модулей
-
-	private int NUMBER_OF_SECTION; // количество разделов
-
-	private int NUMBER_OF_WEEK; // количество недель в семестре
-
 	private WPDVersion currWPDVersion;
 	private PoCM currPoCM;
 	private Set<ThematicPlan> setCurrThematicPlan;
@@ -305,38 +292,6 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private TableView<RowSL> tvStudyLoad;
 
-	// Переменные вкладки "Тематический план"
-
-	@FXML
-	private VBox vbThematicalPlan;
-
-	@FXML
-	private Button bAddRowTP;
-
-	@FXML
-	private Button bDelRowTP;
-	
-	@FXML
-	private HBox hbReplacementThematicalPlan;
-
-	@FXML
-	private TreeView<String> tvRoot;
-
-	final TreeItem<String> rootElement = new TreeItem<String>("Создать модуль");
-
-	private SpreadsheetView ssvTableTP; // Таблица тематического плана
-
-	private EventHandler<GridChange> ehTP; // OnGridChange for TableTP
-	
-	@FXML
-	private Button bAddElement;
-
-	@FXML
-	private Button bSetElement;
-
-	@FXML
-	private Button bDelElement;
-
 	// Переменные вкладки "ПКМ"
 
 	@FXML
@@ -368,6 +323,23 @@ public class FXMLCtrlNewTab extends VBox {
 
 	@FXML
 	private Button bDelRowPoCM; // Удаление строки
+
+	// Переменные вкладки "Тематический план"
+
+	@FXML
+	private VBox vbThematicalPlan;
+	
+	@FXML
+	private HBox hbReplacementThematicalPlan;
+
+	@FXML
+	private TreeView<String> tvRoot;
+
+	final TreeItem<String> rootElement = new TreeItem<String>("Создать модуль");
+
+	private SpreadsheetView ssvTableTP; // Таблица тематического плана
+
+	private EventHandler<GridChange> ehTP; // OnGridChange for TableTP
 
 	// Переменные вкладки "Таблица 7.1"
 
@@ -521,6 +493,7 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 		cbSemesters.getSelectionModel().selectFirst();
 		loadTvT71();
+		loadTabThematicalPlan();
 	}
 
 	/**
@@ -737,21 +710,6 @@ public class FXMLCtrlNewTab extends VBox {
 		// for (int i = 0; i < dataOfStudyLoad.size(); i++) System.out.println(dataOfStudyLoad.get(i).toString());
 	}
 
-	/*
-	 * Создаёт строку типа "Виды работ" + часы на каждую неделю для указанной позиции
-	 * @param posRow
-	 * @return
-	 */
-	/*private ObservableList<SpreadsheetCell> createSimpleRow(int posRow) {
-		ObservableList<SpreadsheetCell> olRow = FXCollections.observableArrayList();
-		olRow.add(SpreadsheetCellType.STRING.createCell(posRow, 0, 1, 1,""));
-		for (int column = 1; column < ssvTable71.getGrid().getColumnCount(); column++) {
-			olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, 0));
-		}
-		olRow.get(olRow.size() - 1).setEditable(false); // Последняя строка не доступна для редактирования
-		return olRow;
-	}*/
-
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
 	//**
@@ -760,53 +718,248 @@ public class FXMLCtrlNewTab extends VBox {
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
 
-	/*@FXML
-	void clickBAddRowTP(ActionEvent event) {
-		GridBase newGrid = new GridBase(ssvTableTP.getGrid().getRowCount() + 1, ssvTableTP.getGrid().getColumnCount()); // Создадим сетку с +1 строкой
-		int newRowPos = ssvTableTP.getGrid().getRowCount(); // и количество строк
+	/**
+	 * Обновление содержимого вкладки "Тематический план"
+	 */
+	private void loadTabThematicalPlan() {
+		createTree();
 
-		ObservableList<ObservableList<SpreadsheetCell>> newRows = ssvTableTP.getGrid().getRows(); // а так же существующие строки
-		final ObservableList<SpreadsheetCell> olNew = createRowForTTP(newRowPos, null); // Добавление на место последней строки пустой строки
-		newRows.add(olNew);
+		tvRoot.addEventHandler(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
 
-		newGrid.setRows(newRows);
-		newGrid.setRowHeightCallback(new GridBase.MapBasedRowHeightFactory(generateRowHeight(newGrid.getRowCount())));
-		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehTP);
-		ssvTableTP.setGrid(newGrid);
-	}*/
+			private ContextMenu menu = new ContextMenu();
 
-	/*@FXML
-	void clickBDelRowTP(ActionEvent event) {
-		int col = ssvTableTP.getSelectionModel().getFocusedCell().getColumn();
-		int row = ssvTableTP.getSelectionModel().getFocusedCell().getRow();
-		if (!(row > 0 && row < ssvTableTP.getGrid().getRowCount())) return; 
-		GridBase newGrid = new GridBase(ssvTableTP.getGrid().getRowCount() - 1, ssvTableTP.getGrid().getColumnCount()); // Создадим сетку с -1 строкой
-		ObservableList<ObservableList<SpreadsheetCell>> newRows = setHeaderForTTP(newGrid); // по новой инициализируем хедер таблицы
-		
-		for (int i = 1; i < ssvTableTP.getGrid().getRowCount(); i++) {
-			if (i == row) continue; // та строка, которую нужно пропустить
-			int k = i;
-			if (i > row) k--; // перешагиваем i-ую строку для createStringRow() 
-			ArrayList<String> lValueOfOldCell = new ArrayList<>();
-			for (int j = 0; j < ssvTableTP.getGrid().getColumnCount(); j++) {
-				lValueOfOldCell.add(ssvTableTP.getGrid().getRows().get(i).get(j).getText());
+			@Override
+			public void handle(MouseEvent event) {
+				if (event.getButton() == MouseButton.SECONDARY) {
+					TreeItem<String> selected = tvRoot.getSelectionModel().getSelectedItem();
+					
+					//item is selected - this prevents fail when clicking on empty space
+					if (selected != null) {
+						//open context menu on current screen position
+						openContextMenu(selected, event.getScreenX(), event.getScreenY());
+					}
+				} else {
+					//any other click cause hiding menu
+					menu.hide();
+				}
 			}
-			ObservableList<SpreadsheetCell> oldRow = createRowForTTP(k, lValueOfOldCell); // TTP - Table Thematical Plan
-			newRows.add(oldRow);
-		}
-		newGrid.getColumnHeaders().addAll(ssvTableTP.getGrid().getColumnHeaders());
-		newGrid.setRowHeightCallback(new GridBase.MapBasedRowHeightFactory(generateRowHeight(newGrid.getRowCount())));
-		newGrid.setRows(newRows);
-		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehTP);
 
-		ssvTableTP.setGrid(newGrid);
+			// UNDONE Контроллер
+			private void openContextMenu(TreeItem<String> item, double x, double y) {
+				// custom method that update menu items
+				menu.getItems().clear();
+				MenuItem mI;
 
-		if (row == ssvTableTP.getGrid().getRowCount()) { // переставим фокус
-			ssvTableTP.getSelectionModel().focus(row - 1, ssvTableTP.getColumns().get(col)); // фокус на предыдущую строку, но ту же колонку
-		} else {
-			ssvTableTP.getSelectionModel().focus(row, ssvTableTP.getColumns().get(col)); // фокус на ту же строку и ту же колонку
-		}
-	}*/
+				List<MenuItem> liMI = new ArrayList<MenuItem>();
+				if (item.getValue().contains("Семестр")) {
+					mI = new MenuItem("Добавить модуль");
+					mI.setOnAction(e -> {
+						showModalModule(item);
+					});
+					liMI.add(mI);
+				}
+				if (item.getValue().contains("Модуль")) {
+					mI = new MenuItem("Добавить раздел");
+					mI.setOnAction(e -> {
+						showModalSection(item);
+					});
+					liMI.add(mI);
+					mI = new MenuItem("Изменить модуль");
+					mI.setOnAction(e -> {
+						showModalModule(item);
+					});
+					liMI.add(mI);
+					mI = new MenuItem("Удалить модуль");
+					mI.setOnAction(e -> {
+						int numOfSem = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
+						int numOfMod = Integer.parseInt(item.getValue().split(" ")[1]);
+
+						treeRoot.getSemester(numOfSem).getTreeModule().remove(treeRoot.getSemester(numOfSem).getModule(numOfMod));
+						createTree();
+						System.err.println(treeRoot.toString());
+					});
+					liMI.add(mI);
+				}
+				if (item.getValue().contains("Раздел")) {
+					mI = new MenuItem("Добавить тему");
+					mI.setOnAction(e -> {
+						showModalTheme(item);
+					});
+					liMI.add(mI);
+					mI = new MenuItem("Изменить раздел");
+					mI.setOnAction(e -> {
+						showModalSection(item);
+					});
+					liMI.add(mI);
+					mI = new MenuItem("Удалить раздел");
+					mI.setOnAction(e -> {
+						int numOfSem = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
+						int numOfMod = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
+						int numOfSec = Integer.parseInt(item.getValue().split(" ")[1]);
+
+						treeRoot.getSemester(numOfSem).getModule(numOfMod).getTreeSection().remove(treeRoot.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec));
+						createTree();
+						System.err.println(treeRoot.toString());
+					});
+					liMI.add(mI);
+				}
+				if (item.getValue().contains("Тема")) {
+					mI = new MenuItem("Изменить тему");
+					mI.setOnAction(e -> {
+						showModalTheme(item);
+					});
+					liMI.add(mI);
+					mI = new MenuItem("Удалить тему");
+					mI.setOnAction(e -> {
+						int numOfSem = Integer.parseInt(item.getParent().getParent().getParent().getValue().split(" ")[1]);
+						int numOfMod = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
+						int numOfSec = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
+						int numOfTheme = Integer.parseInt(item.getValue().split(" ")[1]);
+
+						treeRoot.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec).getTreeTheme().remove(treeRoot.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec).getTheme(numOfTheme));
+						createTree();
+						System.err.println(treeRoot.toString());
+					});
+					liMI.add(mI);
+				}
+				
+				menu.getItems().addAll(liMI);
+
+				//show menu
+				menu.show(tvRoot, x, y);
+			}
+
+			/**
+			 * Вызов диалогового окна добавления / изменения модуля
+			 * @param item если содежит в себе "Модуль", то редактирование, если "Семестр", то добавление
+			 */
+			private void showModalModule(TreeItem<String> item) {
+				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("ModalModule.fxml"));
+				Parent root = null;
+				try {
+					root = (Parent) fxmlLoader.load();
+				} catch (IOException e) {
+					System.err.println("Не удалось загрузить форму настройки таблицы тематического плана");
+					e.printStackTrace();
+				}
+				Scene scene = new Scene(root);
+
+				Stage stageModalModule = new Stage();
+				FXMLCtrlModalModule fxmlCtrlModalModule = fxmlLoader.getController();
+				fxmlCtrlModalModule.init(stageModalModule);
+				stageModalModule.setResizable(false);
+				fxmlCtrlModalModule.setController(fxmlCtrlCurrTab); // Запомним контроллер новой вкладки для перерсовки
+
+				// установка корневого элемента
+				if (item.getValue().contains("Модуль")) {
+					// Изменение выбранного модуля
+					int numOfSem = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
+					int numOfMod = Integer.parseInt(item.getValue().split(" ")[1]);
+					fxmlCtrlModalModule.setRoot(treeRoot.getSemester(numOfSem), numOfMod);
+				} else
+				if (item.getValue().contains("Семестр")) {
+					// Добавление нового модуля
+					int numOfSem = Integer.parseInt(item.getValue().split(" ")[1]);
+					fxmlCtrlModalModule.setRoot(treeRoot.getSemester(numOfSem));
+				} else return;
+
+				stageModalModule.setScene(scene);
+				stageModalModule.setTitle("Добавление / изменение модуля");
+				stageModalModule.getIcons().add(new Image("Logo.png"));
+				stageModalModule.initModality(Modality.APPLICATION_MODAL);
+				stageModalModule.showAndWait();
+			}
+
+			/**
+			 * Вызов диалогового окна добавления / изменения секции
+			 * @param item если содежит в себе "Раздел", то редактирование, если "Модуль", то добавление
+			 */
+			private void showModalSection(TreeItem<String> item) {
+				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("ModalSection.fxml"));
+				Parent root = null;
+				try {
+					root = (Parent) fxmlLoader.load();
+				} catch (IOException e) {
+					System.err.println("Не удалось загрузить форму настройки таблицы тематического плана");
+					e.printStackTrace();
+				}
+				Scene scene = new Scene(root);
+
+				Stage stageModalSection = new Stage();
+				FXMLCtrlModalSection fxmlCtrlModalSection = fxmlLoader.getController();
+				fxmlCtrlModalSection.init(stageModalSection);
+				stageModalSection.setResizable(false);
+				fxmlCtrlModalSection.setController(fxmlCtrlCurrTab); // Запомним контроллер новой вкладки для перерсовки
+
+				// установка корневого элемента
+				if (item.getValue().contains("Раздел")) {
+					// Изменение выбранного раздела
+					int numOfSem = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
+					int numOfMod = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
+					int numOfSec = Integer.parseInt(item.getValue().split(" ")[1]);
+					fxmlCtrlModalSection.setRoot(treeRoot.getSemester(numOfSem), numOfMod, numOfSec);
+				} else
+				if (item.getValue().contains("Модуль")) {
+					// Добавление нового модуля
+					int numOfSem = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
+					int numOfMod = Integer.parseInt(item.getValue().split(" ")[1]);
+					fxmlCtrlModalSection.setRoot(treeRoot.getSemester(numOfSem), numOfMod);
+				} else return;
+
+				stageModalSection.setScene(scene);
+				stageModalSection.setTitle("Добавление / изменение раздела");
+				stageModalSection.getIcons().add(new Image("Logo.png"));
+				stageModalSection.initModality(Modality.APPLICATION_MODAL);
+				stageModalSection.showAndWait();
+			}
+
+			/**
+			 * Вызов диалогового окна добавления / изменения секции
+			 * @param item если содежит в себе "Раздел", то редактирование, если "Модуль", то добавление
+			 */
+			private void showModalTheme(TreeItem<String> item) {
+				FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("ModalTheme.fxml"));
+				Parent root = null;
+				try {
+					root = (Parent) fxmlLoader.load();
+				} catch (IOException e) {
+					System.err.println("Не удалось загрузить форму настройки таблицы тематического плана");
+					e.printStackTrace();
+				}
+				Scene scene = new Scene(root);
+
+				Stage stageModalTheme = new Stage();
+				FXMLCtrlModalTheme fxmlCtrlModalTheme = fxmlLoader.getController();
+				fxmlCtrlModalTheme.init(stageModalTheme);
+				stageModalTheme.setResizable(false);
+				fxmlCtrlModalTheme.setController(fxmlCtrlCurrTab); // Запомним контроллер новой вкладки для перерсовки
+
+				// установка корневого элемента
+				if (item.getValue().contains("Тема")) {
+					// Изменение выбранной темы
+					int numOfSem = Integer.parseInt(item.getParent().getParent().getParent().getValue().split(" ")[1]);
+					int numOfMod = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
+					int numOfSec = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
+					int numOfTheme = Integer.parseInt(item.getValue().split(" ")[1]);
+					fxmlCtrlModalTheme.setRoot(treeRoot.getSemester(numOfSem), numOfMod, numOfSec, numOfTheme);
+				} else
+				if (item.getValue().contains("Раздел")) {
+					// Добавление новой темы
+					int numOfSem = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
+					int numOfMod = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
+					int numOfSec = Integer.parseInt(item.getValue().split(" ")[1]);
+					fxmlCtrlModalTheme.setRoot(treeRoot.getSemester(numOfSem), numOfMod, numOfSec);
+				} else return;
+
+				stageModalTheme.setScene(scene);
+				stageModalTheme.setTitle("Добавление / изменение темы");
+				stageModalTheme.getIcons().add(new Image("Logo.png"));
+				stageModalTheme.initModality(Modality.APPLICATION_MODAL);
+				stageModalTheme.showAndWait();
+			}
+		});
+
+	}
 
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
@@ -908,55 +1061,6 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 		if (ssvTable71.getSelectionModel().getFocusedCell().getRow() < 4)
 			bDelRowT71.setDisable(true);
-	}
-
-	//*************************************************************************************************************************
-	//*************************************************************************************************************************
-	//**
-	//** Вкладка "Тематический план"
-	//**
-	//*************************************************************************************************************************
-	//*************************************************************************************************************************
-
-	/**
-	 * Добавить элемент в TreeView
-	 * @param event
-	 */
-	@FXML
-	void clickBAddElement(ActionEvent event) {
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("ModalThematicalPlan.fxml"));
-		Parent root = null;
-		try {
-			root = (Parent) fxmlLoader.load();
-		} catch (IOException e) {
-			System.err.println("Не удалось загрузить форму настройки таблицы тематического плана");
-			e.printStackTrace();
-		}
-		Scene scene = new Scene(root);
-
-		Stage stageModalThematicalPlan = new Stage();
-		FXMLCtrlModalThematicalPlan fxmlCtrlModalThematicalPlan = fxmlLoader.getController();
-		fxmlCtrlModalThematicalPlan.init(stageModalThematicalPlan);
-		stageModalThematicalPlan.setResizable(false);
-		fxmlCtrlModalThematicalPlan.setController(fxmlCtrlCurrTab); // Запомним контроллер новой вкладки для перерсовки
-		fxmlCtrlModalThematicalPlan.setRoot(treeRoot, 0);
-		fxmlCtrlModalThematicalPlan.setWPDVersion(currWPDVersion);
-		stageModalThematicalPlan.setScene(scene);
-		stageModalThematicalPlan.setTitle("Settings");
-		stageModalThematicalPlan.getIcons().add(new Image("Logo.png"));
-		stageModalThematicalPlan.initModality(Modality.APPLICATION_MODAL);
-		//stageModalThematicalPlan.setResizable(false);
-		stageModalThematicalPlan.showAndWait();
-	}
-
-	@FXML
-	void clickBSetElement(ActionEvent event) {
-		// передача выбранного пункта
-	}
-
-	@FXML
-	void clickBDelElement(ActionEvent event) {
-		System.err.println("OK!");
 	}
 
 	//*************************************************************************************************************************
@@ -1135,64 +1239,6 @@ public class FXMLCtrlNewTab extends VBox {
 	//*************************************************************************************************************************
 
 	/**
-	 * Чтение "config.properties" 
-	 */
-	/*private void readProperties() {
-
-		Properties prop = new Properties();
-		InputStream input = null;
-		try {
-			File propFile = new File("config.properties");
-			if (!propFile.exists()) {// Если этого файла нет, то создаём его
-				propFile.createNewFile();
-			}
-			input = new FileInputStream(propFile);
-			//input = getClass().getClassLoader().getResourceAsStream("config.properties");
-			// load a properties file
-			prop.load(input);
-			NUMBER_OF_SEMESTER = Integer.parseInt(prop.getProperty("numberOfSemester"));
-			NUMBER_OF_MODULE = Integer.parseInt(prop.getProperty("numberOfModule"));
-			NUMBER_OF_SECTION = Integer.parseInt(prop.getProperty("numberOfSection"));
-			NUMBER_OF_WEEK = Integer.parseInt(prop.getProperty("numberOfWeeks"));
-		} catch (IOException | NumberFormatException ex) {
-			ex.printStackTrace();
-			// Стандартные значения в случае ошибки
-			NUMBER_OF_SEMESTER = 1;
-			NUMBER_OF_MODULE = 2;
-			NUMBER_OF_SECTION = 4;
-			NUMBER_OF_WEEK = 17;
-			parentCtrl.setStatus("Файл \"config.properties\" не удалось найти, загружены вшитые параметры");
-			rewriteProp(prop);
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}*/
-
-	/**
-	 * Записывает все текущие значения в "config.properties"
-	 * @param prop сам файл
-	 */
-	/*private void rewriteProp(Properties prop) {
-		prop.setProperty("numberOfSemester", String.valueOf(NUMBER_OF_SEMESTER));
-		prop.setProperty("numberOfModule", String.valueOf(NUMBER_OF_MODULE));
-		prop.setProperty("numberOfSection", String.valueOf(NUMBER_OF_SECTION));
-		prop.setProperty("numberOfWeeks", String.valueOf(NUMBER_OF_WEEK));
-		try {
-			prop.store(new FileOutputStream("config.properties"), "Study load");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}*/
-
-	/**
 	 * Задаёт header всей таблицы ssvTableTP
 	 * @param grid BaseGrid этой таблицы
 	 * @return первую строку
@@ -1275,7 +1321,6 @@ public class FXMLCtrlNewTab extends VBox {
 			public void changed(ObservableValue<? extends TreeItem<String>> observable, TreeItem<String> old_val, TreeItem<String> new_val) {
 				if (new_val == null) return;
 				// Поиск выбранного элемента в treeRoot
-				//System.err.println("AHTUNG new_value == " + new_val); 
 				if (new_val.getValue().split(" ")[0].equals("Семестр")) {
 					repaintSSVTableTP(
 							Integer.parseInt(new_val.getValue().split(" ")[1]) // берём № семестра
@@ -1355,12 +1400,8 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Вставляет данные в ssvTableTP из liTheme
 	 */
 	private void pasteIntoSSVTableTP(List<ThematicPlan> liTheme) {
-		DAO_ThematicPlan dao_theme = new DAO_ThematicPlan();
-		for (ThematicPlan theme : liTheme) {
-			dao_theme = new DAO_ThematicPlan();
-			ThematicPlan thematicPlan = dao_theme.getById(ThematicPlan.class, theme.getId());
-			addRowSSVTableTP(thematicPlan);
-		}
+		for (ThematicPlan theme : liTheme)
+			addRowSSVTableTP(theme);
 	}
 
 	/**
