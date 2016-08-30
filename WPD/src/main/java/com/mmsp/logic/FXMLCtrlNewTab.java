@@ -13,6 +13,7 @@ import java.util.Set;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
+import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
 //import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
 //import org.controlsfx.control.spreadsheet.SpreadsheetCellType.StringType;
@@ -1138,7 +1139,9 @@ public class FXMLCtrlNewTab extends VBox {
 				olRow.add(ssC);
 			}
 			for (int column = 4; column < 6; column++) {
-				olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, lValueOfOldCell.get(column)));
+				SpreadsheetCell cell = SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, lValueOfOldCell.get(column));
+				((SpreadsheetCellBase) cell).setTooltip(lValueOfOldCell.get(column)); // add tooltip
+				olRow.add(cell);
 			}
 			for (int column = 6; column < ssvTableTP.getGrid().getColumnCount(); column++) {
 				int temp = 0;
