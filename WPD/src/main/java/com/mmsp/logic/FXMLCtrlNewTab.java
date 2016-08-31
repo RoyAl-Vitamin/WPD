@@ -16,7 +16,6 @@ import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
-//import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
 //import org.controlsfx.control.spreadsheet.SpreadsheetCellType.StringType;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
@@ -69,6 +68,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.TableColumn.CellEditEvent;
@@ -80,13 +80,11 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-//import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import javafx.util.Duration;
 
 public class FXMLCtrlNewTab extends VBox {
 
@@ -429,6 +427,7 @@ public class FXMLCtrlNewTab extends VBox {
 			tfForQuantity.setPromptText("количество недель");
 			tfForQuantity.setId("quaOfWeek");
 			Button bRemoveSem = new Button("-");
+			bRemoveSem.setTooltip(new Tooltip("Удалить данный семестр"));
 			bRemoveSem.setOnAction(ev -> {
 				clickRemoveSemester(ev);
 				popOver.getRoot().autosize();
@@ -567,20 +566,21 @@ public class FXMLCtrlNewTab extends VBox {
 		// Приводим к VBox                            // к hbForSem // к vbForSemester
 		VBox vbForSemester = (VBox) ((Button) e.getSource()).getParent().getParent();
 
-		for (Node nodeTemp : vbForSemester.getChildren()) {
-			System.err.println("ID NODE " + nodeTemp.getId());
-			if (nodeTemp != null
-				&& nodeTemp instanceof HBox
-				&& ((Button) e.getSource())
-					.getId()
-					.equals(
-							nodeTemp
-							.getId())
-			) {
-				vbForSemester.getChildren().remove(nodeTemp);
-				break;
+		if (((Button) e.getSource()).getId() == null) 
+			vbForSemester.getChildren().remove((HBox) ((Button) e.getSource()).getParent());
+		else
+			for (Node nodeTemp : vbForSemester.getChildren()) {
+				if (nodeTemp instanceof HBox
+					&& ((Button) e.getSource())
+						.getId()
+						.equals(
+								nodeTemp
+								.getId())
+				) {
+					vbForSemester.getChildren().remove(nodeTemp);
+					break;
+				}
 			}
-		}
 	}
 
 	@FXML
