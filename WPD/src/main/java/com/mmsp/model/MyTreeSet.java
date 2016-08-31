@@ -55,4 +55,15 @@ public class MyTreeSet extends TreeSet<Semester> implements Comparator<Semester>
 		System.err.println();
 		return s;
 	}
+
+	public String getStringSemester() {
+		String s = "";
+		for (Semester sem : this) {
+			s += "," + sem.getNUMBER_OF_SEMESTER();
+		}
+		if (s.length() != 0) {
+			return s.substring(1);
+		}
+		return null;
+	}
 }

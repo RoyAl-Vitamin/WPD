@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.PopOver.ArrowLocation;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
@@ -84,6 +86,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import javafx.util.Duration;
 
 public class FXMLCtrlNewTab extends VBox {
 
@@ -261,6 +264,8 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private Button bCallFileChooser;
 
+	PopOver popOver;
+
 	@FXML
 	private Button bSemester;
 
@@ -382,7 +387,6 @@ public class FXMLCtrlNewTab extends VBox {
 	 * @param event
 	 */
 	@FXML
-	// TODO move to Pop-over on ControlsFX
 	// FIXME Написать проверку на ввод
 	// FIXME Проследить уникальность номеров семестров
 	void clickBSemester(ActionEvent event) {
@@ -401,7 +405,11 @@ public class FXMLCtrlNewTab extends VBox {
 			Button bRemoveSem = new Button("-");
 
 			bRemoveSem.setId(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
-			bRemoveSem.setOnAction(e -> clickRemoveSemester(e));
+			bRemoveSem.setOnAction(e -> {
+				clickRemoveSemester(e);
+				popOver.getRoot().autosize();
+				popOver.show(bSemester);
+			});
 
 			hbForSem.getChildren().addAll(tfForNumber, tfForQuantity, bRemoveSem);
 			hbForSem.setId(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
@@ -415,35 +423,55 @@ public class FXMLCtrlNewTab extends VBox {
 			hbForSem.setAlignment(Pos.CENTER);
 
 			TextField tfForNumber = new TextField();
+			tfForNumber.setPromptText("№ семестра");
 			tfForNumber.setId("numOfSem");
 			TextField tfForQuantity = new TextField();
+			tfForQuantity.setPromptText("количество недель");
 			tfForQuantity.setId("quaOfWeek");
 			Button bRemoveSem = new Button("-");
-			bRemoveSem.setOnAction(ev -> clickRemoveSemester(ev));
+			bRemoveSem.setOnAction(ev -> {
+				clickRemoveSemester(ev);
+				popOver.getRoot().autosize();
+				popOver.show(bSemester);
+			});
 
 			hbForSem.getChildren().addAll(tfForNumber, tfForQuantity, bRemoveSem);
 			hbForSem.setId("");
 			VBox.setMargin(hbForSem, new Insets(0, 15, 0, 15));
 			vbForSemester.getChildren().add(vbForSemester.getChildren().size() - 2, hbForSem);
+			popOver.getRoot().autosize();
+			popOver.show(bSemester);
 		});
 		vbForSemester.getChildren().add(bAddSemester);
 
 		Button bSaveSemester = new Button("Сохранить");
 		bSaveSemester.setOnAction(e -> clickBSaveSemester(e));
 		vbForSemester.getChildren().add(bSaveSemester);
-		Scene scene = new Scene(vbForSemester, 300, 350);
-		Stage stageForSemester = new Stage();
-		stageForSemester.setScene(scene);
-		stageForSemester.initModality(Modality.APPLICATION_MODAL);
-		stageForSemester.setOnCloseRequest(e -> {
-			if (treeRoot.size() != 0) bSemester.setText(toString(treeRoot));
+		vbForSemester.setPadding(new Insets(20, 20, 20, 20));
+
+		createPopOver();
+		popOver.setContentNode(vbForSemester);
+		popOver.getRoot().autosize();
+		popOver.show(bSemester);
+		popOver.setOnCloseRequest(e -> {
+			if (treeRoot.size() != 0) bSemester.setText(treeRoot.getStringSemester());
 			else bSemester.setText("Добавить");
-			stageForSemester.close();
 		});
-		stageForSemester.setTitle("Изменить семестры");
-		stageForSemester.getIcons().add(new Image("Logo.png"));
-		stageForSemester.showAndWait();
 	}
+	
+	private PopOver createPopOver() {
+		if (popOver == null)
+			popOver = new PopOver();
+
+		popOver.setDetachable(false);
+		popOver.setDetached(false);
+		popOver.arrowSizeProperty().set(10);
+		popOver.setArrowLocation(ArrowLocation.TOP_RIGHT);
+		popOver.arrowIndentProperty().set(10);
+		popOver.cornerRadiusProperty().set(8);
+		popOver.headerAlwaysVisibleProperty().set(false);
+		return popOver;
+    }
 
 	/**
 	 * Сохраняет текущее содержание семестров и удаляет из treeRoot удалённые из этого окна 
@@ -470,7 +498,7 @@ public class FXMLCtrlNewTab extends VBox {
 
 		for (Node nodeTemp : vbForSemester.getChildren()) { // Добаение новых узлов
 			if (nodeTemp instanceof HBox) {
-				if ("".equals(nodeTemp.getId())) {// Добавить семестр
+				if ("".equals(nodeTemp.getId())) { // Добавить семестр
 					Semester newSem = new Semester();
 					newSem.setNUMBER_OF_SEMESTER(getNumberOfSemester((HBox) nodeTemp));
 					newSem.setQUANTITY_OF_WEEK(getQuantityOfWeek((HBox) nodeTemp));
@@ -482,16 +510,22 @@ public class FXMLCtrlNewTab extends VBox {
 							if ("quaOfWeek".equals(node.getId()))
 								node.setId("quaOfWeek " + newSem.getNUMBER_OF_SEMESTER());
 						}
+						if (node instanceof Button) {
+							node.setId("" + newSem.getNUMBER_OF_SEMESTER());
+						}
 					}
 					nodeTemp.setId(String.valueOf(newSem.getNUMBER_OF_SEMESTER()));
 				}
 			}
 		}
 
+		if (treeRoot.size() != 0) bSemester.setText(treeRoot.getStringSemester());
+		else bSemester.setText("Добавить");
 		olSemesters.clear();
 		for (Semester sem : treeRoot) {
 			olSemesters.add(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
 		}
+		if (olSemesters.size() == 0) currSemester = null;
 		cbSemesters.getSelectionModel().selectFirst();
 		loadTvT71();
 		loadTabThematicalPlan();
@@ -532,8 +566,17 @@ public class FXMLCtrlNewTab extends VBox {
 	private void clickRemoveSemester(ActionEvent e) {
 		// Приводим к VBox                            // к hbForSem // к vbForSemester
 		VBox vbForSemester = (VBox) ((Button) e.getSource()).getParent().getParent();
+
 		for (Node nodeTemp : vbForSemester.getChildren()) {
-			if (nodeTemp instanceof HBox && ((Button) e.getSource()).getId().equals(nodeTemp.getId())) {
+			System.err.println("ID NODE " + nodeTemp.getId());
+			if (nodeTemp != null
+				&& nodeTemp instanceof HBox
+				&& ((Button) e.getSource())
+					.getId()
+					.equals(
+							nodeTemp
+							.getId())
+			) {
 				vbForSemester.getChildren().remove(nodeTemp);
 				break;
 			}
@@ -1665,17 +1708,21 @@ public class FXMLCtrlNewTab extends VBox {
 	}
 
 	/**
-	 * Загружает данные из currSemester в таблицу 7.1 
+	 * Загружает данные из currSemester в таблицу 7.1, если он null, то убирает таблицу
 	 * @param currSem
 	 */
 	private void loadTvT71() {
-		createTvT71(currSemester); // Создание каркаса
-		pasteIntoTvT71(currSemester); // Подгрузка в ячейки данных
+		if (currSemester == null) {
+			vbT71.getChildren().remove(ssvTable71);
+		} else {
+			createTvT71(currSemester); // Создание каркаса
+			pasteIntoTvT71(currSemester); // Подгрузка в ячейки данных
 
-		if (!vbT71.getChildren().contains(ssvTable71)) { // отображение, если ещё не отображено
-			vbT71.getChildren().add(ssvTable71);
-			VBox.setVgrow(ssvTable71, Priority.ALWAYS);
-			VBox.setMargin(ssvTable71, new Insets(0, 15, 0, 0));
+			if (!vbT71.getChildren().contains(ssvTable71)) { // отображение, если ещё не отображено
+				vbT71.getChildren().add(ssvTable71);
+				VBox.setVgrow(ssvTable71, Priority.ALWAYS);
+				VBox.setMargin(ssvTable71, new Insets(0, 15, 0, 0));
+			}
 		}
 	}
 
@@ -1684,6 +1731,7 @@ public class FXMLCtrlNewTab extends VBox {
 	 * @param currSem
 	 */
 	private void pasteIntoTvT71(Semester currSem) {
+		if (currSem == null) return;
 		for (Record row : currSem.getRowT71())
 			addRowT71(row);
 	}
@@ -1720,6 +1768,10 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Создаёт каркас таблицы
 	 */
 	private void createTvT71(Semester sem) {
+		if (sem == null) {
+			ssvTable71.setGrid(null);
+			return;
+		}
 		int length = sem.getQUANTITY_OF_WEEK();
 		ehT71 = new EventHandler<GridChange>() {
 			public void handle(GridChange change) {
@@ -1813,7 +1865,7 @@ public class FXMLCtrlNewTab extends VBox {
 		load(id_Vers); // Загрузка полей
 
 		//mbNumberOfSemesters.setText(tsFNOS.toString());
-		bSemester.setText( treeRoot.size() != 0 ? toString(treeRoot) : "" );
+		bSemester.setText( treeRoot.size() != 0 ? treeRoot.getStringSemester() : "" );
 
 		olSemesters.addListener(new ListChangeListener<String>() {
 			@Override
@@ -1849,7 +1901,7 @@ public class FXMLCtrlNewTab extends VBox {
 			}
 		);
 		cbSemesters.setItems(olSemesters);
-		if (treeRoot.size() != 0) bSemester.setText(toString(treeRoot));
+		if (treeRoot.size() != 0) bSemester.setText(treeRoot.getStringSemester());
 		else bSemester.setText("Добавить");
 	}
 
@@ -1860,17 +1912,6 @@ public class FXMLCtrlNewTab extends VBox {
 	//**
 	//*************************************************************************************************************************
 	//*************************************************************************************************************************
-
-	private String toString(Set<Semester> tR) {
-		String s = "";
-		for (Semester sem : tR) {
-			s += "," + sem.getNUMBER_OF_SEMESTER();
-		}
-		if (s.length() != 0) {
-			return s.substring(1);
-		}
-		return null;
-	}
 
 	public void setParentCtrl(FXMLCtrlMain fxmlCtrlMain) {
 		this.parentCtrl = fxmlCtrlMain;
