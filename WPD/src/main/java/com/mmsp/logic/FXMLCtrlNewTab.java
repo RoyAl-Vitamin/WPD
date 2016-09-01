@@ -390,6 +390,40 @@ public class FXMLCtrlNewTab extends VBox {
 	void clickBSemester(ActionEvent event) {
 		VBox vbForSemester = new VBox(5);
 		vbForSemester.setAlignment(Pos.CENTER);
+		Button bSaveSemester = new Button("Сохранить");
+
+		ChangeListener<String> cl2 = new ChangeListener<String>() { // http://stackoverflow.com/questions/12956061/javafx-oninputmethodtextchanged-not-called-after-focus-is-lost
+
+			@Override
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+				if (
+						isInteger(newValue)
+						&& isSatisfies(newValue)
+					) bSaveSemester.setDisable(false); else bSaveSemester.setDisable(true);
+			}
+
+			private boolean isInteger(String sValue) { // проверка на ввод и что б в Integer помещалось
+				try {
+					Integer.parseInt(sValue);
+					return true;
+				} catch (NumberFormatException ex) {
+					return false;
+				}
+			}
+			
+			private boolean isSatisfies(String sValue) {
+				if (sValue != null) {
+					if (!sValue.equals("")) {
+						return true;
+					} else {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			}
+		};
+
 		for (Semester sem : treeRoot) {
 			HBox hbForSem = new HBox(5);
 			hbForSem.setAlignment(Pos.CENTER);
@@ -400,6 +434,9 @@ public class FXMLCtrlNewTab extends VBox {
 			tfForNumber.setId("numOfSem " + sem.getNUMBER_OF_SEMESTER());
 			TextField tfForQuantity = new TextField(String.valueOf(sem.getQUANTITY_OF_WEEK()));
 			tfForQuantity.setId("quaOfWeek " + sem.getNUMBER_OF_SEMESTER());
+			tfForNumber.textProperty().addListener(cl2);
+			tfForQuantity.textProperty().addListener(cl2);
+
 			Button bRemoveSem = new Button("-");
 
 			bRemoveSem.setId(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
@@ -426,6 +463,9 @@ public class FXMLCtrlNewTab extends VBox {
 			TextField tfForQuantity = new TextField();
 			tfForQuantity.setPromptText("количество недель");
 			tfForQuantity.setId("quaOfWeek");
+			tfForNumber.textProperty().addListener(cl2);
+			tfForQuantity.textProperty().addListener(cl2);
+			
 			Button bRemoveSem = new Button("-");
 			bRemoveSem.setTooltip(new Tooltip("Удалить данный семестр"));
 			bRemoveSem.setOnAction(ev -> {
@@ -443,7 +483,6 @@ public class FXMLCtrlNewTab extends VBox {
 		});
 		vbForSemester.getChildren().add(bAddSemester);
 
-		Button bSaveSemester = new Button("Сохранить");
 		bSaveSemester.setOnAction(e -> clickBSaveSemester(e));
 		vbForSemester.getChildren().add(bSaveSemester);
 		vbForSemester.setPadding(new Insets(20, 20, 20, 20));
@@ -498,22 +537,26 @@ public class FXMLCtrlNewTab extends VBox {
 		for (Node nodeTemp : vbForSemester.getChildren()) { // Добаение новых узлов
 			if (nodeTemp instanceof HBox) {
 				if ("".equals(nodeTemp.getId())) { // Добавить семестр
-					Semester newSem = new Semester();
-					newSem.setNUMBER_OF_SEMESTER(getNumberOfSemester((HBox) nodeTemp));
-					newSem.setQUANTITY_OF_WEEK(getQuantityOfWeek((HBox) nodeTemp));
-					treeRoot.add(newSem);
-					for (Node node : ((HBox) nodeTemp).getChildren()) { // раздадим id новым полям нового семестра
-						if (node instanceof TextField) {
-							if ("numOfSem".equals(node.getId()))
-								node.setId("numOfSem " + newSem.getNUMBER_OF_SEMESTER());
-							if ("quaOfWeek".equals(node.getId()))
-								node.setId("quaOfWeek " + newSem.getNUMBER_OF_SEMESTER());
+					int numOfSem = getNumberOfSemester((HBox) nodeTemp);
+					int quaOfWeek = getQuantityOfWeek((HBox) nodeTemp);
+					if (numOfSem > 0 || quaOfWeek > 0) {
+						Semester newSem = new Semester();
+						newSem.setNUMBER_OF_SEMESTER(numOfSem);
+						newSem.setQUANTITY_OF_WEEK(quaOfWeek);
+						treeRoot.add(newSem);
+						for (Node node : ((HBox) nodeTemp).getChildren()) { // раздадим id новым полям нового семестра
+							if (node instanceof TextField) {
+								if ("numOfSem".equals(node.getId()))
+									node.setId("numOfSem " + newSem.getNUMBER_OF_SEMESTER());
+								if ("quaOfWeek".equals(node.getId()))
+									node.setId("quaOfWeek " + newSem.getNUMBER_OF_SEMESTER());
+							}
+							if (node instanceof Button) {
+								node.setId("" + newSem.getNUMBER_OF_SEMESTER());
+							}
 						}
-						if (node instanceof Button) {
-							node.setId("" + newSem.getNUMBER_OF_SEMESTER());
-						}
+						nodeTemp.setId(String.valueOf(newSem.getNUMBER_OF_SEMESTER()));
 					}
-					nodeTemp.setId(String.valueOf(newSem.getNUMBER_OF_SEMESTER()));
 				}
 			}
 		}
@@ -526,6 +569,7 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 		if (olSemesters.size() == 0) currSemester = null;
 		cbSemesters.getSelectionModel().selectFirst();
+		currSemester = treeRoot.first();
 		loadTvT71();
 		loadTabThematicalPlan();
 	}
@@ -538,7 +582,13 @@ public class FXMLCtrlNewTab extends VBox {
 	private int getQuantityOfWeek(HBox hboxTemp) {
 		for (Node node : hboxTemp.getChildren()) {
 			if (node instanceof TextField && node.getId().contains("quaOfWeek")) {
-				return Integer.parseInt(((TextField) node).getText());
+				int temp = 0;
+				try {
+					temp = Integer.parseInt(((TextField) node).getText());
+				} catch (NumberFormatException e) {
+					temp = 0;
+				}
+				return temp;
 			}
 		}
 		return 0;
@@ -552,7 +602,13 @@ public class FXMLCtrlNewTab extends VBox {
 	private int getNumberOfSemester(HBox hboxTemp) {
 		for (Node node : hboxTemp.getChildren()) {
 			if (node instanceof TextField && node.getId().contains("numOfSem")) {
-				return Integer.parseInt(((TextField) node).getText());
+				int temp = 0;
+				try {
+					temp = Integer.parseInt(((TextField) node).getText());
+				} catch (NumberFormatException e) {
+					temp = 0;
+				}
+				return temp;
 			}
 		}
 		return 0;
@@ -574,8 +630,8 @@ public class FXMLCtrlNewTab extends VBox {
 					&& ((Button) e.getSource())
 						.getId()
 						.equals(
-								nodeTemp
-								.getId())
+							nodeTemp
+							.getId())
 				) {
 					vbForSemester.getChildren().remove(nodeTemp);
 					break;
@@ -1843,10 +1899,6 @@ public class FXMLCtrlNewTab extends VBox {
                 	bDelRowT71.setDisable(true);
             }
         });
-		if (sem.getRowT71() != null && sem.getRowT71().size() != 0) {
-			for (Record rec : sem.getRowT71())
-				addRowT71(rec);
-		}
 	}
 
 	/**
