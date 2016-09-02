@@ -56,10 +56,6 @@ public class WPDVersion implements Serializable {
 	@ManyToOne//(cascade = CascadeType.REFRESH)
 	@JoinColumn(name="WPD_VERSION_DATA")
 	private WPDData wpdData;
-
-	//@OneToOne//(cascade = CascadeType.REMOVE)
-	//@PrimaryKeyJoinColumn
-	//private ThematicPlan thematicPlan; // связь с тематическим планом
 	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "wpdVersion") //, cascade = CascadeType.REMOVE)
 	private Set<ThematicPlan> thematicPlans = new HashSet<>(); // множество версий

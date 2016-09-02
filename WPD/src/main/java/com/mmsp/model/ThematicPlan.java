@@ -177,8 +177,16 @@ public class ThematicPlan implements Serializable {
 	public String toString() {
 		return "\nThematicPlan: " + this.getClass().getName() + "@" + this.hashCode() +
 				"\nID == " + (this.getId() != null ? this.getId().toString() : "null") +
+				"\nWPDVersion == " + this.getWPDVerion().getClass().getName() + "@" + this.getWPDVerion().hashCode() +
 				"\ntitle == " + this.getTitle() +
 				"\ndescription == " + this.getDescription() +
-				"\nWPDVersion == " + this.getWPDVerion().getClass().getName() + "@" + this.getWPDVerion().hashCode();
+				"\nbelonging To The Semester == " + this.getBelongingToTheSemester() +
+				"\nbelonging To The Module == " + this.getBelongingToTheModule() +
+				"\nbelonging To The Section == " + this.getBelongingToTheSection() +
+				"\nL == " + this.getL() +
+				"\nPZ == " + this.getPZ() +
+				"\nLR == " + this.getLR() +
+				"\nKSR == " + this.getKSR() +
+				"\nSRS == " + this.getSRS() + "\n";
 		}
 }

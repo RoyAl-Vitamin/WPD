@@ -50,4 +50,13 @@ public class Section {
 			if (theme.getNumber().equals(Integer.valueOf(number))) return theme;
 		return null;
 	}
+
+	public int getL() {
+		int temp = 0;
+		for (ThematicPlan theme : this.getTreeTheme()) {
+			if (theme.getL() != null)
+				temp += theme.getL();
+		}
+		return temp;
+	}
 }

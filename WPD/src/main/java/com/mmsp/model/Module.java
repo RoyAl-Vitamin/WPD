@@ -16,16 +16,6 @@ public class Module {
 		}
 	});
 
-	/**
-	 * true, если это объекты одного класса и их номера совпадают
-	 */
-	/*@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof Module)) return false;
-		if (((Module) obj).number == this.number) return true;
-		return false;
-	}*/
-
 	public int getNumber() {
 		return number;
 	}
@@ -59,5 +49,13 @@ public class Module {
 		for (Section sec : treeSection)
 			if (sec.getNumber() == number) return sec;
 		return null;
+	}
+
+	public int getL() {
+		int temp = 0;
+		for (Section sec : this.getTreeSection()) {
+			temp += sec.getL();
+		}
+		return temp;
 	}
 }

@@ -262,7 +262,7 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private Button bCallFileChooser;
 
-	PopOver popOver;
+	PopOver popOver; // Окно добавления/изменения № семестров и их недель
 
 	@FXML
 	private Button bSemester;
@@ -385,7 +385,6 @@ public class FXMLCtrlNewTab extends VBox {
 	 * @param event
 	 */
 	@FXML
-	// FIXME Написать проверку на ввод
 	// FIXME Проследить уникальность номеров семестров
 	void clickBSemester(ActionEvent event) {
 		VBox vbForSemester = new VBox(5);
@@ -397,9 +396,9 @@ public class FXMLCtrlNewTab extends VBox {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				if (
-						isInteger(newValue)
-						&& isSatisfies(newValue)
-					) bSaveSemester.setDisable(false); else bSaveSemester.setDisable(true);
+					isInteger(newValue)
+					&& isSatisfies(newValue)
+				) bSaveSemester.setDisable(false); else bSaveSemester.setDisable(true);
 			}
 
 			private boolean isInteger(String sValue) { // проверка на ввод и что б в Integer помещалось
@@ -666,7 +665,7 @@ public class FXMLCtrlNewTab extends VBox {
 
 		// ОБНОВЛЕНИЕ ТЕМАТИЧЕСКОГО ПЛАНА
 		// Удалить все темы из тематического плана, которые принадлежат этой версии
-		// Занести из таблицы Тематического плана во множество setCurrThematicPlan
+		// Занести из treeRoot во множество setCurrThematicPlan
 		// Сохранить их всех в БД
 
 		DAO_ThematicPlan dao_thematicPlan = new DAO_ThematicPlan();
@@ -676,29 +675,17 @@ public class FXMLCtrlNewTab extends VBox {
 		for (ThematicPlan tp : setCurrThematicPlan)
 			dao_thematicPlan.remove(tp);
 
-		for (int i = 1; i < ssvTableTP.getGrid().getRowCount(); i++) {
-			ThematicPlan tp = new ThematicPlan();
-			tp.setWPDVerion(currWPDVersion);
-			tp.setTitle(ssvTableTP.getGrid().getRows().get(i).get(0).getText());
-			tp.setDescription(ssvTableTP.getGrid().getRows().get(i).get(1).getText());
-			tp.setBelongingToTheSemester(Integer.valueOf(1)); // FIXME
-			tp.setBelongingToTheModule(Integer.valueOf(ssvTableTP.getGrid().getRows().get(i).get(2).getText()));
-			tp.setBelongingToTheSection(Integer.valueOf(ssvTableTP.getGrid().getRows().get(i).get(3).getText()));
-			try {
-				tp.setL(Integer.valueOf(ssvTableTP.getGrid().getRows().get(i).get(4).getText()));
-				tp.setPZ(Integer.valueOf(ssvTableTP.getGrid().getRows().get(i).get(5).getText()));
-				tp.setLR(Integer.valueOf(ssvTableTP.getGrid().getRows().get(i).get(6).getText()));
-				tp.setKSR(Integer.valueOf(ssvTableTP.getGrid().getRows().get(i).get(7).getText()));
-				tp.setSRS(Integer.valueOf(ssvTableTP.getGrid().getRows().get(i).get(8).getText()));
-			} catch (NumberFormatException ex) {
-				System.err.println("При выделении числа из TableTP возникла ошибка");
-				ex.printStackTrace();
-			}
+		setCurrThematicPlan.clear();
+		for (Semester sem : treeRoot)
+			for (Module mod : sem.getTreeModule())
+				for (Section sec : mod.getTreeSection())
+					for (ThematicPlan tp : sec.getTreeTheme()) {
+						tp.setWPDVerion(currWPDVersion);
 
-			setCurrThematicPlan.add(tp);
-
-			tp.setId(dao_thematicPlan.add(tp));
-		}
+						setCurrThematicPlan.add(tp);
+			
+						tp.setId(dao_thematicPlan.add(tp));
+					}
 
 
 		DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
@@ -832,21 +819,16 @@ public class FXMLCtrlNewTab extends VBox {
 			public void handle(MouseEvent event) {
 				if (event.getButton() == MouseButton.SECONDARY) {
 					TreeItem<String> selected = tvRoot.getSelectionModel().getSelectedItem();
-					
-					//item is selected - this prevents fail when clicking on empty space
+
 					if (selected != null) {
-						//open context menu on current screen position
 						openContextMenu(selected, event.getScreenX(), event.getScreenY());
 					}
 				} else {
-					//any other click cause hiding menu
 					menu.hide();
 				}
 			}
 
-			// UNDONE Контроллер
 			private void openContextMenu(TreeItem<String> item, double x, double y) {
-				// custom method that update menu items
 				menu.getItems().clear();
 				MenuItem mI;
 
@@ -1213,7 +1195,6 @@ public class FXMLCtrlNewTab extends VBox {
 	 * @param lValueOfOldCell список значений ячеек.
 	 * @return строку
 	 */
-	// FIXME переписать
 	private ObservableList<SpreadsheetCell> createRowForTTP(int posRow, List<String> lValueOfOldCell) {
 		ObservableList<SpreadsheetCell> olRow = FXCollections.observableArrayList();
 		if (lValueOfOldCell == null) { // Используется для создания новой строки
@@ -1231,8 +1212,12 @@ public class FXMLCtrlNewTab extends VBox {
 		} else { // Используется при удалении строки и переносе значений на строку выше, и вставки строки
 			for (int column = 0; column < 4; column++) {
 				int temp = 0;
-				if (!lValueOfOldCell.get(column).equals("null"))
-					 temp = Integer.parseInt(lValueOfOldCell.get(column));
+				try {
+					temp = Integer.parseInt(lValueOfOldCell.get(column));
+				} catch (NumberFormatException | NullPointerException e) {
+					temp = 0;
+				}
+				
 				SpreadsheetCell ssC = SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, temp);
 				ssC.setEditable(false);
 				olRow.add(ssC);
@@ -1244,42 +1229,15 @@ public class FXMLCtrlNewTab extends VBox {
 			}
 			for (int column = 6; column < ssvTableTP.getGrid().getColumnCount(); column++) {
 				int temp = 0;
-				if (!lValueOfOldCell.get(column).equals("null"))
-					 temp = Integer.parseInt(lValueOfOldCell.get(column));
+				try {
+					temp = Integer.parseInt(lValueOfOldCell.get(column));
+				} catch (NumberFormatException | NullPointerException e) {
+					temp = 0;
+				}
 				olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1, temp));
 			}
 		}
 		return olRow;
-	}
-
-	private void addSetToTTP (Set<ThematicPlan> sThematicPlan) {
-		//if (sThematicPlan.size() == 0) return;
-		GridBase newGrid = new GridBase(ssvTableTP.getGrid().getRowCount() + sThematicPlan.size(), ssvTableTP.getGrid().getColumnCount());
-		//int newRowPos = ssvTableTP.getGrid().getRowCount(); // и количество строк
-		int i = 1;
-
-		ObservableList<ObservableList<SpreadsheetCell>> newRows = ssvTableTP.getGrid().getRows(); // а так же существующие строки
-		for (ThematicPlan tp : sThematicPlan) {
-			ArrayList<String> alRow = new ArrayList<>();
-			alRow.add(tp.getTitle());
-			alRow.add(tp.getDescription());
-			//alRow.add(String.valueOf(tp.getBelongingToTheSemester()));
-			alRow.add(String.valueOf( tp.getBelongingToTheModule() == null? "0" : tp.getBelongingToTheModule() ));
-			alRow.add(String.valueOf( tp.getBelongingToTheSection() == null? "0" : tp.getBelongingToTheSection() ));
-			alRow.add(String.valueOf( tp.getL() == null ? "0" : tp.getL() ));
-			alRow.add(String.valueOf( tp.getPZ() == null ? "0" : tp.getPZ() ));
-			alRow.add(String.valueOf( tp.getLR() == null ? "0" : tp.getLR() ));
-			alRow.add(String.valueOf( tp.getKSR() == null ? "0" : tp.getKSR() ));
-			alRow.add(String.valueOf( tp.getSRS() == null ? "0" : tp.getSRS() ));
-			ObservableList<SpreadsheetCell> olNew = createRowForTTP(i++, alRow); // Добавление на место последней строки пустой строки
-			newRows.add(olNew);
-		}
-
-		newGrid.setRows(newRows);
-		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehTP);
-		newGrid.setRowHeightCallback(new GridBase.MapBasedRowHeightFactory(generateRowHeight(newGrid.getRowCount())));
-
-		ssvTableTP.setGrid(newGrid);
 	}
 
 	/**
@@ -1295,7 +1253,8 @@ public class FXMLCtrlNewTab extends VBox {
 		if (currWPDVersion.getThematicPlans() != null) {
 			if (currWPDVersion.getThematicPlans().size() != 0) {
 				setCurrThematicPlan = currWPDVersion.getThematicPlans();
-				addSetToTTP(setCurrThematicPlan);
+				for (ThematicPlan theme : currWPDVersion.getThematicPlans())
+					addRowSSVTableTP(theme);
 			}
 		}
 
@@ -1387,8 +1346,6 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Инициализация компонента ssvTableTP
 	 */
 	private void initSSVTableTP()
-	// FIXME Необходима ли ещё одна колонка для "Принадлежность к семестру?"
-	// FIXME Необходима ли ещё одна колонка для "Номер темы?"
 	// FIXME СРС должна быть String?
 	{
 		ehTP = new EventHandler<GridChange>() {
@@ -1421,6 +1378,9 @@ public class FXMLCtrlNewTab extends VBox {
 
 			@Override
 			public void changed(ObservableValue<? extends TreeItem<String>> observable, TreeItem<String> old_val, TreeItem<String> new_val) {
+
+				saveTheme();
+
 				if (new_val == null) return;
 				// Поиск выбранного элемента в treeRoot
 				if (new_val.getValue().split(" ")[0].equals("Семестр")) {
@@ -1456,7 +1416,32 @@ public class FXMLCtrlNewTab extends VBox {
 		createTree();
 	}
 
+	/**
+	 * сохраняет изменения темы из ssvTableTP
+	 */
+	private void saveTheme() {
+		int rowCount = ssvTableTP.getGrid().getRowCount();
+		for (int i = 1; i < rowCount; i++) {
+			int belongingToTheSemester = (int) ssvTableTP.getGrid().getRows().get(i).get(0).getItem();
+			int belongingToTheModule = (int) ssvTableTP.getGrid().getRows().get(i).get(1).getItem();
+			int belongingToTheSection = (int) ssvTableTP.getGrid().getRows().get(i).get(2).getItem();
+			int numberOfTheme = (int) ssvTableTP.getGrid().getRows().get(i).get(3).getItem();
 
+			ThematicPlan theme = treeRoot.getSemester(belongingToTheSemester).getModule(belongingToTheModule).getSection(belongingToTheSection).getTheme(numberOfTheme);
+
+			if (theme != null) {
+				theme.setWPDVerion(currWPDVersion);
+				theme.setTitle((String) ssvTableTP.getGrid().getRows().get(i).get(4).getItem());
+				theme.setDescription((String) ssvTableTP.getGrid().getRows().get(i).get(5).getItem());
+				theme.setL((Integer) ssvTableTP.getGrid().getRows().get(i).get(6).getItem());
+				theme.setPZ((Integer) ssvTableTP.getGrid().getRows().get(i).get(7).getItem());
+				theme.setLR((Integer) ssvTableTP.getGrid().getRows().get(i).get(8).getItem());
+				theme.setKSR((Integer) ssvTableTP.getGrid().getRows().get(i).get(9).getItem());
+				theme.setSRS((Integer) ssvTableTP.getGrid().getRows().get(i).get(10).getItem());
+				System.out.println("Theme save\n" + theme.toString());
+			}
+		}
+	}
 
 	/**
 	 * перерисовывает содержимое ssvTableTP для выбранного в tvRoot элемента, будь то модуль или раздел, или тема (тематический план)
@@ -1495,6 +1480,7 @@ public class FXMLCtrlNewTab extends VBox {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.err.println("LiThemeSize == " + liTheme.size());
 		pasteIntoSSVTableTP(liTheme);
 	}
 
@@ -1502,8 +1488,9 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Вставляет данные в ssvTableTP из liTheme
 	 */
 	private void pasteIntoSSVTableTP(List<ThematicPlan> liTheme) {
-		for (ThematicPlan theme : liTheme)
+		for (ThematicPlan theme : liTheme) {
 			addRowSSVTableTP(theme);
+		}
 	}
 
 	/**
@@ -1529,6 +1516,8 @@ public class FXMLCtrlNewTab extends VBox {
 		liValueOftheme.add(String.valueOf(theme.getLR()));
 		liValueOftheme.add(String.valueOf(theme.getKSR()));
 		liValueOftheme.add(String.valueOf(theme.getSRS()));
+
+		liValueOftheme.forEach(System.err::println);
 
 		final ObservableList<SpreadsheetCell> olNew = createRowForTTP(newRowPos, liValueOftheme); // Добавление на место последней строки пустой строки
 		newRows.add(olNew);
@@ -1558,6 +1547,9 @@ public class FXMLCtrlNewTab extends VBox {
 					nodeSection.setExpanded(true);
 					nodeModule.getChildren().add(nodeSection);
 					for (ThematicPlan theme : section.getTreeTheme()) {
+
+						theme.setWPDVerion(currWPDVersion);
+
 						TreeItem<String> nodeTheme = new TreeItem<String>("Тема " + theme.getNumber());
 						nodeTheme.setExpanded(false);
 						nodeSection.getChildren().add(nodeTheme);
@@ -1812,7 +1804,6 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 
 		final ObservableList<SpreadsheetCell> olNew = createStringRow(newRowPos, liRow); // Добавление строки на место последней строки
-		//index++;
 		newRows.add(olNew);
 
 		newGrid.setRows(newRows);
@@ -1829,6 +1820,7 @@ public class FXMLCtrlNewTab extends VBox {
 			return;
 		}
 		int length = sem.getQUANTITY_OF_WEEK();
+
 		ehT71 = new EventHandler<GridChange>() {
 			public void handle(GridChange change) {
 				int row = change.getRow();
@@ -1853,12 +1845,153 @@ public class FXMLCtrlNewTab extends VBox {
 					if (col == 0) rec.setCourseTitle((String) change.getNewValue());
 					if (col > 0 && col <= rec.getArrWeek().length) rec.getArrWeek()[col - 1] = (String) change.getNewValue();
 				}
+
+				// Пока только разделы
+				int pos = 0; // номер строки, в которой нашли "Лекции"
+				for (int i = 0; i < ssvTable71.getGrid().getRowCount(); i++) // Смотрим, есть ли в первом столбце "лекции" и запоминаем эту позицию строки
+					if (ssvTable71.getGrid().getRows().get(i).get(0).getText().equalsIgnoreCase("лекции")) pos = i;
+				if (pos > 1) {
+					System.out.println("POS == " + pos);
+					for (int i = 1; i < ssvTable71.getGrid().getColumnCount() - 1; i++) {
+						if (ssvTable71.getGrid().getRows().get(pos).get(i).getText() == null || ssvTable71.getGrid().getRows().get(pos).get(i).getText().equals(""))
+							ssvTable71.getGrid().getRows().get(pos).get(i).setItem("0");
+					}
+					// в идеальном случае, размеры следующих массивов одинаковые,
+					// иначе список секций по количеству элементов будет такой же, но последние элементы будут заполнены 0-ми
+
+					// FIXME слишком сложно, лучше переписать
+					List<Section> liSec = new ArrayList<Section>(); // хранится список секций, который надо отобразить
+					List<Integer> liColSec = new ArrayList<Integer>(); // количесвто колонок, которое занимет каждая секция 
+					for (Module mod : treeRoot.getSemester(Integer.parseInt(cbSemesters.getSelectionModel().getSelectedItem())).getTreeModule())
+						liSec.addAll(mod.getTreeSection());
+					for (int i = 0; i < liSec.size(); i++)
+						liColSec.add(0);
+					int j = 0; // индекс текущей выбранной секции из списка liSec
+					int oldPos = 0; // позиция последней объединённой ячейки
+					int count = 0; // собранное количество часов в предполагаемом разделе
+					for (int i = 1; i < ssvTable71.getGrid().getColumnCount() - 1; i++) {
+						System.out.println("OLD_count == " + count);
+						count += Integer.parseInt(ssvTable71.getGrid().getRows().get(pos).get(i).getText());
+						System.out.println("NEW_count == " + count);
+						if (j >= liSec.size()) break;
+						System.out.println("AND j == " + j + " AND L == " + liSec.get(j).getL());
+						if (count >= liSec.get(j).getL()) {
+							liColSec.set(j, i - oldPos);
+							System.out.println("L == " + liSec.get(j).getL() + " Sec == " + liSec.get(j) + " number of Column == " + liColSec.get(j));
+							count = 0;
+							oldPos = i;
+							j++;
+						}
+					}
+					System.out.println("Section");
+					liSec.forEach(System.out::println);
+					System.out.println("Column");
+					liColSec.forEach(System.out::println);
+
+					setHeaderSection(liSec, liColSec);
+					
+					List<Module> liMod = new ArrayList<Module>(); // хранится список секций, который надо отобразить
+					List<Integer> liColMod = new ArrayList<Integer>(); // количесвто колонок, которое занимет каждая секция 
+					liMod.addAll(treeRoot.getSemester(Integer.parseInt(cbSemesters.getSelectionModel().getSelectedItem())).getTreeModule());
+					for (int i = 0; i < liSec.size(); i++)
+						liColMod.add(0);
+					j = 0; // индекс текущей выбранной секции из списка liSec
+					oldPos = 0; // позиция последней объединённой ячейки
+					count = 0; // собранное количество часов в предполагаемом разделе
+					for (int i = 1; i < ssvTable71.getGrid().getColumnCount() - 1; i++) {
+						System.out.println("OLD_count == " + count);
+						count += Integer.parseInt(ssvTable71.getGrid().getRows().get(pos).get(i).getText());
+						System.out.println("NEW_count == " + count);
+						if (j >= liMod.size()) break;
+						System.out.println("AND j == " + j + " AND L == " + liMod.get(j).getL());
+						if (count >= liMod.get(j).getL()) {
+							liColMod.set(j, i - oldPos);
+							System.out.println("L == " + liMod.get(j).getL() + " Sec == " + liMod.get(j) + " number of Column == " + liColMod.get(j));
+							count = 0;
+							oldPos = i;
+							j++;
+						}
+					}
+					System.out.println("Section");
+					liMod.forEach(System.out::println);
+					System.out.println("Column");
+					liColMod.forEach(System.out::println);
+
+					setHeaderModule(liMod, liColMod);
+				}
+			}
+
+			/**
+			 * Инициализирует все ячейки 2-ой строки значениями вида "М " + номер модуля и объединяет нужные
+			 * @param liMod
+			 * @param liColMod
+			 */
+			private void setHeaderModule(List<Module> liMod, List<Integer> liColMod) {
+				ssvTable71.getGrid().spanColumn(1, 2, 1); // разъединение "М1"
+				int posSec = 0; // отвечает за нужный раздел
+				int count = 0; // отвечает за количество нужных клеток в данном разделе
+				for (int column = 1; column < ssvTable71.getGrid().getColumnCount() - 1; column++) {
+					if (posSec < liMod.size() && count < liColMod.get(posSec)) {
+						ssvTable71.getGrid().getRows().get(2).set(column, SpreadsheetCellType.STRING.createCell(2, column, 1, 1, "М " + liMod.get(posSec).getNumber()));
+						count++;
+						if (count >= liColMod.get(posSec)) {
+							posSec++;
+							count = 0;
+						}
+					} else {
+						ssvTable71.getGrid().getRows().get(2).set(column, SpreadsheetCellType.STRING.createCell(2, column, 1, 1, "М " + liMod.get(liMod.size() - 1).getNumber()));
+					}
+					ssvTable71.getGrid().getRows().get(2).get(column).getStyleClass().add("span");
+					ssvTable71.getGrid().getRows().get(2).get(column).setEditable(false);
+				}
+				posSec = 1; // теперь отвечает за позицию последней объединённой ячейки + 1
+				for (int i = 0; i < liMod.size(); i++) {
+					if (i < liMod.size() - 1) {
+						ssvTable71.getGrid().spanColumn(liColMod.get(i), 2, posSec); // объединяем все кроме последних
+						posSec += liColMod.get(i);
+					} else {
+						ssvTable71.getGrid().spanColumn(ssvTable71.getGrid().getColumnCount() - 1 - posSec, 2, posSec); // объединяем все остальные клетки
+					}
+				}
+			}
+
+			/**
+			 * Инициализирует все ячейки 3-ей строки значениями вида "Р " + номер раздела и объединяет нужные
+			 * @param liSec
+			 * @param liColSec
+			 */
+			private void setHeaderSection(List<Section> liSec, List<Integer> liColSec) {
+				ssvTable71.getGrid().spanColumn(1, 3, 1); // разъединение "P1"
+				int posSec = 0; // отвечает за нужный раздел
+				int count = 0; // отвечает за количество нужных клеток в данном разделе
+				for (int column = 1; column < ssvTable71.getGrid().getColumnCount() - 1; column++) {
+					if (posSec < liSec.size() && count < liColSec.get(posSec)) {
+						ssvTable71.getGrid().getRows().get(3).set(column, SpreadsheetCellType.STRING.createCell(3, column, 1, 1, "Р " + liSec.get(posSec).getNumber()));
+						count++;
+						if (count >= liColSec.get(posSec)) {
+							posSec++;
+							count = 0;
+						}
+					} else {
+						ssvTable71.getGrid().getRows().get(3).set(column, SpreadsheetCellType.STRING.createCell(3, column, 1, 1, "Р " + liSec.get(liSec.size() - 1).getNumber()));
+					}
+					ssvTable71.getGrid().getRows().get(3).get(column).getStyleClass().add("span");
+					ssvTable71.getGrid().getRows().get(3).get(column).setEditable(false);
+				}
+				posSec = 1; // теперь отвечает за позицию последней объединённой ячейки + 1
+				for (int i = 0; i < liSec.size(); i++) {
+					if (i < liSec.size() - 1) {
+						ssvTable71.getGrid().spanColumn(liColSec.get(i), 3, posSec); // объединяем все кроме последних
+						posSec += liColSec.get(i);
+					} else {
+						ssvTable71.getGrid().spanColumn(ssvTable71.getGrid().getColumnCount() - 1 - posSec, 3, posSec); // объединяем все остальные клетки
+					}
+				}
 			}
 		};
 
 		int rowCount = 4;
 		int columnCount = length + 2;
-		//index = 4;
 		GridBase grid = new GridBase(rowCount, columnCount);
 
 		ObservableList<ObservableList<SpreadsheetCell>> rows = setHeaderForT71(grid, length);
@@ -1905,7 +2038,6 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Описание методов поведения TableView, TreeTableView, а так же выделение памяти и установление связей
 	 */
 	private void initT() {
-		//readProperties();
 		initSSVTableTP(); // Инициализация вкладки Тематический план
 		initTvStudyLoad();
 		initTvPoCM();
@@ -1916,7 +2048,6 @@ public class FXMLCtrlNewTab extends VBox {
 
 		load(id_Vers); // Загрузка полей
 
-		//mbNumberOfSemesters.setText(tsFNOS.toString());
 		bSemester.setText( treeRoot.size() != 0 ? treeRoot.getStringSemester() : "" );
 
 		olSemesters.addListener(new ListChangeListener<String>() {
