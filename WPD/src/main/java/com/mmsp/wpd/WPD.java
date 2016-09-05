@@ -13,8 +13,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -47,7 +45,7 @@ public class WPD extends Application {
 			Scene scene = new Scene(root);
 			
 			primaryStage.setScene(scene);
-			primaryStage.setTitle("WPD");
+			primaryStage.setTitle("РПД");
 			primaryStage.getIcons().add(new Image("Logo.png"));
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -69,6 +67,7 @@ public class WPD extends Application {
 
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() { // Работает только на закрытие окна по крестику
 			public void handle(WindowEvent t) {
+				core.closeSessionFactory(); // Закрываем сессию
 				stop();
 			}
 		});

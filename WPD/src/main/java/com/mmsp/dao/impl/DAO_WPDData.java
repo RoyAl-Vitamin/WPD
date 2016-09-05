@@ -21,7 +21,7 @@ public class DAO_WPDData implements DAO<WPDData>{
 		session.beginTransaction();
 		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
 		Query query = session.createQuery("from com.mmsp.model.WPDData");
-		List<WPDData> objects = query.list();
+		List<WPDData> objects = (List<WPDData>) query.list();
 		System.out.println("Found ALL Successfully");
 		for(WPDData obj_out : objects)
 		{

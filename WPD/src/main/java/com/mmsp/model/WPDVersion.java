@@ -174,8 +174,10 @@ public class WPDVersion implements Serializable {
 				"\nname == " + this.getName() +
 				"\ntemplate name == " + this.getTemplateName() +
 				"\ndate == " + this.getDate().toString() +
-				"\nHANDBOOKDISCIPLINE == " + this.getHbD().toString() +
-				"\nPoCM == " + this.getPoCM().getClass().getName() + "@" + this.getPoCM().hashCode();
+				"\nHANDBOOKDISCIPLINE == " + this.getHbD().toString();
+		if (this.getPoCM() != null)
+				s += "\nPoCM == " + this.getPoCM().getClass().getName() + "@" + this.getPoCM().hashCode();
+		else s+= "\n PoCM == null";
 		for (ThematicPlan t : this.getThematicPlans()) {
 			s += "\nThematicPlan == " + t.getClass().getName() + "@" + this.getThematicPlans().hashCode();
 		}

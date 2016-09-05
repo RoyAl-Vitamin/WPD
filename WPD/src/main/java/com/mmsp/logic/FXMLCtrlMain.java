@@ -4,18 +4,12 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-
-import org.controlsfx.dialog.Wizard;
-
 import com.mmsp.dao.impl.DAO_HandBookDiscipline;
 import com.mmsp.dao.impl.DAO_WPDData;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.model.WPDData;
 import com.mmsp.model.WPDVersion;
-import com.mmsp.wpd.WPD;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -28,8 +22,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert; // не работает, скорее всего связано с Maven
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -41,7 +33,6 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 
 /**
  * @author Алексей
@@ -183,8 +174,8 @@ public class FXMLCtrlMain extends VBox {
 	@FXML
 	void clickBOpenTab(ActionEvent event) throws IOException { // "Открыть" WPDVersion
 
-		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
-		Long id_Disc = dao_Disc.getIdByValueAndCode(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
+		//DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
+		//Long id_Disc = dao_Disc.getIdByValueAndCode(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
 		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
 
 		Long id_Vers = dao_Vers.getIdByName(cbVersion.getValue()); // TODO Проверить то ли возвращает
@@ -224,6 +215,7 @@ public class FXMLCtrlMain extends VBox {
 				}
 			});
 			tpDiscipline.getTabs().add(t);
+			tpDiscipline.getSelectionModel().select(t);
 			
 			olCtrl.add(ctrlTemp); // Добавим контроллер и Id, Tab в список
 		} else
@@ -260,7 +252,7 @@ public class FXMLCtrlMain extends VBox {
 		Tab t = new Tab();
 
 		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
-		hbD = dao_Disc.getByValueAndCode(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
+		hbD = dao_Disc.getByValueAndCode(cbDiscipline.getValue().split(":")[0], cbDiscipline.getValue().split(":")[1]);
 
 		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
 		WPDVersion wpdVers = new WPDVersion();
@@ -334,6 +326,7 @@ public class FXMLCtrlMain extends VBox {
 			}
 		});
 		tpDiscipline.getTabs().add(t);
+		tpDiscipline.getSelectionModel().select(t);
 
 		olVersion.add(wpdVers.getName());
 		
@@ -371,7 +364,7 @@ public class FXMLCtrlMain extends VBox {
 		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
 
 		if (hbD == null) hbD = new HandbookDiscipline(); // Если открыл в первый раз
-		hbD.setCode(0);
+		hbD.setCode("");
 		hbD.setValue("");
 		hbD.getVersions().clear(); // почистим версии при создании
 		hbD.setId(dao_HBD.add(hbD));
@@ -390,19 +383,19 @@ public class FXMLCtrlMain extends VBox {
 		FXMLCtrlDiscipline fxmlCtrlDiscipline = fxmlLoader.getController();
 		fxmlCtrlDiscipline.init(stageDiscipline, hbD.getId());
 		stageDiscipline.setScene(scene);
-		stageDiscipline.setTitle("Discipline");
+		stageDiscipline.setTitle("Создать дисциплину");
 		stageDiscipline.getIcons().add(new Image("Logo.png"));
 		stageDiscipline.initModality(Modality.APPLICATION_MODAL);
 		stageDiscipline.setResizable(false);
 		stageDiscipline.showAndWait();
 
 		hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
-		if ("".equals(hbD.getValue()) && hbD.getCode() == -1) // Пользователь передумал создавать дисциплину
+		if ("".equals(hbD.getValue()) && "".equals(hbD.getCode())) // Пользователь передумал создавать дисциплину
 			dao_HBD.remove(hbD);
 		else {
 			olDiscipline.add(hbD.getValue() + ":" + hbD.getCode().toString());
-	
-			lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конце
+
+			lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конец
 			if (olDiscipline.size() == 1) cbDiscipline.getSelectionModel().selectLast();
 			lStatus.setText("Дисциплина создана");
 		}
@@ -438,7 +431,7 @@ public class FXMLCtrlMain extends VBox {
 		FXMLCtrlDiscipline fxmlCtrlDiscipline = fxmlLoader.getController();
 		fxmlCtrlDiscipline.init(stageDiscipline, hbD.getId());
 		stageDiscipline.setScene(scene);
-		stageDiscipline.setTitle("Discipline");
+		stageDiscipline.setTitle("Изменить дисциплину");
 		stageDiscipline.getIcons().add(new Image("Logo.png"));
 		stageDiscipline.initModality(Modality.APPLICATION_MODAL);
 		stageDiscipline.setResizable(false);
@@ -517,7 +510,7 @@ public class FXMLCtrlMain extends VBox {
 		DAO_HandBookDiscipline dao_disc = new DAO_HandBookDiscipline();
 		List<HandbookDiscipline> li = dao_disc.getAll(HandbookDiscipline.class);
 		for (int i = 0; i < li.size(); i++) {
-			olDiscipline.add(li.get(i).getValue() + ":" + li.get(i).getCode().intValue());
+			olDiscipline.add(li.get(i).getValue() + ":" + li.get(i).getCode());
 		}
 
 		/*olCtrl.addListener(new ListChangeListener<String>() {
@@ -571,7 +564,7 @@ public class FXMLCtrlMain extends VBox {
 					bDelete.setDisable(false);
 
 					DAO_HandBookDiscipline DAO_HBD = new DAO_HandBookDiscipline();
-					hbD = DAO_HBD.getByValueAndCode(newValue.split(":")[0], Integer.valueOf(newValue.split(":")[1]));
+					hbD = DAO_HBD.getByValueAndCode(newValue.split(":")[0], newValue.split(":")[1]);
 				} else {
 					bChange.setDisable(true);
 					bDelete.setDisable(true);
@@ -583,12 +576,12 @@ public class FXMLCtrlMain extends VBox {
 
 		cbDiscipline.getSelectionModel().selectedIndexProperty().addListener(
 			new ChangeListener<Number>() {
-				public void changed (ObservableValue ov, Number value, Number new_value) {
+				public void changed (ObservableValue<? extends Number> ov, Number value, Number new_value) {
 					if (new_value.intValue() > -1) {
 						bAddTab.setDisable(false);
 						olVersion.clear();
 						String temp_disc = olDiscipline.get(new_value.intValue());
-						Long id = dao_disc.getIdByValueAndCode(temp_disc.split(":")[0], Integer.valueOf(temp_disc.split(":")[1]));
+						Long id = dao_disc.getIdByValueAndCode(temp_disc.split(":")[0], temp_disc.split(":")[1]);
 						updateOlVersion(id);
 					} else { // если пустое поле
 						bAddTab.setDisable(true);
@@ -601,7 +594,7 @@ public class FXMLCtrlMain extends VBox {
 
 		cbVersion.getSelectionModel().selectedIndexProperty().addListener(
 			new ChangeListener<Number>() {
-				public void changed (ObservableValue ov, Number value, Number new_value) {
+				public void changed (ObservableValue<? extends Number> ov, Number value, Number new_value) {
 					if (new_value.intValue() < 0)
 						bOpenTab.setDisable(true);
 					else

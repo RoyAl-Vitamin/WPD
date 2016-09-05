@@ -76,6 +76,7 @@ import javafx.scene.control.TablePosition;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
+import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -567,8 +568,10 @@ public class FXMLCtrlNewTab extends VBox {
 			olSemesters.add(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
 		}
 		if (olSemesters.size() == 0) currSemester = null;
-		cbSemesters.getSelectionModel().selectFirst();
-		currSemester = treeRoot.first();
+		else {
+			cbSemesters.getSelectionModel().selectFirst();
+			currSemester = treeRoot.first();
+		}
 		loadTvT71();
 		loadTabThematicalPlan();
 	}
@@ -1480,7 +1483,6 @@ public class FXMLCtrlNewTab extends VBox {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.err.println("LiThemeSize == " + liTheme.size());
 		pasteIntoSSVTableTP(liTheme);
 	}
 
@@ -1517,7 +1519,7 @@ public class FXMLCtrlNewTab extends VBox {
 		liValueOftheme.add(String.valueOf(theme.getKSR()));
 		liValueOftheme.add(String.valueOf(theme.getSRS()));
 
-		liValueOftheme.forEach(System.err::println);
+		//liValueOftheme.forEach(System.err::println);
 
 		final ObservableList<SpreadsheetCell> olNew = createRowForTTP(newRowPos, liValueOftheme); // Добавление на место последней строки пустой строки
 		newRows.add(olNew);
@@ -1807,8 +1809,8 @@ public class FXMLCtrlNewTab extends VBox {
 		newRows.add(olNew);
 
 		newGrid.setRows(newRows);
-		ssvTable71.setGrid(newGrid);
 		newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehT71);
+		ssvTable71.setGrid(newGrid);
 	}
 
 	/**
@@ -1841,7 +1843,7 @@ public class FXMLCtrlNewTab extends VBox {
 
 				Record rec = currSemester.getRecord(row);
 				if (rec != null) {
-					System.err.println("NEW VALUE == " + (String) change.getNewValue() + " ON CELL( " + row + " : " + col +")");
+					//System.err.println("NEW VALUE == " + (String) change.getNewValue() + " ON CELL( " + row + " : " + col +")");
 					if (col == 0) rec.setCourseTitle((String) change.getNewValue());
 					if (col > 0 && col <= rec.getArrWeek().length) rec.getArrWeek()[col - 1] = (String) change.getNewValue();
 				}
@@ -1851,7 +1853,7 @@ public class FXMLCtrlNewTab extends VBox {
 				for (int i = 0; i < ssvTable71.getGrid().getRowCount(); i++) // Смотрим, есть ли в первом столбце "лекции" и запоминаем эту позицию строки
 					if (ssvTable71.getGrid().getRows().get(i).get(0).getText().equalsIgnoreCase("лекции")) pos = i;
 				if (pos > 1) {
-					System.out.println("POS == " + pos);
+					//System.out.println("POS == " + pos);
 					for (int i = 1; i < ssvTable71.getGrid().getColumnCount() - 1; i++) {
 						if (ssvTable71.getGrid().getRows().get(pos).get(i).getText() == null || ssvTable71.getGrid().getRows().get(pos).get(i).getText().equals(""))
 							ssvTable71.getGrid().getRows().get(pos).get(i).setItem("0");
@@ -1870,23 +1872,15 @@ public class FXMLCtrlNewTab extends VBox {
 					int oldPos = 0; // позиция последней объединённой ячейки
 					int count = 0; // собранное количество часов в предполагаемом разделе
 					for (int i = 1; i < ssvTable71.getGrid().getColumnCount() - 1; i++) {
-						System.out.println("OLD_count == " + count);
 						count += Integer.parseInt(ssvTable71.getGrid().getRows().get(pos).get(i).getText());
-						System.out.println("NEW_count == " + count);
 						if (j >= liSec.size()) break;
-						System.out.println("AND j == " + j + " AND L == " + liSec.get(j).getL());
 						if (count >= liSec.get(j).getL()) {
 							liColSec.set(j, i - oldPos);
-							System.out.println("L == " + liSec.get(j).getL() + " Sec == " + liSec.get(j) + " number of Column == " + liColSec.get(j));
 							count = 0;
 							oldPos = i;
 							j++;
 						}
 					}
-					System.out.println("Section");
-					liSec.forEach(System.out::println);
-					System.out.println("Column");
-					liColSec.forEach(System.out::println);
 
 					setHeaderSection(liSec, liColSec);
 					
@@ -1899,30 +1893,22 @@ public class FXMLCtrlNewTab extends VBox {
 					oldPos = 0; // позиция последней объединённой ячейки
 					count = 0; // собранное количество часов в предполагаемом разделе
 					for (int i = 1; i < ssvTable71.getGrid().getColumnCount() - 1; i++) {
-						System.out.println("OLD_count == " + count);
 						count += Integer.parseInt(ssvTable71.getGrid().getRows().get(pos).get(i).getText());
-						System.out.println("NEW_count == " + count);
 						if (j >= liMod.size()) break;
-						System.out.println("AND j == " + j + " AND L == " + liMod.get(j).getL());
 						if (count >= liMod.get(j).getL()) {
 							liColMod.set(j, i - oldPos);
-							System.out.println("L == " + liMod.get(j).getL() + " Sec == " + liMod.get(j) + " number of Column == " + liColMod.get(j));
 							count = 0;
 							oldPos = i;
 							j++;
 						}
 					}
-					System.out.println("Section");
-					liMod.forEach(System.out::println);
-					System.out.println("Column");
-					liColMod.forEach(System.out::println);
 
 					setHeaderModule(liMod, liColMod);
 				}
 			}
 
 			/**
-			 * Инициализирует все ячейки 2-ой строки значениями вида "М " + номер модуля и объединяет нужные
+			 * Инициализирует все ячейки 2-ой строки значениями вида "М" + номер модуля и объединяет нужные
 			 * @param liMod
 			 * @param liColMod
 			 */
@@ -1932,14 +1918,14 @@ public class FXMLCtrlNewTab extends VBox {
 				int count = 0; // отвечает за количество нужных клеток в данном разделе
 				for (int column = 1; column < ssvTable71.getGrid().getColumnCount() - 1; column++) {
 					if (posSec < liMod.size() && count < liColMod.get(posSec)) {
-						ssvTable71.getGrid().getRows().get(2).set(column, SpreadsheetCellType.STRING.createCell(2, column, 1, 1, "М " + liMod.get(posSec).getNumber()));
+						ssvTable71.getGrid().getRows().get(2).set(column, SpreadsheetCellType.STRING.createCell(2, column, 1, 1, "М" + liMod.get(posSec).getNumber()));
 						count++;
 						if (count >= liColMod.get(posSec)) {
 							posSec++;
 							count = 0;
 						}
 					} else {
-						ssvTable71.getGrid().getRows().get(2).set(column, SpreadsheetCellType.STRING.createCell(2, column, 1, 1, "М " + liMod.get(liMod.size() - 1).getNumber()));
+						ssvTable71.getGrid().getRows().get(2).set(column, SpreadsheetCellType.STRING.createCell(2, column, 1, 1, "М" + liMod.get(liMod.size() - 1).getNumber()));
 					}
 					ssvTable71.getGrid().getRows().get(2).get(column).getStyleClass().add("span");
 					ssvTable71.getGrid().getRows().get(2).get(column).setEditable(false);
@@ -1956,7 +1942,7 @@ public class FXMLCtrlNewTab extends VBox {
 			}
 
 			/**
-			 * Инициализирует все ячейки 3-ей строки значениями вида "Р " + номер раздела и объединяет нужные
+			 * Инициализирует все ячейки 3-ей строки значениями вида "Р" + номер раздела и объединяет нужные
 			 * @param liSec
 			 * @param liColSec
 			 */
@@ -1966,14 +1952,14 @@ public class FXMLCtrlNewTab extends VBox {
 				int count = 0; // отвечает за количество нужных клеток в данном разделе
 				for (int column = 1; column < ssvTable71.getGrid().getColumnCount() - 1; column++) {
 					if (posSec < liSec.size() && count < liColSec.get(posSec)) {
-						ssvTable71.getGrid().getRows().get(3).set(column, SpreadsheetCellType.STRING.createCell(3, column, 1, 1, "Р " + liSec.get(posSec).getNumber()));
+						ssvTable71.getGrid().getRows().get(3).set(column, SpreadsheetCellType.STRING.createCell(3, column, 1, 1, "Р" + liSec.get(posSec).getNumber()));
 						count++;
 						if (count >= liColSec.get(posSec)) {
 							posSec++;
 							count = 0;
 						}
 					} else {
-						ssvTable71.getGrid().getRows().get(3).set(column, SpreadsheetCellType.STRING.createCell(3, column, 1, 1, "Р " + liSec.get(liSec.size() - 1).getNumber()));
+						ssvTable71.getGrid().getRows().get(3).set(column, SpreadsheetCellType.STRING.createCell(3, column, 1, 1, "Р" + liSec.get(liSec.size() - 1).getNumber()));
 					}
 					ssvTable71.getGrid().getRows().get(3).get(column).getStyleClass().add("span");
 					ssvTable71.getGrid().getRows().get(3).get(column).setEditable(false);
@@ -2021,10 +2007,11 @@ public class FXMLCtrlNewTab extends VBox {
 		ssvTable71.getSelectionModel().getSelectedCells().addListener(new InvalidationListener() {
 
             @Override
+            // UNDONE мб это использовать на замену ehT71?
             public void invalidated(Observable o) {
-                for(TablePosition cell : ssvTable71.getSelectionModel().getSelectedCells()){
+                /*for(TablePosition<?, ?> cell : ssvTable71.getSelectionModel().getSelectedCells()){
                     System.err.println(cell.getRow()+" / "+cell.getColumn()); // показывает индексы выделенных строк
-                }
+                }*/
                 if (ssvTable71.getSelectionModel().getSelectedCells().size() != 0)
                 if (ssvTable71.getSelectionModel().getSelectedCells().get(ssvTable71.getSelectionModel().getSelectedCells().size() - 1).getRow() > 3)
                 	bDelRowT71.setDisable(false);

@@ -33,7 +33,7 @@ public class HandbookDiscipline implements Serializable {
     private Long id;
     
 	@Column(name = "HANDBOOK_DISCIPLINE_CODE")
-	private Integer code;
+	private String code;
 	
     @Column(name = "HANDBOOK_DISCIPLINE_VALUE")
     private String value;
@@ -43,14 +43,14 @@ public class HandbookDiscipline implements Serializable {
 
     public HandbookDiscipline() {
     	value = "";
-    	code = 0;
+    	code = "";
     }
 
     public Long getId() {
         return id;
     }
 
-    public Integer getCode() {
+    public String getCode() {
 		return code;
 	}
 
@@ -74,7 +74,7 @@ public class HandbookDiscipline implements Serializable {
         this.id = id;
     }
     
-	public void setCode(Integer code) {
+	public void setCode(String code) {
 		this.code = code;
 	}
 

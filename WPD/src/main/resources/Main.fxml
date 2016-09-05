@@ -48,20 +48,20 @@
                      <children>
                         <ListView fx:id="lvDiscipline" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
                            <HBox.margin>
-                              <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
+                              <Insets />
                            </HBox.margin>
                         </ListView>
-                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="7.0">
+                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0">
                            <children>
                               <Button fx:id="bCreate" minWidth="70.0" mnemonicParsing="false" onAction="#clickBCreate" text="Создать" />
                               <Button fx:id="bChange" disable="true" minWidth="70.0" mnemonicParsing="false" onAction="#clickBChange" text="Изменить" />
                               <Button fx:id="bDelete" disable="true" minWidth="70.0" mnemonicParsing="false" onAction="#clickBDelete" text="Удалить" />
                            </children>
-                           <padding>
-                              <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
-                           </padding>
                         </VBox>
                      </children>
+                     <padding>
+                        <Insets left="10.0" top="10.0" />
+                     </padding>
                   </HBox>
                </content></Tab>
 </tabs>

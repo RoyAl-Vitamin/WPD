@@ -9,7 +9,6 @@ import org.hibernate.SessionFactory;
 import com.mmsp.dao.DAO;
 import com.mmsp.model.WPDVersion;
 import com.mmsp.util.HibernateUtil;
-import com.mmsp.wpd.WPD;
 
 @SuppressWarnings("unchecked")
 public class DAO_WPDVersion implements DAO<WPDVersion> {

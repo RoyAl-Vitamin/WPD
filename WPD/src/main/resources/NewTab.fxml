@@ -98,8 +98,8 @@
                               </HBox>
                               <TableView id="tav" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="0.0" stylesheets="@Main.css" VBox.vgrow="ALWAYS">
                                  <columns>
-                                    <TableColumn maxWidth="1.7976931348623157E308" prefWidth="293.0" text="Вид КМ" />
-                                    <TableColumn maxWidth="1.7976931348623157E308" prefWidth="293.0" text="Семестр" />
+                                    <TableColumn prefWidth="195.0" text="Вид КМ" />
+                                    <TableColumn prefWidth="194.0" text="Семестр" />
                                  </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -114,7 +114,7 @@
                   </HBox>
                </content>
             </Tab>
-            <Tab closable="false" text="ПКМ">
+            <Tab closable="false" disable="true" text="ПКМ">
                <content>
                   <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>

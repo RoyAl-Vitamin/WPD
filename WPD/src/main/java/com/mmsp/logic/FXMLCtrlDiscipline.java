@@ -29,6 +29,9 @@ public class FXMLCtrlDiscipline extends VBox {
 	@FXML
 	private Button bSave;
 
+	@FXML
+	private Button bCancel;
+
 	public void init(Stage external_stage, Long id_HBD) {
 		stage = external_stage;
 		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
@@ -38,7 +41,7 @@ public class FXMLCtrlDiscipline extends VBox {
 			@Override
 			public void handle(WindowEvent event) {
 				hbD.setValue("");
-				hbD.setCode(-1);
+				hbD.setCode("");
 				dao_HBD.update(hbD);
 				stage.close();
 			}
@@ -49,28 +52,19 @@ public class FXMLCtrlDiscipline extends VBox {
 
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				if (isInteger(tfCode.getText()) && isSatisfies(tfDisciplineName.getText())) bSave.setDisable(false); else bSave.setDisable(true);
-			}
+				if (tfDisciplineName.getText().length() > 255)
+					tfDisciplineName.setText(tfDisciplineName.getText().substring(0, 255));
+				if (tfCode.getText().length() > 255)
+					tfCode.setText(tfCode.getText().substring(0, 255));
 
-			private boolean isInteger(String sValue) { // проверка на ввод и что б в Integer помещалось
-				try {
-					Integer.parseInt(sValue);
-					return true;
-				} catch (NumberFormatException ex) {
-					return false;
-				}
+				if (isSatisfies(tfCode.getText()) && isSatisfies(tfDisciplineName.getText())) bSave.setDisable(false); else bSave.setDisable(true);
 			}
 			
 			private boolean isSatisfies(String sValue) {
-				if (sValue != null) {
-					if (!sValue.equals("")) {
-						return true;
-					} else {
-						return false;
-					}
-				} else {
-					return false;
+				if (!sValue.equals("")) {
+					return true;
 				}
+				return false;
 			}
 		};
 
@@ -80,6 +74,8 @@ public class FXMLCtrlDiscipline extends VBox {
 			tfCode.setText(String.valueOf(hbD.getCode()));
 		if (hbD.getValue() != null)
 			tfDisciplineName.setText(String.valueOf(hbD.getValue()));
+
+		if ("".equals(tfCode.getText()) || "".equals(tfDisciplineName.getText())) bSave.setDisable(true);
 	}
 
 	@FXML
@@ -88,11 +84,16 @@ public class FXMLCtrlDiscipline extends VBox {
 		// TODO Проверить, а не существует ли точно такой же версии в БД?
 
 		hbD.setValue(tfDisciplineName.getText());
-		hbD.setCode(Integer.valueOf(tfCode.getText()));
+		hbD.setCode(tfCode.getText());
 
 		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline(); // Просто обновим запись
 		dao_HBD.update(hbD);
 		System.err.println(hbD.getValue() + " : " + hbD.getCode());
+		stage.close();
+	}
+
+	@FXML
+	void clickBCancel(ActionEvent event) {
 		stage.close();
 	}
 }

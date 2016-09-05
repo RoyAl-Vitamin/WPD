@@ -51,11 +51,11 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 		return objects;
 	}
 	
-	public Long getIdByValueAndCode(String sValue, Integer iCode) {
+	public Long getIdByValueAndCode(String sValue, String sCode) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
-		Query query = session.createQuery("SELECT id FROM HandbookDiscipline WHERE value = \'" + sValue + "\' AND code = " + iCode.intValue());
+		Query query = session.createQuery("SELECT id FROM HandbookDiscipline WHERE value = \'" + sValue + "\' AND code = \'" + sCode + "\'");
 		List<Long> objects = query.list();
 		System.out.println("Found handbook discipline ID Successfully");
 		session.getTransaction().commit();
@@ -67,12 +67,12 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 			return null;
 	}
 	
-	public HandbookDiscipline getByValueAndCode(String sValue, Integer iCode) {
+	public HandbookDiscipline getByValueAndCode(String sValue, String sCode) {
 		// FIXME Узнать: Мб дисциплины с одинаковым value(названием) и code?
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
-		Query query = session.createQuery("FROM HandbookDiscipline WHERE value = \'" + sValue + "\' AND code = " + iCode.intValue());
+		Query query = session.createQuery("FROM HandbookDiscipline WHERE value = \'" + sValue + "\' AND code = \'" + sCode + "\'");
 		List<HandbookDiscipline> objects = query.list();
 		System.out.println("Found by value and code Successfully. Size = " + objects.size());
 		session.getTransaction().commit();
@@ -82,7 +82,7 @@ public class DAO_HandBookDiscipline implements DAO<HandbookDiscipline>{
 		HandbookDiscipline object = null;
 		switch (objects.size()) {
 		case 0:
-			System.err.println("Объект не найден \nValue = " + sValue + "\nCode = " + iCode.intValue());
+			System.err.println("Объект не найден \nValue = " + sValue + "\nCode = " + sCode);
 			break;
 		case 1:
 			object = objects.get(0);
