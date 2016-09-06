@@ -27,11 +27,19 @@ public class FXMLCtrlVersionName extends VBox {
 	private Button bSave;
 
 	@FXML
+	private Button bCancel;
+
+	@FXML
 	void clickBSave(ActionEvent event) {
 		wpdVers.setName(tfVersionName.getText());
 
 		DAO_WPDVersion dao_WPDVers = new DAO_WPDVersion(); // Просто обновим запись
 		dao_WPDVers.update(wpdVers);
+		stage.close();
+	}
+
+	@FXML
+	void clickBCancel(ActionEvent event) {
 		stage.close();
 	}
 
