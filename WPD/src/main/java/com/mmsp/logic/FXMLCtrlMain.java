@@ -45,8 +45,6 @@ public class FXMLCtrlMain extends VBox {
 
 	private FXMLCtrlMain fxmlCtrlMain; // контроллер данной вкладки
 
-	//private HandbookDiscipline hbD;
-
 	private final ObservableList<String> olDiscipline = FXCollections.observableArrayList(); // for cbDiscipline
 
 	private final ObservableList<String> olVersion = FXCollections.observableArrayList(); // for cbVersion
@@ -584,6 +582,7 @@ public class FXMLCtrlMain extends VBox {
 						olVersion.clear();
 						String temp_disc = olDiscipline.get(new_value.intValue());
 						Long id = dao_disc.getIdByValueAndCode(temp_disc.split(":")[0], temp_disc.split(":")[1]);
+						cbDiscipline.getSelectionModel().select(new_value.intValue());
 						updateOlVersion(id);
 					} else { // если пустое поле
 						bAddTab.setDisable(true);
@@ -627,17 +626,18 @@ public class FXMLCtrlMain extends VBox {
 
 	/**
 	 * Обновляет список olVersion => cbVersion
-	 * @param sValue строка из cbDiscipline, если вызван во время переключения cbDiscipline, и null, если вызван из другого контроллера 
+	 * @param idHBD ID HandbookDiscipline
 	 */
-	public void updateOlVersion(Long id) {
+	public void updateOlVersion(Long idHBD) {
 		DAO_HandBookDiscipline dao_disc = new DAO_HandBookDiscipline();
-		HandbookDiscipline currHBD = dao_disc.getById(HandbookDiscipline.class, id);
-		olVersion.clear();
-		for (WPDVersion wpdVers: currHBD.getVersions()) {
-			olVersion.add(wpdVers.getName());
+		HandbookDiscipline currHBD = dao_disc.getById(HandbookDiscipline.class, idHBD);
+		if ((currHBD.getValue() + ":" + currHBD.getCode()).equals(cbDiscipline.getSelectionModel().getSelectedItem())) {
+			olVersion.clear();
+			for (WPDVersion wpdVers: currHBD.getVersions()) {
+				olVersion.add(wpdVers.getName());
+			}
+			cbVersion.getSelectionModel().selectFirst();
 		}
-		cbVersion.getSelectionModel().selectFirst();
-		//cbVersion.setItems(olVersion);
 	}
 	
 	/**
