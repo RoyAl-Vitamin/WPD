@@ -45,7 +45,7 @@ public class FXMLCtrlMain extends VBox {
 
 	private FXMLCtrlMain fxmlCtrlMain; // контроллер данной вкладки
 
-	private HandbookDiscipline hbD;
+	//private HandbookDiscipline hbD;
 
 	private final ObservableList<String> olDiscipline = FXCollections.observableArrayList(); // for cbDiscipline
 
@@ -90,9 +90,9 @@ public class FXMLCtrlMain extends VBox {
 	private Label lStatus; // возможна работа из другого контроллера
 
 	private class Ctrl {
-		private FXMLCtrlNewTab ctrl;
-		private Long id;
-		private Tab t;
+		private FXMLCtrlNewTab ctrl; // FXMLCtrl
+		private Long id; // ID wpdVersion
+		private Tab t; // tab
 		
 		public Ctrl(FXMLCtrlNewTab ctrl, Long id, Tab t) {
 			this.ctrl = ctrl;
@@ -160,14 +160,12 @@ public class FXMLCtrlMain extends VBox {
 	 * @return найденный Ctrl
 	 */
 	private Ctrl getCtrlById(Long id_Vers) {
-		Ctrl t = null;
 		for (Ctrl c: olCtrl) {
-			if (c.getId() == id_Vers) {
-				t = c;
-				break;
+			if (c.getId().equals(id_Vers)) {
+				return c;
 			}
 		}
-		return t;
+		return null;
 	}
 	
 	// Функция открытия существующей версии
@@ -234,7 +232,7 @@ public class FXMLCtrlMain extends VBox {
 	private Tab getTabById(Long id) {
 		Tab tab = null;
 		for (Ctrl c: olCtrl) {
-			if (c.getId() == id) {
+			if (c.getId().equals(id)) {
 				tab = c.getTab();
 				break;
 			}
@@ -252,7 +250,7 @@ public class FXMLCtrlMain extends VBox {
 		Tab t = new Tab();
 
 		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
-		hbD = dao_Disc.getByValueAndCode(cbDiscipline.getValue().split(":")[0], cbDiscipline.getValue().split(":")[1]);
+		HandbookDiscipline hbD = dao_Disc.getByValueAndCode(cbDiscipline.getValue().split(":")[0], cbDiscipline.getValue().split(":")[1]);
 
 		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
 		WPDVersion wpdVers = new WPDVersion();
@@ -312,6 +310,7 @@ public class FXMLCtrlMain extends VBox {
 		fxmlCtrlNewTab.init(wpdVers.getId()); // инициализируем
 
 		t.setContent(root);
+		System.err.println("Ctrl: " + fxmlCtrlNewTab + " version ID == " + wpdVers.getId());
 		olCtrl.add(new Ctrl(fxmlCtrlNewTab, wpdVers.getId(), t)); // Добавим контроллер и Id, саму вкладку в список
 
 		t.setOnClosed(new EventHandler<Event>() {
@@ -343,14 +342,12 @@ public class FXMLCtrlMain extends VBox {
 	 * @return открыта ли вкладка (Y/N)
 	 */
 	private boolean tabIsOpen(Long id) {
-		boolean b = false;
 		for (Ctrl c: olCtrl) {
-			if (c.getId() == id) {
-				b = true;
-				break;
+			if (c.getId().equals(id)) {
+				return true;
 			}
 		}
-		return b;
+		return false;
 	}
 
 	/**
@@ -363,7 +360,7 @@ public class FXMLCtrlMain extends VBox {
 
 		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
 
-		if (hbD == null) hbD = new HandbookDiscipline(); // Если открыл в первый раз
+		HandbookDiscipline hbD = new HandbookDiscipline(); // Если открыл в первый раз
 		hbD.setCode("");
 		hbD.setValue("");
 		hbD.getVersions().clear(); // почистим версии при создании
@@ -414,7 +411,9 @@ public class FXMLCtrlMain extends VBox {
 		if (lvDiscipline.getSelectionModel().getSelectedIndex() == cbDiscipline.getSelectionModel().getSelectedIndex()) b = true; 
 
 		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
-		hbD = dao_HBD.getByValueAndCode(hbD.getValue(), hbD.getCode());
+		String value = lvDiscipline.getSelectionModel().getSelectedItem().split(":")[0];
+		String code = lvDiscipline.getSelectionModel().getSelectedItem().split(":")[1];
+		HandbookDiscipline hbD = dao_HBD.getByValueAndCode(value, code);
 		if (hbD == null) System.err.println("НЕ НАЙДЕН!!!");
 		
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Discipline.fxml"));
@@ -453,9 +452,12 @@ public class FXMLCtrlMain extends VBox {
 	 */
 	@FXML
 	void clickBDelete(ActionEvent event) {
-		// UNDONE Если есть версии, то уточнить у пользователя стоит ли удалять? UPD: Отловить Exception
+		// UNDONE Если есть версии, то уточнить у пользователя стоит ли удалять?
+		// UPD: Отловить Exception
+		String value = lvDiscipline.getSelectionModel().getSelectedItem().split(":")[0];
+		String code = lvDiscipline.getSelectionModel().getSelectedItem().split(":")[1];
 		DAO_HandBookDiscipline dao_hbd = new DAO_HandBookDiscipline();
-		hbD = dao_hbd.getByValueAndCode(hbD.getValue(), hbD.getCode()); // Обновим содержимое hbD
+		HandbookDiscipline hbD = dao_hbd.getByValueAndCode(value, code); // Обновим содержимое hbD
 
 		/*DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
 
@@ -481,6 +483,7 @@ public class FXMLCtrlMain extends VBox {
 
 		System.out.println("Удалённая строка = " + strWasRemoved);
 		cbDiscipline.getSelectionModel().selectFirst();
+		//cbVersion.getSelectionModel().selectFirst();
 		lStatus.setText("Дисциплина удалена");
 	}
 
@@ -536,8 +539,10 @@ public class FXMLCtrlMain extends VBox {
 			public void onChanged(ListChangeListener.Change change) {
 				if (olDiscipline.size() != 0) {
 					cbDiscipline.setDisable(false);
+					//cbVersion.setDisable(false);
 				} else {
 					cbDiscipline.setDisable(true);
+					cbVersion.setDisable(true);
 				}
 			}
 		});
@@ -562,9 +567,6 @@ public class FXMLCtrlMain extends VBox {
 				if (newValue != null) {
 					bChange.setDisable(false);
 					bDelete.setDisable(false);
-
-					DAO_HandBookDiscipline DAO_HBD = new DAO_HandBookDiscipline();
-					hbD = DAO_HBD.getByValueAndCode(newValue.split(":")[0], newValue.split(":")[1]);
 				} else {
 					bChange.setDisable(true);
 					bDelete.setDisable(true);
@@ -614,6 +616,13 @@ public class FXMLCtrlMain extends VBox {
 
 		cbDiscipline.getSelectionModel().selectFirst();
 		cbVersion.getSelectionModel().selectFirst();
+
+		if (olVersion.size() == 0) {
+			cbVersion.setDisable(true);
+			bOpenTab.setDisable(true);
+		}
+		if (olDiscipline.size() == 0)
+			cbDiscipline.setDisable(true);
 	}
 
 	/**
@@ -621,16 +630,14 @@ public class FXMLCtrlMain extends VBox {
 	 * @param sValue строка из cbDiscipline, если вызван во время переключения cbDiscipline, и null, если вызван из другого контроллера 
 	 */
 	public void updateOlVersion(Long id) {
-		if (id == hbD.getId()) { // То в cbDiscipline содержится та дисциплина, версию которой надо обновить
-			DAO_HandBookDiscipline dao_disc = new DAO_HandBookDiscipline();
-			HandbookDiscipline currHBD = dao_disc.getById(HandbookDiscipline.class, id);
-			olVersion.clear();
-			for (WPDVersion wpdVers: currHBD.getVersions()) {
-				olVersion.add(wpdVers.getName());
-			}
-			cbVersion.getSelectionModel().selectFirst();
-			//cbVersion.setItems(olVersion);
+		DAO_HandBookDiscipline dao_disc = new DAO_HandBookDiscipline();
+		HandbookDiscipline currHBD = dao_disc.getById(HandbookDiscipline.class, id);
+		olVersion.clear();
+		for (WPDVersion wpdVers: currHBD.getVersions()) {
+			olVersion.add(wpdVers.getName());
 		}
+		cbVersion.getSelectionModel().selectFirst();
+		//cbVersion.setItems(olVersion);
 	}
 	
 	/**
@@ -678,10 +685,9 @@ public class FXMLCtrlMain extends VBox {
 	 */
 	public void closeTab(Long idVers) {
 		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
-		WPDVersion wpdVers = dao_Vers.getById(WPDVersion.class, idVers); // FIXME NPE видимо не правильно сохраняет 
+		WPDVersion wpdVers = dao_Vers.getById(WPDVersion.class, idVers); 
 		if (wpdVers != null) {
 			String sDisc = wpdVers.getHbD().getValue() + ":" + wpdVers.getHbD().getCode(); // Название дисциплины и её код
-			//String sTabName = wpdVers.getHbD().getValue() + ":" + wpdVers.getName(); // Название вкладки
 
 			Ctrl t = getCtrlById(idVers); // Находим ту самую вкадку
 
@@ -694,6 +700,11 @@ public class FXMLCtrlMain extends VBox {
 
 			if (cbDiscipline.getSelectionModel().getSelectedIndex() == olDiscipline.indexOf(sDisc)) { // Если выбрана та самая дисциплина, то надо удалить из списка версию
 				olVersion.remove(wpdVers.getName());
+				if ((wpdVers.getHbD().getValue() + ":" + wpdVers.getHbD().getCode()).equals(cbDiscipline.getSelectionModel().getSelectedItem()) // Если эта версия была выбрана в cbDiscipline and cbVersion
+						&& wpdVers.getName().equals(cbVersion.getSelectionModel().getSelectedItem())
+						) {
+					cbVersion.getSelectionModel().selectFirst();
+				}
 			}
 		} else {
 			System.err.println("WARNING: WPDVersion с ID == " + idVers + " не был найден");

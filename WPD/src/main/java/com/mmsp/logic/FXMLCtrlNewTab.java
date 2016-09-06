@@ -72,11 +72,9 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.TableColumn.CellEditEvent;
-import javafx.scene.control.TablePosition;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
-import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -699,6 +697,7 @@ public class FXMLCtrlNewTab extends VBox {
 		// Если сменилось название версии, то подгрузим контроллер
 		// и изменим из него значение названия вкладки и обновим список названий версий
 		{
+			// FIXME Если выбрана другая дисциплина, то он всёравно вставит свою версию в cbDiscipline
 			parentCtrl.updateOlVersion(currWPDVersion.getHbD().getId()); // Обновляет список, содержащийся в cbVersion
 			if (!parentCtrl.updateTabName(tabName, currWPDVersion.getName())) { // обновляет название вкладки
 				System.err.println("Возникла ошибка при обновлении названия вкадки");
