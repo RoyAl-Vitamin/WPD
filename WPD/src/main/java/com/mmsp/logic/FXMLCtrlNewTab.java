@@ -658,6 +658,31 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	void clickBDelete(ActionEvent event) {
 
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("ModalSure.fxml"));
+		Parent root = null;
+		try {
+			root = (Parent) fxmlLoader.load();
+		} catch (IOException e) {
+			System.err.println("Не удалось загрузить форму подтверждения");
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+
+		Stage stageModalSure = new Stage();
+		FXMLCtrlModalSure fxmlCtrlModalSure = fxmlLoader.getController();
+		fxmlCtrlModalSure.init(stageModalSure);
+		stageModalSure.setResizable(false);
+		stageModalSure.setOnCloseRequest(e -> stageModalSure.close());
+		fxmlCtrlModalSure.setController(fxmlCtrlCurrTab); // Запомним контроллер новой вкладки для перерсовки
+		stageModalSure.setScene(scene);
+		stageModalSure.setTitle("Подтверждение");
+		stageModalSure.getIcons().add(new Image("Logo.png"));
+		stageModalSure.initModality(Modality.APPLICATION_MODAL);
+		stageModalSure.showAndWait();
+	}
+
+	public void deleteWPDVerison() {
+
 		Long id = currWPDVersion.getId();
 
 		// Закрываем вкладку
@@ -665,7 +690,7 @@ public class FXMLCtrlNewTab extends VBox {
 
 		DAO_HandBookDiscipline dao_hbd = new DAO_HandBookDiscipline();
 		HandbookDiscipline hbd = dao_hbd.getById(HandbookDiscipline.class, currWPDVersion.getHbD().getId());
-		if (!hbd.getVersions().removeIf(p -> p.getId() == id))
+		if (!hbd.getVersions().removeIf(p -> p.getId().equals(id)))
 			System.err.println("Не смог удалить версии в hbd");
 		else
 			dao_hbd.update(hbd);
