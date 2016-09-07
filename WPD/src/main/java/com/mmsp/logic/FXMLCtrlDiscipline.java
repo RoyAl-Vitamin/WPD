@@ -52,19 +52,14 @@ public class FXMLCtrlDiscipline extends VBox {
 
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				if (tfDisciplineName.getText().length() > 255)
-					tfDisciplineName.setText(tfDisciplineName.getText().substring(0, 255));
-				if (tfCode.getText().length() > 255)
-					tfCode.setText(tfCode.getText().substring(0, 255));
-
 				if (isSatisfies(tfCode.getText()) && isSatisfies(tfDisciplineName.getText())) bSave.setDisable(false); else bSave.setDisable(true);
 			}
 			
 			private boolean isSatisfies(String sValue) {
-				if (!sValue.equals("")) {
-					return true;
+				if (sValue.equals("") || sValue.length() > 256) {
+					return false;
 				}
-				return false;
+				return true;
 			}
 		};
 

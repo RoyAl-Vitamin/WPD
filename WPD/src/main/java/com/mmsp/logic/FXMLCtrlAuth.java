@@ -78,7 +78,13 @@ public class FXMLCtrlAuth extends VBox {
 		ChangeListener<String> cl2 = new ChangeListener<String>() { // http://stackoverflow.com/questions/12956061/javafx-oninputmethodtextchanged-not-called-after-focus-is-lost
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				if (!tFFirstName.getText().equals("") && !tFLastName.getText().equals("") && !tFMiddleName.getText().equals("")) bSave.setDisable(false); else bSave.setDisable(true);
+				if (isSatisfies(tFFirstName.getText()) && isSatisfies(tFLastName.getText()) && isSatisfies(tFMiddleName.getText())) bSave.setDisable(false); else bSave.setDisable(true);
+			}
+
+			private boolean isSatisfies(String sValue) {
+				if (sValue.equals("") || sValue.length() > 256)
+					return false;
+				return true;
 			}
 		};
 

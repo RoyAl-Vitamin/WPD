@@ -3,12 +3,11 @@ package com.mmsp.logic;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
@@ -17,7 +16,6 @@ import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
-//import org.controlsfx.control.spreadsheet.SpreadsheetCellType.StringType;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -73,7 +71,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -122,43 +119,6 @@ public class FXMLCtrlNewTab extends VBox {
 		@Override
 		public String toString() {
 			return "view Of Study Load " + viewOfStudyLoad.toString() + ", number Of Hours " + numberOfHours;
-		}
-	}
-
-	public class RowPoCM { // Класс строки компонента tableView вкладки "ПКМ"
-
-		private final SimpleStringProperty sspCtrlMes; // Контрольное мероприятие
-		private final SimpleStringProperty sspNuberOfSemester; // Номер семестра
-		private final SimpleStringProperty sspNumberOfWeek; // Номер недели
-		
-		private RowPoCM(String sCtrlMes, String sNumberOfSemester, String sNumberOfWeek) {
-			this.sspCtrlMes = new SimpleStringProperty(sCtrlMes);
-			this.sspNuberOfSemester = new SimpleStringProperty(sNumberOfSemester);
-			this.sspNumberOfWeek = new SimpleStringProperty(sNumberOfWeek);
-		}
-
-		public String getSspCtrlMes() {
-			return sspCtrlMes.get();
-		}
-
-		public String getSspNuberOfSemester() {
-			return sspNuberOfSemester.get();
-		}
-
-		public String getSspNumberOfWeek() {
-			return sspNumberOfWeek.get();
-		}
-		
-		public void setSspCtrlMes(String sValue) {
-			sspCtrlMes.set(sValue);
-		}
-
-		public void setSspNuberOfSemester(String sValue) {
-			sspNuberOfSemester.set(sValue);
-		}
-
-		public void setSspNumberOfWeek(String sValue) {
-			sspNumberOfWeek.set(sValue);
 		}
 	}
 
@@ -230,8 +190,6 @@ public class FXMLCtrlNewTab extends VBox {
 
 	private final ObservableList<RowSL> olDataOfStudyLoad = FXCollections.observableArrayList();
 
-	private final ObservableList<RowPoCM> olDataOfPoCM = FXCollections.observableArrayList();
-
 	private Stage stage;
 
 	private FXMLCtrlNewTab fxmlCtrlCurrTab; // Контроллер этой вкладки
@@ -295,38 +253,6 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private TableView<RowSL> tvStudyLoad;
 
-	// Переменные вкладки "ПКМ"
-
-	@FXML
-	private TableColumn<RowPoCM, String> tcCM;
-
-	@FXML
-	private TableColumn<RowPoCM, String> tcNoS;
-
-	@FXML
-	private TableColumn<RowPoCM, String> tcNoW;
-
-	@FXML
-	private TableView<RowPoCM> tvPoCM;
-
-	@FXML
-	private TextField tfCM;
-
-	@FXML
-	private TextField tfNoS;
-
-	@FXML
-	private TextField tfNoW;
-
-	@FXML
-	private Button bSaveRowPoCM; // Сохранение строки
-
-	@FXML
-	private Button bAddRowPoCM; // Добавление строки
-
-	@FXML
-	private Button bDelRowPoCM; // Удаление строки
-
 	// Переменные вкладки "Тематический план"
 
 	@FXML
@@ -384,7 +310,6 @@ public class FXMLCtrlNewTab extends VBox {
 	 * @param event
 	 */
 	@FXML
-	// FIXME Проследить уникальность номеров семестров
 	void clickBSemester(ActionEvent event) {
 		VBox vbForSemester = new VBox(5);
 		vbForSemester.setAlignment(Pos.CENTER);
@@ -410,15 +335,9 @@ public class FXMLCtrlNewTab extends VBox {
 			}
 			
 			private boolean isSatisfies(String sValue) {
-				if (sValue != null) {
-					if (!sValue.equals("")) {
-						return true;
-					} else {
-						return false;
-					}
-				} else {
+				if (sValue.equals("") || sValue.length() > 2)
 					return false;
-				}
+				return true;
 			}
 		};
 
@@ -657,9 +576,9 @@ public class FXMLCtrlNewTab extends VBox {
 		currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
 
 		/* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
-		LocalDate localDate = dpDateOfCreate.getValue();
+		/*LocalDate localDate = dpDateOfCreate.getValue();
 		Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault()));
-		currWPDVersion.setDate(Date.from(instant)); // Попробуем занести дату создания
+		currWPDVersion.setDate(Date.from(instant));*/ // Попробуем занести дату создания
 
 		DAO_PoCM dao_pocm = new DAO_PoCM();
 		dao_pocm.update(currPoCM);
@@ -671,7 +590,7 @@ public class FXMLCtrlNewTab extends VBox {
 
 		DAO_ThematicPlan dao_thematicPlan = new DAO_ThematicPlan();
 		if (setCurrThematicPlan == null) {
-			setCurrThematicPlan = new HashSet<>();
+			setCurrThematicPlan = new TreeSet<>();
 		}
 		for (ThematicPlan tp : setCurrThematicPlan)
 			dao_thematicPlan.remove(tp);
@@ -1042,7 +961,6 @@ public class FXMLCtrlNewTab extends VBox {
 				stageModalTheme.showAndWait();
 			}
 		});
-
 	}
 
 	//*************************************************************************************************************************
@@ -1145,42 +1063,6 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 		if (ssvTable71.getSelectionModel().getFocusedCell().getRow() < 4)
 			bDelRowT71.setDisable(true);
-	}
-
-	//*************************************************************************************************************************
-	//*************************************************************************************************************************
-	//**
-	//** Контроллеры вкладки "ПКМ"
-	//**
-	//*************************************************************************************************************************
-	//*************************************************************************************************************************
-
-	@FXML
-	void clickBAddRowPoCM(ActionEvent event) {
-		olDataOfPoCM.add(new RowPoCM("","",""));
-	}
-
-	@FXML
-	void clickBDelRowPoCM(ActionEvent event) {
-		int selectedIndex = tvPoCM.getSelectionModel().getSelectedIndex();
-		if (selectedIndex >= 0) tvPoCM.getItems().remove(selectedIndex);
-		if (olDataOfPoCM.size() == 0) {
-			tfCM.setText("");
-			tfNoS.setText("");
-			tfNoW.setText("");
-		}
-	}
-
-	@FXML
-	void clickBSaveRowPoCM(ActionEvent event) {
-		/*tvPoCM.getSelectionModel().getSelectedItem().setSspCtrlMes(tfCM.getText());
-		tvPoCM.getSelectionModel().getSelectedItem().setSspNuberOfSemester(tfNoS.getText());
-		tvPoCM.getSelectionModel().getSelectedItem().setSspNumberOfWeek(tfNoW.getText());*/
-		RowPoCM rowPoCM = olDataOfPoCM.get(tvPoCM.getSelectionModel().getSelectedIndex());
-		rowPoCM.setSspCtrlMes(tfCM.getText());
-		rowPoCM.setSspNuberOfSemester(tfNoS.getText());
-		rowPoCM.setSspNumberOfWeek(tfNoW.getText());
-		olDataOfPoCM.set(tvPoCM.getSelectionModel().getSelectedIndex(), rowPoCM);
 	}
 
 	//*************************************************************************************************************************
@@ -1643,57 +1525,6 @@ public class FXMLCtrlNewTab extends VBox {
 	}
 
 	/**
-	 * Инициализация контроллера для TableView из PoCM
-	 */
-	private void initTvPoCM() {
-
-		olDataOfPoCM.addListener(new ListChangeListener<RowPoCM>() {
-
-			@Override
-			public void onChanged(ListChangeListener.Change change) {
-				if (olDataOfPoCM.size() == 0) {
-					tfCM.setDisable(true);
-					tfNoS.setDisable(true);
-					tfNoW.setDisable(true);
-					bSaveRowPoCM.setDisable(true);
-				}
-			}
-		});
-
-		tcCM.setCellValueFactory(cellData -> cellData.getValue().sspCtrlMes);
-		tcCM.setCellFactory(TextFieldTableCell.forTableColumn());
-
-		tcNoS.setCellValueFactory(cellData -> cellData.getValue().sspNuberOfSemester);
-		tcNoS.setCellFactory(TextFieldTableCell.forTableColumn());
-
-		tcNoW.setCellValueFactory(cellData -> cellData.getValue().sspNumberOfWeek);
-		tcNoW.setCellFactory(TextFieldTableCell.forTableColumn());
-
-		tvPoCM.setItems(olDataOfPoCM);
-		tvPoCM.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
-			if (tvPoCM.getSelectionModel().getSelectedItem() != null) {
-				bSaveRowPoCM.setDisable(false);
-				tfCM.setDisable(false);
-				tfNoS.setDisable(false);
-				tfNoW.setDisable(false);
-				tfCM.setText(newValue.getSspCtrlMes());
-				tfNoS.setText(newValue.getSspNuberOfSemester());
-				tfNoW.setText(newValue.getSspNumberOfWeek());
-			} else {
-				bSaveRowPoCM.setDisable(true);
-				tfCM.setDisable(true);
-				tfNoS.setDisable(true);
-				tfNoW.setDisable(true);
-			}
-		});
-		
-		tfCM.setDisable(true);
-		tfNoS.setDisable(true);
-		tfNoW.setDisable(true);
-		bSaveRowPoCM.setDisable(true);
-	};
-
-	/**
 	 * Задаёт header всей таблицы ssvTable71
 	 * @param grid BaseGrid этой таблицы
 	 * @param length количество недель
@@ -2026,7 +1857,6 @@ public class FXMLCtrlNewTab extends VBox {
 	private void initT() {
 		initSSVTableTP(); // Инициализация вкладки Тематический план
 		initTvStudyLoad();
-		initTvPoCM();
 	}
 
 	public void init(Long id_Vers) {

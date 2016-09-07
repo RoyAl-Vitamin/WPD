@@ -66,15 +66,9 @@ public class FXMLCtrlVersionName extends VBox {
 			}
 
 			private boolean isSatisfies(String sValue) {
-				if (sValue != null) {
-					if (!sValue.equals("")) {
-						return true;
-					} else {
-						return false;
-					}
-				} else {
+				if (sValue.equals("") || sValue.length() > 256)
 					return false;
-				}
+				return true;
 			}
 		};
 

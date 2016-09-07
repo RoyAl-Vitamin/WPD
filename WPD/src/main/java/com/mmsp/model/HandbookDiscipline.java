@@ -32,10 +32,10 @@ public class HandbookDiscipline implements Serializable {
     @Column(name = "HANDBOOK_DISCIPLINE_ID")
     private Long id;
     
-	@Column(name = "HANDBOOK_DISCIPLINE_CODE")
+	@Column(name = "HANDBOOK_DISCIPLINE_CODE", length = 256)
 	private String code;
 	
-    @Column(name = "HANDBOOK_DISCIPLINE_VALUE")
+    @Column(name = "HANDBOOK_DISCIPLINE_VALUE", length = 256)
     private String value;
     
     @OneToMany(mappedBy = "hbD", fetch = FetchType.EAGER, cascade = CascadeType.ALL) //, cascade = CascadeType.REMOVE)

@@ -92,7 +92,7 @@ public class WPD extends Application {
 		FXMLCtrlAuth fxmlCtrlAuth = fxmlLoader.getController();
 		fxmlCtrlAuth.init(stageAuth);
 		stageAuth.setScene(scene);
-		stageAuth.setTitle("Auth");
+		stageAuth.setTitle("Авторизация");
 		stageAuth.getIcons().add(new Image("Logo.png"));
 		stageAuth.initModality(Modality.APPLICATION_MODAL);
 		stageAuth.setResizable(false);

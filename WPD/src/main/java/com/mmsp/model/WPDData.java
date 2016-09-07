@@ -28,13 +28,13 @@ public class WPDData implements Serializable {
 	@Column(name = "WPD_DATA_ID")
 	private Long id;
 
-	@Column(name = "WPD_DATA_FIRST_NAME")
+	@Column(name = "WPD_DATA_FIRST_NAME", length = 256)
 	private String firstName; // Имя
 
-	@Column(name = "WPD_DATA_LAST_NAME")
+	@Column(name = "WPD_DATA_LAST_NAME", length = 256)
 	private String lastName; // Фамилия
 
-	@Column(name = "WPD_DATA_MIDDLE_NAME")
+	@Column(name = "WPD_DATA_MIDDLE_NAME", length = 256)
 	private String middleName; // Отчество
 
 	@OneToMany(mappedBy = "wpdData") //, cascade = CascadeType.REMOVE)

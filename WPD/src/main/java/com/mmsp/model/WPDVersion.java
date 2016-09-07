@@ -2,8 +2,8 @@ package com.mmsp.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 //import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -47,7 +47,7 @@ public class WPDVersion implements Serializable {
 	@Column(name = "WPD_VERSION_TEMPLATE_NAME")
 	private String templateName; // путь до шаблона
 
-	@Column(name = "WPD_VERSION_NAME")
+	@Column(name = "WPD_VERSION_NAME", length = 256)
 	private String name; // имя версии
 
 	@Column(name = "WPD_VERSION_STUDY_LOAD")
@@ -58,7 +58,7 @@ public class WPDVersion implements Serializable {
 	private WPDData wpdData;
 	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "wpdVersion") //, cascade = CascadeType.REMOVE)
-	private Set<ThematicPlan> thematicPlans = new HashSet<>(); // множество версий
+	private Set<ThematicPlan> thematicPlans = new TreeSet<>(); // множество версий
 
 	@OneToOne//(cascade = CascadeType.REMOVE)
 	@PrimaryKeyJoinColumn

@@ -105,6 +105,7 @@ public class FXMLCtrlModalTheme extends VBox {
 			}
 
 			private boolean isInteger(String sValue) { // проверка на ввод и что б в Integer помещалось
+				if (sValue.length() > 2) return false;
 				try {
 					Integer.parseInt(sValue);
 					return true;

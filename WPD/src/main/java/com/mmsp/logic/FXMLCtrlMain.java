@@ -279,7 +279,7 @@ public class FXMLCtrlMain extends VBox {
 		FXMLCtrlVersionName fxmlCtrlVersionName = fxmlLoader.getController();
 		fxmlCtrlVersionName.init(stageVersionName, wpdVers.getId());
 		stageVersionName.setScene(scene);
-		stageVersionName.setTitle("Version name");
+		stageVersionName.setTitle("Добавление версии");
 		stageVersionName.getIcons().add(new Image("Logo.png"));
 		stageVersionName.initModality(Modality.APPLICATION_MODAL);
 		stageVersionName.setResizable(false);
