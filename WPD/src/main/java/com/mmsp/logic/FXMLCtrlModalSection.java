@@ -21,12 +21,17 @@ public class FXMLCtrlModalSection extends VBox {
 
 	private Module module;
 
+	private Section section;
+
 	private FXMLCtrlNewTab fxmlCtrlParentTab;
 
 	private Stage stage;
 
 	@FXML
 	private Button bSave;
+
+	@FXML
+	private Button bCancel;
 
 	@FXML
 	private TextField tfNumberOfSection;
@@ -39,8 +44,6 @@ public class FXMLCtrlModalSection extends VBox {
 
 	@FXML
 	private TextArea taDescOfSection;
-
-	private Section section;
 
 	@FXML
 	void clickBSave(ActionEvent event) {
@@ -67,6 +70,11 @@ public class FXMLCtrlModalSection extends VBox {
 		}
 
 		fxmlCtrlParentTab.createTree();
+		stage.close();
+	}
+
+	@FXML
+	void clickBCancel(ActionEvent e) {
 		stage.close();
 	}
 

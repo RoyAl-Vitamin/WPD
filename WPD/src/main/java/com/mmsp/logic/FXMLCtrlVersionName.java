@@ -1,6 +1,8 @@
 package com.mmsp.logic;
 
+import com.mmsp.dao.impl.DAO_HandBookDiscipline;
 import com.mmsp.dao.impl.DAO_WPDVersion;
+import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.model.WPDVersion;
 
 import javafx.beans.value.ChangeListener;
@@ -17,6 +19,8 @@ import javafx.stage.WindowEvent;
 public class FXMLCtrlVersionName extends VBox {
 
 	private Stage stage;
+
+	private HandbookDiscipline hbD;
 
 	private WPDVersion wpdVers;
 
@@ -43,12 +47,15 @@ public class FXMLCtrlVersionName extends VBox {
 		stage.close();
 	}
 
-	public void init(Stage stage, Long id_wpdVers) {
+	public void init(Stage stage, Long id_wpdVers, Long id_HandbookDiscipline) {
 
 		this.stage = stage;
 
 		DAO_WPDVersion dao_WPDVers = new DAO_WPDVersion();
 		wpdVers = dao_WPDVers.getById(WPDVersion.class, id_wpdVers);
+
+		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
+		hbD = dao_HBD.getById(HandbookDiscipline.class, id_HandbookDiscipline);
 
 		this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
@@ -62,12 +69,19 @@ public class FXMLCtrlVersionName extends VBox {
 
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				if (isSatisfies(tfVersionName.getText())) bSave.setDisable(false); else bSave.setDisable(true);
+				if (isSatisfies(tfVersionName.getText()) && isNotExist()) bSave.setDisable(false); else bSave.setDisable(true);
 			}
 
 			private boolean isSatisfies(String sValue) {
 				if (sValue.equals("") || sValue.length() > 256)
 					return false;
+				return true;
+			}
+
+			private boolean isNotExist() {
+				for (WPDVersion vers : hbD.getVersions()) {
+					if (vers.getName() != null && vers.getName().equals(tfVersionName.getText())) return false;
+				}
 				return true;
 			}
 		};

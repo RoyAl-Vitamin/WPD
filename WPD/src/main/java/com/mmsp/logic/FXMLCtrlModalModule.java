@@ -28,6 +28,9 @@ public class FXMLCtrlModalModule extends VBox {
 	private Button bSave;
 
 	@FXML
+	private Button bCancel;
+
+	@FXML
 	private Label lNumberOfSemester;
 
 	@FXML
@@ -61,6 +64,11 @@ public class FXMLCtrlModalModule extends VBox {
 		}
 
 		fxmlCtrlParentTab.createTree();
+		stage.close();
+	}
+
+	@FXML
+	void clickBCancel(ActionEvent e) {
 		stage.close();
 	}
 

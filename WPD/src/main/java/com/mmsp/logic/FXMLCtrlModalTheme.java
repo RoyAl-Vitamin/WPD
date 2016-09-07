@@ -52,6 +52,9 @@ public class FXMLCtrlModalTheme extends VBox {
 	private Button bSave;
 
 	@FXML
+	private Button bCancel;
+
+	@FXML
 	void clickBSave(ActionEvent event) {
 
 		if (theme != null) {
@@ -90,6 +93,11 @@ public class FXMLCtrlModalTheme extends VBox {
 		}
 
 		fxmlCtrlParentTab.createTree();
+		stage.close();
+	}
+
+	@FXML
+	void clickBCancel(ActionEvent event) {
 		stage.close();
 	}
 

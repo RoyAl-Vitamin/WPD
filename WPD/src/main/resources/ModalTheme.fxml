@@ -40,9 +40,10 @@
       </HBox>
       <Label text="Описание" />
       <TextArea fx:id="taDescOfTheme" prefHeight="200.0" prefWidth="200.0" />
-      <HBox alignment="CENTER">
+      <HBox alignment="CENTER" spacing="10.0">
          <children>
             <Button fx:id="bSave" mnemonicParsing="false" onAction="#clickBSave" text="Сохранить" />
+            <Button fx:id="bCancel" cancelButton="true" mnemonicParsing="false" onAction="#clickBCancel" text="Отмена" />
          </children>
       </HBox>
    </children>
