@@ -1,20 +1,46 @@
 package com.mmsp.model;
 
-import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class Module {
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
+/**
+ * Класс данных одного модуля является частью Semester
+ * @author rav
+ */
+
+@Entity
+@Table(name = "MODULE")
+public class Module implements Comparable<Module> {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "MODULE_ID")
+	private Long id;
+
+	@ManyToOne
+	@JoinColumn(name="MODULE_LINK")
+	private Semester semester;
+
+	@Column(name = "MODULE_NUMBER")
 	private int number; // номер модуля
 
+	@Column(name = "MODULE_NAME", length = 256)
 	private String name; // Название модуля
 
-	private Set<Section> treeSection = new TreeSet<Section>(new Comparator<Section>() { // Множество разделов
-		public int compare(Section o1, Section o2) {
-			return o1.getNumber() - o2.getNumber();
-		}
-	});
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "module", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+	private Set<Section> treeSection = new TreeSet<Section>((Section a, Section b) -> a.compareTo(b));
 
 	public int getNumber() {
 		return number;
@@ -40,6 +66,22 @@ public class Module {
 		this.treeSection = setSection;
 	}
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Semester getSemester() {
+		return semester;
+	}
+
+	public void setSemester(Semester semester) {
+		this.semester = semester;
+	}
+
 	/**
 	 * Возвращает секцию по её номеру или null, если секция не найдена
 	 * @param number номер секции
@@ -57,5 +99,10 @@ public class Module {
 			temp += sec.getL();
 		}
 		return temp;
+	}
+
+	@Override
+	public int compareTo(Module o) {
+		return this.getNumber() - o.getNumber();
 	}
 }

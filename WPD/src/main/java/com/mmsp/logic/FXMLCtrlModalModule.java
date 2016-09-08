@@ -53,6 +53,7 @@ public class FXMLCtrlModalModule extends VBox {
 				mod.setName(module.getName());
 				mod.setNumber(module.getNumber());
 				mod.setTreeSection(module.getTreeSection());
+				mod.setSemester(module.getSemester());
 				semester.getTreeModule().remove(module);
 				semester.getTreeModule().add(mod);
 			}
@@ -60,6 +61,7 @@ public class FXMLCtrlModalModule extends VBox {
 			Module mod = new Module();
 			mod.setNumber(Integer.parseInt(tfNumberOfModule.getText()));
 			mod.setName(taDescOfModule.getText());
+			mod.setSemester(semester);
 			semester.getTreeModule().add(mod);
 		}
 

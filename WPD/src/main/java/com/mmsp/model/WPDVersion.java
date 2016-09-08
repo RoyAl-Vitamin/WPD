@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.persistence.CascadeType;
 //import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,7 +31,8 @@ import javax.persistence.TemporalType;
 @Entity
 @Table(name = "WPD_VERSION")
 public class WPDVersion implements Serializable {
-	private static final long serialVersionUID = 1L;
+
+	private static final long serialVersionUID = 7149382190381953724L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -57,8 +59,8 @@ public class WPDVersion implements Serializable {
 	@JoinColumn(name="WPD_VERSION_DATA")
 	private WPDData wpdData;
 	
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "wpdVersion") //, cascade = CascadeType.REMOVE)
-	private Set<ThematicPlan> thematicPlans = new TreeSet<>(); // множество версий
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "wpdVersion", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+	private Set<Semester> semesters = new TreeSet<Semester>((Semester a, Semester b) -> a.compareTo(b)); // множество семестров
 
 	@OneToOne//(cascade = CascadeType.REMOVE)
 	@PrimaryKeyJoinColumn
@@ -107,28 +109,12 @@ public class WPDVersion implements Serializable {
 		return hbD;
 	}
 
-	public WPDData getWpdData() {
-		return wpdData;
+	public Set<Semester> getTreeSemesters() {
+		return semesters;
 	}
 
-	public void setWpdData(WPDData wpdData) {
-		this.wpdData = wpdData;
-	}
-
-	public Set<ThematicPlan> getThematicPlans() {
-		return thematicPlans;
-	}
-
-	public void setThematicPlans(Set<ThematicPlan> thematicPlans) {
-		this.thematicPlans = thematicPlans;
-	}
-
-	public PoCM getPlanOfConMes() {
-		return planOfConMes;
-	}
-
-	public void setPlanOfConMes(PoCM planOfConMes) {
-		this.planOfConMes = planOfConMes;
+	public void setTreeSemesters(Set<Semester> thematicPlans) {
+		this.semesters = thematicPlans;
 	}
 
 	public void setHbD(HandbookDiscipline hbD) {
@@ -178,9 +164,61 @@ public class WPDVersion implements Serializable {
 		if (this.getPoCM() != null)
 				s += "\nPoCM == " + this.getPoCM().getClass().getName() + "@" + this.getPoCM().hashCode();
 		else s+= "\n PoCM == null";
-		for (ThematicPlan t : this.getThematicPlans()) {
-			s += "\nThematicPlan == " + t.getClass().getName() + "@" + this.getThematicPlans().hashCode();
+		// спустимся по дереву
+		if (this.getTreeSemesters().size() != 0)
+		for (Semester sem : this.getTreeSemesters()) {
+			s += "\nSemester == " + sem.getClass().getName() + "@" + this.getTreeSemesters().hashCode();
+			s += "\n + ";
+			s += "\n ++> " + "Семестр № " + sem.getNUMBER_OF_SEMESTER() + " количество недель в нём == " + sem.getQUANTITY_OF_WEEK();
+			for (Module mod : sem.getTreeModule()) {
+				s += "\n + ";
+				s += "\n +++> " + "Модуль № " + mod.getNumber() + " и его название " + mod.getName();
+				for (Section sec : mod.getTreeSection()) {
+					s += "\n + ";
+					s += "\n ++++> " + "Секция № " + sec.getNumber() + " и её название " + sec.getName();
+					for (ThematicPlan theme : sec.getTreeTheme()) {
+						s += "\n + ";
+						s += "\n +++++> " + " Тема № " + theme.getNumber() + " и её название " + theme.getTitle();
+					}
+				}
+			}
 		}
+		else s += "\nSemester count == 0\n";
 		return s;
+	}
+
+	public Set<ThematicPlan> getThematicPlans() {
+		Set<ThematicPlan> setTheme = new TreeSet<ThematicPlan>();
+		for (Semester sem : this.getTreeSemesters())
+			for (Module mod : sem.getTreeModule())
+				for (Section sec : mod.getTreeSection())
+					setTheme.addAll(sec.getTreeTheme());
+		return setTheme;
+	}
+
+	/**
+	 * Вывод через запятую семестров доступных для данной @WPDVersion
+	 */
+	public String getStringSemester() {
+		String s = "";
+		for (Semester sem : semesters) {
+			s += "," + sem.getNUMBER_OF_SEMESTER();
+		}
+		if (s.length() != 0) {
+			return s.substring(1);
+		}
+		return null;
+	}
+
+	/**
+	 * Возвращает семестр по его номеру или null, если семестр не найден
+	 * @param number номер семестра
+	 * @return @Semester or null
+	 */
+	public Semester getSemester(int number) {
+		for (Semester sem : semesters) {
+			if (sem.getNUMBER_OF_SEMESTER() == number) return sem;
+		}
+		return null;
 	}
 }

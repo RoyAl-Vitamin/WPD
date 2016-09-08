@@ -78,6 +78,7 @@ public class FXMLCtrlModalTheme extends VBox {
 				tempTheme.setLR(theme.getLR());
 				tempTheme.setKSR(theme.getKSR());
 				tempTheme.setSRS(theme.getSRS());
+				tempTheme.setSection(theme.getSection());
 				section.getTreeTheme().remove(theme);
 				section.getTreeTheme().add(tempTheme);
 			}
@@ -89,6 +90,7 @@ public class FXMLCtrlModalTheme extends VBox {
 			tempTheme.setBelongingToTheSemester(semester.getNUMBER_OF_SEMESTER());
 			tempTheme.setBelongingToTheModule(module.getNumber());
 			tempTheme.setBelongingToTheSection(section.getNumber());
+			tempTheme.setSection(section);
 			section.getTreeTheme().add(tempTheme);
 		}
 

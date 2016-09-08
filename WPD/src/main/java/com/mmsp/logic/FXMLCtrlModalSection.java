@@ -59,6 +59,7 @@ public class FXMLCtrlModalSection extends VBox {
 				sec.setName(section.getName());
 				sec.setNumber(section.getNumber());
 				sec.setTreeTheme(section.getTreeTheme());
+				sec.setModule(section.getModule());
 				module.getTreeSection().remove(section);
 				module.getTreeSection().add(sec);
 			}
@@ -66,6 +67,7 @@ public class FXMLCtrlModalSection extends VBox {
 			Section sec = new Section();
 			sec.setNumber(Integer.parseInt(tfNumberOfSection.getText()));
 			sec.setName(taDescOfSection.getText());
+			sec.setModule(module);
 			module.getTreeSection().add(sec);
 		}
 

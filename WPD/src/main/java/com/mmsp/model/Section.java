@@ -1,20 +1,46 @@
 package com.mmsp.model;
 
-import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class Section {
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
+/**
+ * Класс данных одной секции является частью Module
+ * @author rav
+ */
+
+@Entity
+@Table(name = "SECTION")
+public class Section implements Comparable<Section> {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "SECTION_ID")
+	private Long id;
+
+	@ManyToOne
+	@JoinColumn(name="SECTION_LINK")
+	private Module module; // Связь с модулем
+
+	@Column(name = "SECTION_NUMBER")
 	private int number; // Номер раздела
 
+	@Column(name = "SECTION_NAME")
 	private String name; // описание раздела
 
-	private Set<ThematicPlan> treeTheme = new TreeSet<ThematicPlan>(new Comparator<ThematicPlan>() { // Множество тем
-		public int compare(ThematicPlan o1, ThematicPlan o2) {
-			return o1.getNumber() - o2.getNumber();
-		}
-	});
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "section", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+	private Set<ThematicPlan> treeTheme = new TreeSet<ThematicPlan>((ThematicPlan a, ThematicPlan b) -> a.compareTo(b));
 
 	public int getNumber() {
 		return number;
@@ -40,6 +66,22 @@ public class Section {
 		this.treeTheme = setTheme;
 	}
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Module getModule() {
+		return module;
+	}
+
+	public void setModule(Module module) {
+		this.module = module;
+	}
+
 	/**
 	 * Возвращает тему по её номеру или null, если тема не найдена
 	 * @param number номер темы
@@ -58,5 +100,10 @@ public class Section {
 				temp += theme.getL();
 		}
 		return temp;
+	}
+
+	@Override
+	public int compareTo(Section o) {
+		return this.getNumber() - o.getNumber();
 	}
 }

@@ -13,7 +13,11 @@
     
     <mapping class="com.mmsp.model.WPDData"/>
     <mapping class="com.mmsp.model.WPDVersion"/>
+    <mapping class="com.mmsp.model.Semester"/>
+    <mapping class="com.mmsp.model.Module"/>
+    <mapping class="com.mmsp.model.Section"/>
     <mapping class="com.mmsp.model.ThematicPlan"/>
+    <mapping class="com.mmsp.model.Record"/>
     <mapping class="com.mmsp.model.PoCM"/>
     <mapping class="com.mmsp.model.HandbookAcademicPlan"/>
     <mapping class="com.mmsp.model.HandbookCompetency"/>

@@ -1,20 +1,49 @@
 package com.mmsp.model;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OrderColumn;
+import javax.persistence.Table;
+
 /**
  * класс одной записи в таблице 7.1
  * @author rav
  */
+
+@Entity
+@Table(name = "RECORD")
 public class Record {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "RECORD_ID")
+	private Long id;
+
+	@ManyToOne
+	@JoinColumn(name="RECORD_LINK")
+	private Semester semester;
+
+	@Column(name = "RECORD_COURSE_TITLE")
 	private String courseTitle; // название дисциплины
 
+	//@IndexColumn
+	@OrderColumn(name = "RECORD_ARRAY_WEEK")
 	private String[] arrWeek; // распределение часов/плюсов по неделям
 
+	@Column(name = "RECORD_POS")
 	private int pos; // позиция строки в таблице (нужна, что бы не промахнуться с удалением)
 
 	public Record(int size, int currPos) {
 		arrWeek = new String[size];
 		pos = currPos;
+	}
+
+	public Record() {
 	}
 
 	public String getCourseTitle() {
@@ -39,6 +68,22 @@ public class Record {
 
 	public void setPos(int pos) {
 		this.pos = pos;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Semester getSemester() {
+		return semester;
+	}
+
+	public void setSemester(Semester semester) {
+		this.semester = semester;
 	}
 
 	/**

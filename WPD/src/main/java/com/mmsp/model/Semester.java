@@ -1,32 +1,57 @@
 package com.mmsp.model;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 /**
- * Класс данных одного семестра
+ * Класс данных одного семестра является частью WPDVersion
  * @author rav
  */
+
+@Entity
+@Table(name = "SEMESTERS")
 public class Semester implements Comparable<Semester> {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "SEMESTERS_ID")
+	private Long id;
+
+	@ManyToOne
+	@JoinColumn(name="SEMESTERS_LINK")
+	private WPDVersion wpdVersion; // Связь с версией
+
+	@Column(name = "SEMESTERS_NUMBER_OF_SEMESTER")
 	private int NUMBER_OF_SEMESTER; // номер модуля
 
+	@Column(name = "SEMESTERS_QUANTITY_OF_MODULE")
 	private int QUANTITY_OF_MODULE; // количество модулей
-	
+
+	@Column(name = "SEMESTERS_QUANTITY_OF_SECTION")
 	private int QUANTITY_OF_SECTION; // количество разделов
 
+	@Column(name = "SEMESTERS_QUANTITY_OF_WEEK")
 	private int QUANTITY_OF_WEEK; // количество недель
 
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "semester", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
 	private List<Record> rowT71; // сами записи в таблице 7.1, как { имя предмета и распределение часов или плюсов по неделям}
 
-	private Set<Module> treeModule = new TreeSet<Module>(new Comparator<Module>() { // Дерево модулей для отображения в ttvRoot
-		public int compare(Module o1, Module o2) {
-			return o1.getNumber() - o2.getNumber();
-		}
-	});
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "semester", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+	private Set<Module> treeModule = new TreeSet<Module>((Module a, Module b) -> a.compareTo(b));
 
 	public Semester() {
 		rowT71 = new ArrayList<Record>();
@@ -82,6 +107,22 @@ public class Semester implements Comparable<Semester> {
 
 	public void setTreeModule(Set<Module> treeModule) {
 		this.treeModule = treeModule;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public WPDVersion getWPDVersion() {
+		return wpdVersion;
+	}
+
+	public void setWPDVersion(WPDVersion wpdVersion) {
+		this.wpdVersion = wpdVersion;
 	}
 
 	/**

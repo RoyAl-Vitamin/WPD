@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,8 +26,12 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import com.mmsp.dao.DAO;
 import com.mmsp.dao.impl.DAO_HandBookDiscipline;
+import com.mmsp.dao.impl.DAO_Module;
 import com.mmsp.dao.impl.DAO_PoCM;
+import com.mmsp.dao.impl.DAO_Section;
+import com.mmsp.dao.impl.DAO_Semester;
 import com.mmsp.dao.impl.DAO_ThematicPlan;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.model.HandbookDiscipline;
@@ -36,7 +41,6 @@ import com.mmsp.model.Section;
 import com.mmsp.model.Semester;
 import com.mmsp.model.ThematicPlan;
 import com.mmsp.model.Module;
-import com.mmsp.model.MyTreeSet;
 import com.mmsp.model.WPDVersion;
 
 import javafx.beans.InvalidationListener;
@@ -194,13 +198,11 @@ public class FXMLCtrlNewTab extends VBox {
 
 	private FXMLCtrlNewTab fxmlCtrlCurrTab; // Контроллер этой вкладки
 
-	private FXMLCtrlMain parentCtrl;
+	private FXMLCtrlMain parentCtrl; // Контроллер родительской вкладки
 	
 	private String tabName; // здесь полное название вкладки, возможно стоило хранить только название версии, т.к. название дисциплины пока не менятся
 
-	private WPDVersion currWPDVersion;
-	private PoCM currPoCM;
-	private Set<ThematicPlan> setCurrThematicPlan;
+	private WPDVersion currWPDVersion; // @WPDVersion принадлежащая этой вкладке
 
 	// шапка текущей вкладки
 
@@ -281,8 +283,6 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private Button bDelRowT71; // кнопка удаления текущей строки из текущего семестра
 
-	private MyTreeSet treeRoot = new MyTreeSet(); // как за*бало всё переписывать
-
 	private final ObservableList<String> olSemesters = FXCollections.observableArrayList(); // for cbSemester // список # семестров
 
 	@FXML
@@ -341,7 +341,7 @@ public class FXMLCtrlNewTab extends VBox {
 			}
 		};
 
-		for (Semester sem : treeRoot) {
+		for (Semester sem : currWPDVersion.getTreeSemesters()) {
 			HBox hbForSem = new HBox(5);
 			hbForSem.setAlignment(Pos.CENTER);
 
@@ -409,7 +409,7 @@ public class FXMLCtrlNewTab extends VBox {
 		popOver.getRoot().autosize();
 		popOver.show(bSemester);
 		popOver.setOnCloseRequest(e -> {
-			if (treeRoot.size() != 0) bSemester.setText(treeRoot.getStringSemester());
+			if (currWPDVersion.getTreeSemesters().size() != 0) bSemester.setText(currWPDVersion.getStringSemester());
 			else bSemester.setText("Добавить");
 		});
 	}
@@ -429,13 +429,14 @@ public class FXMLCtrlNewTab extends VBox {
     }
 
 	/**
-	 * Сохраняет текущее содержание семестров и удаляет из treeRoot удалённые из этого окна 
+	 * Сохраняет текущее содержание семестров и удаляет из currWPDVersion.getSemester удалённые из этого окна 
 	 * @param e
 	 */
+	// ERROR При изменении номера непустого семестра всё крашиться
 	private void clickBSaveSemester(ActionEvent e) {
 		VBox vbForSemester = (VBox) ((Button) e.getSource()).getParent();
-		List<Semester> liSemForDelete = new ArrayList<>(); // список на  удаление
-		for (Semester semesterTemp : treeRoot) {
+		for (Iterator<Semester> i = currWPDVersion.getTreeSemesters().iterator(); i.hasNext();) {
+			Semester semesterTemp = i.next();
 			boolean delete = true;
 			for (Node nodeTemp : vbForSemester.getChildren()) {
 				if (nodeTemp instanceof HBox) {
@@ -446,10 +447,8 @@ public class FXMLCtrlNewTab extends VBox {
 					}
 				}
 			}
-			if (delete) liSemForDelete.add(semesterTemp);
+			if (delete) i.remove();
 		}
-
-		treeRoot.removeAll(liSemForDelete);
 
 		for (Node nodeTemp : vbForSemester.getChildren()) { // Добаение новых узлов
 			if (nodeTemp instanceof HBox) {
@@ -460,7 +459,9 @@ public class FXMLCtrlNewTab extends VBox {
 						Semester newSem = new Semester();
 						newSem.setNUMBER_OF_SEMESTER(numOfSem);
 						newSem.setQUANTITY_OF_WEEK(quaOfWeek);
-						treeRoot.add(newSem);
+						newSem.setWPDVersion(currWPDVersion);
+						currWPDVersion.getTreeSemesters().add(newSem);
+
 						for (Node node : ((HBox) nodeTemp).getChildren()) { // раздадим id новым полям нового семестра
 							if (node instanceof TextField) {
 								if ("numOfSem".equals(node.getId()))
@@ -478,18 +479,19 @@ public class FXMLCtrlNewTab extends VBox {
 			}
 		}
 
-		if (treeRoot.size() != 0) bSemester.setText(treeRoot.getStringSemester());
+		if (currWPDVersion.getTreeSemesters().size() != 0) bSemester.setText(currWPDVersion.getStringSemester());
 		else bSemester.setText("Добавить");
 		olSemesters.clear();
-		for (Semester sem : treeRoot) {
+		for (Semester sem : currWPDVersion.getTreeSemesters()) {
 			olSemesters.add(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
 		}
 		if (olSemesters.size() == 0) currSemester = null;
 		else {
 			cbSemesters.getSelectionModel().selectFirst();
-			currSemester = treeRoot.first();
+			currSemester = currWPDVersion.getTreeSemesters().iterator().next();
 		}
 		loadTvT71();
+		repaintSSVTableTP();
 		loadTabThematicalPlan();
 	}
 
@@ -537,6 +539,7 @@ public class FXMLCtrlNewTab extends VBox {
 	 * Удаляет HBox на кнопку рядом с ним
 	 * @param e
 	 */
+	// ERROR Если был удалён тот семестр, что выведен в ssvTableTP, то его надо бы отчистить
 	private void clickRemoveSemester(ActionEvent e) {
 		// Приводим к VBox                            // к hbForSem // к vbForSemester
 		VBox vbForSemester = (VBox) ((Button) e.getSource()).getParent().getParent();
@@ -568,12 +571,14 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 	}
 
+	// TODO first достать данные из полей и вставить их в объект PoCM
 	@FXML
 	void clickBSave(ActionEvent event) {
 
-		// TODO first достать данные из полей и вставить их в объекты PoCM and ThematicPlan
 		currWPDVersion.setName(tfVersion.getText()); // Запоминаем название версии
 		currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
+		DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
+		dao_wpdVersion.update(currWPDVersion);
 
 		/* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
 		/*LocalDate localDate = dpDateOfCreate.getValue();
@@ -581,47 +586,73 @@ public class FXMLCtrlNewTab extends VBox {
 		currWPDVersion.setDate(Date.from(instant));*/ // Попробуем занести дату создания
 
 		DAO_PoCM dao_pocm = new DAO_PoCM();
-		dao_pocm.update(currPoCM);
+		dao_pocm.update(currWPDVersion.getPoCM());
 
 		// ОБНОВЛЕНИЕ ТЕМАТИЧЕСКОГО ПЛАНА
-		// Удалить все темы из тематического плана, которые принадлежат этой версии
-		// Занести из treeRoot во множество setCurrThematicPlan
-		// Сохранить их всех в БД
+		// Удалить всё WPDVerison, кроме ID, Name, TemplateName (всего того, что относится только к WPDVersion)
+		// Сохранить новые содержащиеся в currWPD темы в БД
 
-		DAO_ThematicPlan dao_thematicPlan = new DAO_ThematicPlan();
-		if (setCurrThematicPlan == null) {
-			setCurrThematicPlan = new TreeSet<>();
+		DAO_Semester dao_semester = new DAO_Semester();
+		// Удаление всего ненужного из BD
+		WPDVersion tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
+		for (Iterator<Semester> i = tempVersion.getTreeSemesters().iterator(); i.hasNext();) {
+			Semester sem = i.next();
+			dao_semester.remove(sem); // удаляем семестры, остальное должно удалиться само
+			i.remove();
 		}
-		for (ThematicPlan tp : setCurrThematicPlan)
-			dao_thematicPlan.remove(tp);
+		dao_wpdVersion.update(tempVersion);
+		
+		// TEST
+		/*tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
+		System.err.println("NEW SIZE == " + tempVersion.getTreeSemesters().size());*/
 
-		setCurrThematicPlan.clear();
-		for (Semester sem : treeRoot)
-			for (Module mod : sem.getTreeModule())
-				for (Section sec : mod.getTreeSection())
-					for (ThematicPlan tp : sec.getTreeTheme()) {
-						tp.setWPDVerion(currWPDVersion);
-
-						setCurrThematicPlan.add(tp);
-			
-						tp.setId(dao_thematicPlan.add(tp));
+		// Сохранение в БД
+		for (Semester s : currWPDVersion.getTreeSemesters()) {
+			s.setWPDVersion(currWPDVersion);
+			s.setId(dao_semester.add(s));
+			DAO<Record> dao_record = new DAO<Record>(){};
+			for (Record rec : s.getRowT71()) {
+				rec.setSemester(s);
+				rec.setId(dao_record.add(rec));
+			}
+			DAO_Module dao_module = new DAO_Module();
+			for (Module mod : s.getTreeModule()) {
+				mod.setId(dao_module.add(mod));
+				mod.setSemester(s);
+				DAO_Section dao_section = new DAO_Section();
+				for (Section sec : mod.getTreeSection()) {
+					sec.setId(dao_section.add(sec));
+					sec.setModule(mod);
+					DAO_ThematicPlan dao_theme = new DAO_ThematicPlan();
+					for (ThematicPlan theme : sec.getTreeTheme()) {
+						theme.setSection(sec);
+						theme.setId(dao_theme.add(theme));
 					}
+				}
+			}
+		}
 
-
-		DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
-		dao_wpdVersion.update(currWPDVersion);
+		// TEST
+		tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
+		System.err.println("CHO TAM? SIZE ROWT71 == " + tempVersion.getTreeSemesters().iterator().next().getRowT71().size());
 
 		// Блок обновления названия вкладки и списка Версий в cbVersion 
 		if (!tabName.split(":")[1].equals(currWPDVersion.getName()))
 		// Если сменилось название версии, то подгрузим контроллер
 		// и изменим из него значение названия вкладки и обновим список названий версий
 		{
-			// FIXME Если выбрана другая дисциплина, то он всёравно вставит свою версию в cbDiscipline
 			parentCtrl.updateOlVersion(currWPDVersion.getHbD().getId()); // Обновляет список, содержащийся в cbVersion
 			if (!parentCtrl.updateTabName(tabName, currWPDVersion.getName())) { // обновляет название вкладки
 				System.err.println("Возникла ошибка при обновлении названия вкадки");
 			}
 		}
+
+		//System.err.println(currWPDVersion.toString());
+
+		// TEST
+		/*WPDVersion newWPDVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
+		System.err.println(newWPDVersion.toString()); // посмотрим что он там сохранил
+		*/
 	}
 
 	/**
@@ -652,7 +683,7 @@ public class FXMLCtrlNewTab extends VBox {
 	}
 
 	/**
-	 * Удаление данной версии
+	 * Удаление данной версии (вызывает окно для подтверждения)
 	 * @param event
 	 */
 	@FXML
@@ -681,6 +712,9 @@ public class FXMLCtrlNewTab extends VBox {
 		stageModalSure.showAndWait();
 	}
 
+	/**
+	 * Удаляет текущую версию
+	 */
 	public void deleteWPDVerison() {
 
 		Long id = currWPDVersion.getId();
@@ -802,9 +836,11 @@ public class FXMLCtrlNewTab extends VBox {
 						int numOfSem = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
 						int numOfMod = Integer.parseInt(item.getValue().split(" ")[1]);
 
-						treeRoot.getSemester(numOfSem).getTreeModule().remove(treeRoot.getSemester(numOfSem).getModule(numOfMod));
+						currWPDVersion.getSemester(numOfSem).getTreeModule().remove(currWPDVersion.getSemester(numOfSem).getModule(numOfMod));
 						createTree();
-						System.err.println(treeRoot.toString());
+
+						// TEST
+						System.err.println(currWPDVersion.toString());
 					});
 					liMI.add(mI);
 				}
@@ -825,9 +861,11 @@ public class FXMLCtrlNewTab extends VBox {
 						int numOfMod = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
 						int numOfSec = Integer.parseInt(item.getValue().split(" ")[1]);
 
-						treeRoot.getSemester(numOfSem).getModule(numOfMod).getTreeSection().remove(treeRoot.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec));
+						currWPDVersion.getSemester(numOfSem).getModule(numOfMod).getTreeSection().remove(currWPDVersion.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec));
 						createTree();
-						System.err.println(treeRoot.toString());
+
+						// TEST
+						System.err.println(currWPDVersion.toString());
 					});
 					liMI.add(mI);
 				}
@@ -844,9 +882,11 @@ public class FXMLCtrlNewTab extends VBox {
 						int numOfSec = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
 						int numOfTheme = Integer.parseInt(item.getValue().split(" ")[1]);
 
-						treeRoot.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec).getTreeTheme().remove(treeRoot.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec).getTheme(numOfTheme));
+						currWPDVersion.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec).getTreeTheme().remove(currWPDVersion.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec).getTheme(numOfTheme));
 						createTree();
-						System.err.println(treeRoot.toString());
+
+						// TEST
+						System.err.println(currWPDVersion.toString());
 					});
 					liMI.add(mI);
 				}
@@ -883,12 +923,12 @@ public class FXMLCtrlNewTab extends VBox {
 					// Изменение выбранного модуля
 					int numOfSem = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
 					int numOfMod = Integer.parseInt(item.getValue().split(" ")[1]);
-					fxmlCtrlModalModule.setRoot(treeRoot.getSemester(numOfSem), numOfMod);
+					fxmlCtrlModalModule.setRoot(currWPDVersion.getSemester(numOfSem), numOfMod);
 				} else
 				if (item.getValue().contains("Семестр")) {
 					// Добавление нового модуля
 					int numOfSem = Integer.parseInt(item.getValue().split(" ")[1]);
-					fxmlCtrlModalModule.setRoot(treeRoot.getSemester(numOfSem));
+					fxmlCtrlModalModule.setRoot(currWPDVersion.getSemester(numOfSem));
 				} else return;
 
 				stageModalModule.setScene(scene);
@@ -925,13 +965,13 @@ public class FXMLCtrlNewTab extends VBox {
 					int numOfSem = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
 					int numOfMod = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
 					int numOfSec = Integer.parseInt(item.getValue().split(" ")[1]);
-					fxmlCtrlModalSection.setRoot(treeRoot.getSemester(numOfSem), numOfMod, numOfSec);
+					fxmlCtrlModalSection.setRoot(currWPDVersion.getSemester(numOfSem), numOfMod, numOfSec);
 				} else
 				if (item.getValue().contains("Модуль")) {
 					// Добавление нового модуля
 					int numOfSem = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
 					int numOfMod = Integer.parseInt(item.getValue().split(" ")[1]);
-					fxmlCtrlModalSection.setRoot(treeRoot.getSemester(numOfSem), numOfMod);
+					fxmlCtrlModalSection.setRoot(currWPDVersion.getSemester(numOfSem), numOfMod);
 				} else return;
 
 				stageModalSection.setScene(scene);
@@ -969,14 +1009,14 @@ public class FXMLCtrlNewTab extends VBox {
 					int numOfMod = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
 					int numOfSec = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
 					int numOfTheme = Integer.parseInt(item.getValue().split(" ")[1]);
-					fxmlCtrlModalTheme.setRoot(treeRoot.getSemester(numOfSem), numOfMod, numOfSec, numOfTheme);
+					fxmlCtrlModalTheme.setRoot(currWPDVersion.getSemester(numOfSem), numOfMod, numOfSec, numOfTheme);
 				} else
 				if (item.getValue().contains("Раздел")) {
 					// Добавление новой темы
 					int numOfSem = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
 					int numOfMod = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
 					int numOfSec = Integer.parseInt(item.getValue().split(" ")[1]);
-					fxmlCtrlModalTheme.setRoot(treeRoot.getSemester(numOfSem), numOfMod, numOfSec);
+					fxmlCtrlModalTheme.setRoot(currWPDVersion.getSemester(numOfSem), numOfMod, numOfSec);
 				} else return;
 
 				stageModalTheme.setScene(scene);
@@ -1154,27 +1194,48 @@ public class FXMLCtrlNewTab extends VBox {
 	 * @param id_Vers ID версии
 	 */
 	private void load(Long id_Vers) {
-		currWPDVersion = new WPDVersion();
 
 		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
 		currWPDVersion = dao_Vers.getById(WPDVersion.class, id_Vers);
 
-		if (currWPDVersion.getThematicPlans() != null) {
-			if (currWPDVersion.getThematicPlans().size() != 0) {
-				setCurrThematicPlan = currWPDVersion.getThematicPlans();
-				for (ThematicPlan theme : currWPDVersion.getThematicPlans())
-					addRowSSVTableTP(theme);
+		// TODO Уточнить: так и должно быть? Сортировка загруженного Set из Hibernate
+		for (Semester sem : currWPDVersion.getTreeSemesters()) {
+			for (Module mod : sem.getTreeModule()) {
+				for (Section sec : mod.getTreeSection()) {
+					TreeSet<ThematicPlan> setTheme = new TreeSet<>((ThematicPlan a, ThematicPlan b) -> a.compareTo(b));
+					setTheme.addAll(sec.getTreeTheme());
+					sec.getTreeTheme().clear();
+					sec.setTreeTheme(setTheme);
+				}
+				TreeSet<Section> setSec = new TreeSet<>((Section a, Section b) -> a.compareTo(b));
+				setSec.addAll(mod.getTreeSection());
+				mod.getTreeSection().clear();
+				mod.setTreeSection(setSec);
 			}
+			TreeSet<Module> setMod = new TreeSet<>((Module a, Module b) -> a.compareTo(b));
+			setMod.addAll(sem.getTreeModule());
+			sem.getTreeModule().clear();
+			sem.setTreeModule(setMod);
+		}
+		TreeSet<Semester> setSem = new TreeSet<>((Semester a, Semester b) -> a.compareTo(b));
+		setSem.addAll(currWPDVersion.getTreeSemesters());
+		currWPDVersion.getTreeSemesters().clear();
+		currWPDVersion.setTreeSemesters(setSem);
+		// Конец сортировки
+
+		if (currWPDVersion.getThematicPlans() != null) {
+			for (ThematicPlan theme : currWPDVersion.getThematicPlans())
+				addRowSSVTableTP(theme);
 		}
 
 		if (currWPDVersion.getPoCM() == null) {
-			currPoCM = new PoCM();
-			currWPDVersion.setPoCM(currPoCM);
-			currPoCM.setWpdVersion(currWPDVersion);
+			PoCM newPoCM = new PoCM();
+			currWPDVersion.setPoCM(newPoCM);
+			newPoCM.setWpdVersion(currWPDVersion);
 			DAO_PoCM dao_PoCM = new DAO_PoCM();
-			currPoCM.setId(dao_PoCM.add(currPoCM));
+			newPoCM.setId(dao_PoCM.add(newPoCM));
+			currWPDVersion.setPoCM(newPoCM);
 		} else {
-			currPoCM = currWPDVersion.getPoCM();
 			// TODO Выгрузить в список RowPoCM
 			// TODO Загрузка полей во вкладку
 		}
@@ -1191,13 +1252,22 @@ public class FXMLCtrlNewTab extends VBox {
 		} else
 			dpDateOfCreate.setValue(LocalDate.now());
 
+		olSemesters.clear();
+		for (Semester sem : currWPDVersion.getTreeSemesters()) {
+			olSemesters.add(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
+		}
+		if (olSemesters.size() == 0) currSemester = null;
+		else {
+			cbSemesters.setItems(olSemesters);
+			cbSemesters.getSelectionModel().selectFirst();
+			bAddRowT71.setDisable(false);
+			cbSemesters.setDisable(false);
+			currSemester = currWPDVersion.getTreeSemesters().iterator().next();
+		}
+
 		//Вывод того, что есть
 		System.err.println(currWPDVersion.toString());
-		System.err.println(currPoCM.toString());
-		if (setCurrThematicPlan != null)
-			for (ThematicPlan tematicPlan : setCurrThematicPlan) {
-				System.err.println(tematicPlan.toString());
-			}
+		System.err.println(currWPDVersion.getPoCM().toString());
 	}
 
 	//*************************************************************************************************************************
@@ -1322,7 +1392,7 @@ public class FXMLCtrlNewTab extends VBox {
 
         });
 		tvRoot.setShowRoot(false);
-		createTree();
+		//createTree();
 	}
 
 	/**
@@ -1336,10 +1406,10 @@ public class FXMLCtrlNewTab extends VBox {
 			int belongingToTheSection = (int) ssvTableTP.getGrid().getRows().get(i).get(2).getItem();
 			int numberOfTheme = (int) ssvTableTP.getGrid().getRows().get(i).get(3).getItem();
 
-			ThematicPlan theme = treeRoot.getSemester(belongingToTheSemester).getModule(belongingToTheModule).getSection(belongingToTheSection).getTheme(numberOfTheme);
+			ThematicPlan theme = currWPDVersion.getSemester(belongingToTheSemester).getModule(belongingToTheModule).getSection(belongingToTheSection).getTheme(numberOfTheme);
 
 			if (theme != null) {
-				theme.setWPDVerion(currWPDVersion);
+				//theme.setWPDVerion(currWPDVersion);
 				theme.setTitle((String) ssvTableTP.getGrid().getRows().get(i).get(4).getItem());
 				theme.setDescription((String) ssvTableTP.getGrid().getRows().get(i).get(5).getItem());
 				theme.setL((Integer) ssvTableTP.getGrid().getRows().get(i).get(6).getItem());
@@ -1363,8 +1433,9 @@ public class FXMLCtrlNewTab extends VBox {
 		List<ThematicPlan> liTheme = new ArrayList<>();
 		try {
 			switch (temp.length) {
+			case 0: break;
 			case 1:
-				for (Module module : treeRoot.getSemester(temp[0]).getTreeModule()) {
+				for (Module module : currWPDVersion.getSemester(temp[0]).getTreeModule()) {
 					Set<Section> setSection = module.getTreeSection();
 					for (Section section : setSection) {
 						liTheme.addAll(section.getTreeTheme());
@@ -1372,19 +1443,19 @@ public class FXMLCtrlNewTab extends VBox {
 				}
 				break;
 			case 2:
-				Set<Section> setSection = treeRoot.getSemester(temp[0]).getModule(temp[1]).getTreeSection();
+				Set<Section> setSection = currWPDVersion.getSemester(temp[0]).getModule(temp[1]).getTreeSection();
 				for (Section section : setSection) {
 					liTheme.addAll(section.getTreeTheme()); // скопируем у каждой секции
 				}
 				break;
 			case 3:
-				liTheme.addAll(treeRoot.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTreeTheme());
+				liTheme.addAll(currWPDVersion.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTreeTheme());
 				break;
 			case 4:
-				liTheme.add(treeRoot.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTheme(temp[3]));
+				liTheme.add(currWPDVersion.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTheme(temp[3]));
 				break;
 			default:
-				throw new Exception("нет аргументов у массива тематического плана");
+				throw new Exception("не правильное количество аргументов у массива тематического плана");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1407,7 +1478,10 @@ public class FXMLCtrlNewTab extends VBox {
 	 */
 	private void addRowSSVTableTP(ThematicPlan theme) {
 
-		GridBase newGrid = new GridBase(ssvTableTP.getGrid().getRowCount() + 1, ssvTableTP.getGrid().getColumnCount()); // Создадим сетку с +1 строкой
+		GridBase newGrid = null;
+		if (ssvTableTP.getGrid() != null)
+			newGrid = new GridBase(ssvTableTP.getGrid().getRowCount() + 1, ssvTableTP.getGrid().getColumnCount()); // Создадим сетку с +1 строкой
+		else newGrid = new GridBase(1, 11);
 		int newRowPos = ssvTableTP.getGrid().getRowCount(); // и количество строк
 
 		ObservableList<ObservableList<SpreadsheetCell>> newRows = ssvTableTP.getGrid().getRows(); // а так же существующие строки
@@ -1442,7 +1516,7 @@ public class FXMLCtrlNewTab extends VBox {
 	public void createTree() {
 		tvRoot.getSelectionModel().clearSelection();
 		rootElement.getChildren().clear();
-		for (Semester semester : treeRoot) {
+		for (Semester semester : currWPDVersion.getTreeSemesters()) {
 			TreeItem<String> nodeSemester = new TreeItem<String>("Семестр " + semester.getNUMBER_OF_SEMESTER());
 			nodeSemester.setExpanded(true);
 			rootElement.getChildren().add(nodeSemester);
@@ -1456,7 +1530,7 @@ public class FXMLCtrlNewTab extends VBox {
 					nodeModule.getChildren().add(nodeSection);
 					for (ThematicPlan theme : section.getTreeTheme()) {
 
-						theme.setWPDVerion(currWPDVersion);
+						//theme.setWPDVerion(currWPDVersion);
 
 						TreeItem<String> nodeTheme = new TreeItem<String>("Тема " + theme.getNumber());
 						nodeTheme.setExpanded(false);
@@ -1489,8 +1563,8 @@ public class FXMLCtrlNewTab extends VBox {
 		ssvTableTP.getColumns().get(3).setPrefWidth(55);
 		ssvTableTP.getColumns().get(4).setPrefWidth(200);
 		ssvTableTP.getColumns().get(5).setPrefWidth(100);
-		for (int i = 6; i < ssvTable71.getColumns().size() - 1; i++)
-			ssvTable71.getColumns().get(i).setPrefWidth(25);
+		for (int i = 6; i < ssvTableTP.getColumns().size() - 1; i++)
+			ssvTableTP.getColumns().get(i).setPrefWidth(25);
 
 		ssvTableTP.setGrid(grid);
 		ssvTableTP.setShowRowHeader(true);
@@ -1633,11 +1707,15 @@ public class FXMLCtrlNewTab extends VBox {
 
 	/**
 	 * Вставляет данные в талбицу 7.1 из currSemester
-	 * @param currSem
+	 * @param semester
 	 */
-	private void pasteIntoTvT71(Semester currSem) {
-		if (currSem == null) return;
-		for (Record row : currSem.getRowT71())
+	private void pasteIntoTvT71(Semester semester) {
+		if (semester == null) return;
+
+		// TEST
+		System.err.println("RECORD SIZE == " + semester.getRowT71().size());
+
+		for (Record row : semester.getRowT71())
 			addRowT71(row);
 	}
 
@@ -1719,7 +1797,7 @@ public class FXMLCtrlNewTab extends VBox {
 					// FIXME слишком сложно, лучше переписать
 					List<Section> liSec = new ArrayList<Section>(); // хранится список секций, который надо отобразить
 					List<Integer> liColSec = new ArrayList<Integer>(); // количесвто колонок, которое занимет каждая секция 
-					for (Module mod : treeRoot.getSemester(Integer.parseInt(cbSemesters.getSelectionModel().getSelectedItem())).getTreeModule())
+					for (Module mod : currWPDVersion.getSemester(Integer.parseInt(cbSemesters.getSelectionModel().getSelectedItem())).getTreeModule())
 						liSec.addAll(mod.getTreeSection());
 					for (int i = 0; i < liSec.size(); i++)
 						liColSec.add(0);
@@ -1741,7 +1819,7 @@ public class FXMLCtrlNewTab extends VBox {
 					
 					List<Module> liMod = new ArrayList<Module>(); // хранится список секций, который надо отобразить
 					List<Integer> liColMod = new ArrayList<Integer>(); // количесвто колонок, которое занимет каждая секция 
-					liMod.addAll(treeRoot.getSemester(Integer.parseInt(cbSemesters.getSelectionModel().getSelectedItem())).getTreeModule());
+					liMod.addAll(currWPDVersion.getSemester(Integer.parseInt(cbSemesters.getSelectionModel().getSelectedItem())).getTreeModule());
 					for (int i = 0; i < liSec.size(); i++)
 						liColMod.add(0);
 					j = 0; // индекс текущей выбранной секции из списка liSec
@@ -1768,6 +1846,7 @@ public class FXMLCtrlNewTab extends VBox {
 			 * @param liColMod
 			 */
 			private void setHeaderModule(List<Module> liMod, List<Integer> liColMod) {
+				if (liMod.size() == 0) return;
 				ssvTable71.getGrid().spanColumn(1, 2, 1); // разъединение "М1"
 				int posSec = 0; // отвечает за нужный раздел
 				int count = 0; // отвечает за количество нужных клеток в данном разделе
@@ -1802,6 +1881,7 @@ public class FXMLCtrlNewTab extends VBox {
 			 * @param liColSec
 			 */
 			private void setHeaderSection(List<Section> liSec, List<Integer> liColSec) {
+				if (liSec.size() == 0) return;
 				ssvTable71.getGrid().spanColumn(1, 3, 1); // разъединение "P1"
 				int posSec = 0; // отвечает за нужный раздел
 				int count = 0; // отвечает за количество нужных клеток в данном разделе
@@ -1877,6 +1957,7 @@ public class FXMLCtrlNewTab extends VBox {
 	}
 
 	/**
+	 * Инициализация компонентов без загрузки в них содержимого из БД
 	 * Описание методов поведения TableView, TreeTableView, а так же выделение памяти и установление связей
 	 */
 	private void initT() {
@@ -1884,12 +1965,24 @@ public class FXMLCtrlNewTab extends VBox {
 		initTvStudyLoad();
 	}
 
+	/**
+	 * Вставка данных из структуры в компоненты
+	 */
+	private void pasteT() {
+		loadTabThematicalPlan();
+		// UNDONE загрузка Т 7.1
+		loadTvT71();
+	}
+
 	public void init(Long id_Vers) {
-		initT(); // Инициализация
 
-		load(id_Vers); // Загрузка полей
+		initT(); // Только Инициализация
 
-		bSemester.setText( treeRoot.size() != 0 ? treeRoot.getStringSemester() : "" );
+		load(id_Vers); // Загрузка из БД
+
+		pasteT(); // Только загрузка из структуры в компоненты
+
+		bSemester.setText( currWPDVersion.getTreeSemesters().size() != 0 ? currWPDVersion.getStringSemester() : "" );
 
 		olSemesters.addListener(new ListChangeListener<String>() {
 			@Override
@@ -1910,7 +2003,7 @@ public class FXMLCtrlNewTab extends VBox {
 						//bDelRowT71.setDisable(false);
 
 						int iValue = Integer.parseInt(olSemesters.get((int) new_value));
-						for (Semester sem : treeRoot) {
+						for (Semester sem : currWPDVersion.getTreeSemesters()) {
 							if (sem.getNUMBER_OF_SEMESTER() == iValue) {
 								currSemester = sem;
 								loadTvT71();
@@ -1925,7 +2018,7 @@ public class FXMLCtrlNewTab extends VBox {
 			}
 		);
 		cbSemesters.setItems(olSemesters);
-		if (treeRoot.size() != 0) bSemester.setText(treeRoot.getStringSemester());
+		if (currWPDVersion.getTreeSemesters().size() != 0) bSemester.setText(currWPDVersion.getStringSemester());
 		else bSemester.setText("Добавить");
 	}
 

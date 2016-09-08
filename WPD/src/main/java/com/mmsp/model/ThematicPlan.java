@@ -17,7 +17,8 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "THEMATIC_PLAN")
-public class ThematicPlan implements Serializable {
+public class ThematicPlan implements Serializable, Comparable<ThematicPlan> {
+
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -25,7 +26,11 @@ public class ThematicPlan implements Serializable {
 	@Column(name = "THEMATIC_PLAN_ID")
 	private Long id;
 
-	@Column(name = "THEMATIC_PLAN_TITLE", length = 32)
+	@ManyToOne
+	@JoinColumn(name="THEMATIC_PLAN_LINK")
+	private Section section; // Связь с секцией
+
+	@Column(name = "THEMATIC_PLAN_TITLE", length = 256)
 	private String title; // название темы
 
 	@Column(name = "THEMATIC_PLAN_DESCRIPTION")
@@ -48,13 +53,6 @@ public class ThematicPlan implements Serializable {
 
 	@Column(name = "THEMATIC_PLAN_SRS")
 	private Integer SRS; // СРС
-
-	//@OneToOne(mappedBy = "thematicPlan")
-	//private WPDVersion wpdVersion; // связь с дисциплиной, к которой это тематический план принаделжит
-
-	@ManyToOne
-	@JoinColumn(name="THEMATIC_PLAN_VERSION")
-	private WPDVersion wpdVersion;
 
 	@Column(name = "THEMATIC_PLAN_BELONGING_TO_THE_SEMESTER")
 	private Integer belongingToTheSemester; // Принадлежность к семестру
@@ -80,8 +78,8 @@ public class ThematicPlan implements Serializable {
 		return description;
 	}
 
-	public WPDVersion getWPDVerion() {
-		return wpdVersion;
+	public Section getSection() {
+		return section;
 	}
 
 	public Integer getBelongingToTheModule() {
@@ -152,8 +150,8 @@ public class ThematicPlan implements Serializable {
 		this.description = description;
 	}
 
-	public void setWPDVerion(WPDVersion wpdVersion) {
-		this.wpdVersion = wpdVersion;
+	public void setWPDVerion(Section section) {
+		this.section = section;
 	}
 
 	public void setBelongingToTheModule(Integer value) {
@@ -173,10 +171,19 @@ public class ThematicPlan implements Serializable {
 	}
 
 	@Override
+	public int compareTo(ThematicPlan o) {
+		return this.getNumber() - o.getNumber();
+	}
+
+	public void setSection(Section section) {
+		this.section = section;
+	}
+
+	@Override
 	public String toString() {
 		return "\nThematicPlan: " + this.getClass().getName() + "@" + this.hashCode() +
 				"\nID == " + (this.getId() != null ? this.getId().toString() : "null") +
-				"\nWPDVersion == " + this.getWPDVerion().getClass().getName() + "@" + this.getWPDVerion().hashCode() +
+				"\nSection == " + this.getSection().getClass().getName() + "@" + this.getSection().hashCode() +
 				"\ntitle == " + this.getTitle() +
 				"\ndescription == " + this.getDescription() +
 				"\nbelonging To The Semester == " + this.getBelongingToTheSemester() +
@@ -187,5 +194,5 @@ public class ThematicPlan implements Serializable {
 				"\nLR == " + this.getLR() +
 				"\nKSR == " + this.getKSR() +
 				"\nSRS == " + this.getSRS() + "\n";
-		}
+	}
 }

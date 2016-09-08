@@ -124,6 +124,11 @@ public class FXMLCtrlMain extends VBox {
 		
 	}
 
+	/**
+	 * Нажатие на кнопку авторизации
+	 * @param event
+	 * @throws IOException
+	 */
 	@FXML
 	void clickMIAuth(ActionEvent event) throws IOException {
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Auth.fxml"));
@@ -202,12 +207,12 @@ public class FXMLCtrlMain extends VBox {
 						olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
 					else
 						System.err.println("Не удалось удалить Ctrl из списка");
-					// TODO Спросить о сохранении
 					showDialogSave();
 				}
 
+				// UNDONE
 				private void showDialogSave() {
-					// UNDONE					
+					// TODO Спросить о сохранении
 				}
 			});
 			tpDiscipline.getTabs().add(t);
@@ -534,7 +539,7 @@ public class FXMLCtrlMain extends VBox {
 		olDiscipline.addListener(new ListChangeListener<String>() {
 
 			@Override
-			public void onChanged(ListChangeListener.Change change) {
+			public void onChanged(ListChangeListener.Change<? extends String> change) {
 				if (olDiscipline.size() != 0) {
 					cbDiscipline.setDisable(false);
 					//cbVersion.setDisable(false);
@@ -548,7 +553,7 @@ public class FXMLCtrlMain extends VBox {
 		olVersion.addListener(new ListChangeListener<String>() {
 
 			@Override
-			public void onChanged(ListChangeListener.Change change) {
+			public void onChanged(ListChangeListener.Change<? extends String> change) {
 				if (olVersion.size() != 0) {
 					cbVersion.setDisable(false);
 				} else {
