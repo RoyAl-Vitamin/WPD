@@ -116,16 +116,16 @@
             </Tab>
             <Tab text="Тематический план">
                <content>
-                  <HBox fx:id="hbReplacementThematicalPlan" alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
+                  <HBox fx:id="hbReplacementThematicalPlan" alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="15.0">
                      <children>
                         <TreeView fx:id="tvRoot" maxWidth="140.0" minWidth="140.0">
                            <HBox.margin>
-                              <Insets bottom="15.0" right="10.0" top="15.0" />
+                              <Insets bottom="15.0" top="15.0" />
                            </HBox.margin>
                         </TreeView>
                      </children>
                      <padding>
-                        <Insets left="15.0" />
+                        <Insets left="15.0" right="15.0" />
                      </padding>
                   </HBox>
                </content>

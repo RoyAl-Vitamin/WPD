@@ -42,6 +42,7 @@ import com.mmsp.model.Semester;
 import com.mmsp.model.ThematicPlan;
 import com.mmsp.model.Module;
 import com.mmsp.model.WPDVersion;
+import com.mmsp.util.GenerateDoc;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -221,13 +222,15 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private Button bCallFileChooser;
 
-	PopOver popOver; // Окно добавления/изменения № семестров и их недель
+	private PopOver popOver; // Окно добавления/изменения № семестров и их недель
 
 	@FXML
 	private Button bSemester;
 
 	@FXML
 	private Button bSave;
+
+	private GenerateDoc gDoc = new GenerateDoc(); // клсаа отвечающий за генерацию
 
 	@FXML
 	private Button bGenerate;
@@ -266,7 +269,7 @@ public class FXMLCtrlNewTab extends VBox {
 	@FXML
 	private TreeView<String> tvRoot;
 
-	final TreeItem<String> rootElement = new TreeItem<String>("Создать модуль");
+	private final TreeItem<String> rootElement = new TreeItem<String>("Создать модуль");
 
 	private SpreadsheetView ssvTableTP; // Таблица тематического плана
 
@@ -633,8 +636,8 @@ public class FXMLCtrlNewTab extends VBox {
 		}
 
 		// TEST
-		tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
-		System.err.println("CHO TAM? SIZE ROWT71 == " + tempVersion.getTreeSemesters().iterator().next().getRowT71().size());
+		//tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
+		//System.err.println("CHO TAM? SIZE ROWT71 == " + tempVersion.getTreeSemesters().iterator().next().getRowT71().size());
 
 		// Блок обновления названия вкладки и списка Версий в cbVersion 
 		if (!tabName.split(":")[1].equals(currWPDVersion.getName()))
@@ -661,25 +664,9 @@ public class FXMLCtrlNewTab extends VBox {
 	 */
 	@FXML
 	void clickBGenerate(ActionEvent event) {
-		String pathToTemplateFile = tfPath.getText(); // путь до шаблона
-		File fInput = new File(pathToTemplateFile);
-		WordprocessingMLPackage wordMLPackage = null;
-		try {
-			wordMLPackage = WordprocessingMLPackage.load(fInput);
-		} catch (Docx4JException e) {
-			System.err.println("Не удалось найти шаблон");
-			e.printStackTrace();
-		}
 
-		// TODO Запилить хотя бы простую генерацию
-		String pathToGenFile = pathToTemplateFile.substring(0, pathToTemplateFile.lastIndexOf(".")) + "_gen" + pathToTemplateFile.substring(pathToTemplateFile.lastIndexOf(".")); // путь до сгенерированного файла
-		File fOutput = new File(pathToGenFile);
-		try {
-			wordMLPackage.save(fOutput);
-		} catch (Docx4JException e) {
-			System.err.println("Не удалось сохранить сгенирированый файл");
-			e.printStackTrace();
-		}
+		gDoc.generate(currWPDVersion); // генерируем
+
 	}
 
 	/**
@@ -1349,7 +1336,7 @@ public class FXMLCtrlNewTab extends VBox {
 
 		hbReplacementThematicalPlan.getChildren().add(ssvTableTP); // FIXME USE MasterDetailPane
 		HBox.setHgrow(ssvTableTP, Priority.ALWAYS);
-		HBox.setMargin(ssvTableTP, new Insets(15, 10, 15, 10));
+		HBox.setMargin(ssvTableTP, new Insets(15, 0, 15, 0));
 
 		rootElement.setExpanded(true);
 		tvRoot.setRoot(rootElement);
