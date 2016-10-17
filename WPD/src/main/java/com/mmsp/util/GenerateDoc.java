@@ -8,13 +8,17 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.lang3.StringUtils;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
+import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
+import org.docx4j.wml.ObjectFactory;
 
+import com.mmsp.model.Semester;
 import com.mmsp.model.WPDVersion;
 
 /**
@@ -27,6 +31,8 @@ public class GenerateDoc {
 	private WPDVersion version = null;
 
 	private String tokenThematicalPlan = "Thematical_Plan";
+
+	private ObjectFactory factory = null;
 
 	// UNDONE
 	// http://www.smartjava.org/content/create-complex-word-docx-documents-programatically-docx4j
@@ -45,11 +51,12 @@ public class GenerateDoc {
 			e.printStackTrace();
 		}
 
+		factory = Context.getWmlObjectFactory();
 		// Замена параграфа
 		String placeholder = "I_SEARCH"; // Что ищем
 		String toAdd = "THIS_PHRASE"; // на что заменяем
  
-		replaceParagraph(placeholder, toAdd, wordMLPackage, wordMLPackage.getMainDocumentPart());
+		//replaceParagraph(placeholder, toAdd, wordMLPackage, wordMLPackage.getMainDocumentPart());
 		addThematicalPlan(wordMLPackage, wordMLPackage.getMainDocumentPart());
 
 		String pathToGenFile = pathToTemplateFile.substring(0, pathToTemplateFile.lastIndexOf(".")) + "_gen" + pathToTemplateFile.substring(pathToTemplateFile.lastIndexOf(".")); // путь до сгенерированного файла
@@ -99,10 +106,29 @@ public class GenerateDoc {
 			}
 		}
 
+		// Создаём граф семестров
 		List<P> listOfParagraph = new ArrayList<P>();
-		for (int i = 0; i < version.getTreeSemesters().size(); i++) {
-			P Paragraph = new P(); // вставка инорамации про семестр
+		for (Semester sem: version.getTreeSemesters()) {
+			P result = factory.createP(); // вставка инорамации про семестр
+			R run = factory.createR();
+			Text text = factory.createText();
+
+			text.setValue("Семестр " + sem.getNUMBER_OF_SEMESTER() + "."); // TODO Сделать эту строку Bold
+			run.getContent().add(text);
+			result.getContent().add(run);
+			listOfParagraph.add(result);
 		}
+
+		// Вставляем в указанную позицию весь массив listOfParagraph
+		if (pos > -1) {
+			int i_pos = pos;
+			for (P p : listOfParagraph)
+				addTo.getContent().add(i_pos++, p);
+		} else {
+			for (P p : listOfParagraph)
+				addTo.getContent().add(p);
+		}
+		((ContentAccessor)toReplace.getParent()).getContent().remove(toReplace); // даление шаблонной фразы
 	}
 
 	private static List<Object> getAllElementFromObject(Object obj, Class<?> toSearch) {
