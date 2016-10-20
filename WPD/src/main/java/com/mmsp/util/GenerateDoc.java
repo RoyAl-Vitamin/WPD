@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.commons.lang3.StringUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -18,13 +17,15 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.ObjectFactory;
 
+import com.mmsp.model.Module;
+import com.mmsp.model.Section;
 import com.mmsp.model.Semester;
+import com.mmsp.model.ThematicPlan;
 import com.mmsp.model.WPDVersion;
 
 /**
  * Work only with *.docx
  * @author rav
- *
  */
 public class GenerateDoc {
 
@@ -53,8 +54,8 @@ public class GenerateDoc {
 
 		factory = Context.getWmlObjectFactory();
 		// Замена параграфа
-		String placeholder = "I_SEARCH"; // Что ищем
-		String toAdd = "THIS_PHRASE"; // на что заменяем
+		//String placeholder = "I_SEARCH"; // Что ищем
+		//String toAdd = "THIS_PHRASE"; // на что заменяем
  
 		//replaceParagraph(placeholder, toAdd, wordMLPackage, wordMLPackage.getMainDocumentPart());
 		addThematicalPlan(wordMLPackage, wordMLPackage.getMainDocumentPart());
@@ -72,8 +73,8 @@ public class GenerateDoc {
 
 	/**
 	 * Находит Thematical_Plan и заменяет её на Тематический план
-	 * @param wordMLPackage хз
-	 * @param mainDocumentPart хз что это
+	 * @param document
+	 * @param addTo
 	 * 
 	 * Структура следующая (2 пробела - возможно несколько объектов):
 	 * <p><b>Семестр #.</b></p>
@@ -84,8 +85,11 @@ public class GenerateDoc {
 	 *       <p>Тема #</p>
 	 *       <p>#{описание}</p>
 	 * 
-	 * TODO Возможно стоит сделать Введение?
-	 * TODO Нужен ли семестр?
+	 * TODO Возможно стоит сделать "Введение"? В отдельном окне или в "Таблице 7.1"?
+	 * TODO Нужен ли "Семестр"?
+	 * FIXME Необходим BOLD в некторых местах, а так же межстрочный интервал и между разделами просто перенос строки
+	 * FIXME Перевести в отдельный поток, а то тормозит весь процесс
+	 * FIXME Сделать конкатенацию для часов
 	 */
 	private void addThematicalPlan(WordprocessingMLPackage document, ContentAccessor addTo) {
 		List<Object> paragraphs = getAllElementFromObject(document.getMainDocumentPart(), P.class);
@@ -108,15 +112,97 @@ public class GenerateDoc {
 
 		// Создаём граф семестров
 		List<P> listOfParagraph = new ArrayList<P>();
-		for (Semester sem: version.getTreeSemesters()) {
-			P result = factory.createP(); // вставка инорамации про семестр
-			R run = factory.createR();
-			Text text = factory.createText();
 
-			text.setValue("Семестр " + sem.getNUMBER_OF_SEMESTER() + "."); // TODO Сделать эту строку Bold
-			run.getContent().add(text);
-			result.getContent().add(run);
-			listOfParagraph.add(result);
+		for (Semester sem: version.getTreeSemesters()) {
+			// Семестр и его номер
+			P pSemester = factory.createP(); // вставка инорамации про семестр
+			R rSemester = factory.createR();
+			Text tSemester = factory.createText();
+			tSemester.setValue("Семестр " + sem.getNUMBER_OF_SEMESTER() + "."); // TODO Сделать эту строку Bold
+			rSemester.getContent().add(tSemester);
+			pSemester.getContent().add(rSemester);
+			listOfParagraph.add(pSemester);
+
+			for (Module mod : sem.getTreeModule()) {
+				// Модуль, номер и его описание
+				P pModule = factory.createP(); // вставка ифнорамации про семестр
+				R rModule = factory.createR();
+				Text tModule = factory.createText();
+				tModule.setValue("Модуль " + mod.getNumber() + ". " + mod.getName()); // TODO Сделать эту строку Bold
+				rModule.getContent().add(tModule);
+				pModule.getContent().add(rModule);
+				listOfParagraph.add(pModule);
+				// Часы на модуль
+				P pTimeForModule = factory.createP();
+				R rTimeForModule = factory.createR();
+				Text tTimeForModule = factory.createText();
+
+				String sTimeForModule = ""; // TODO написать функцию конкатинации строк, если сейчас Л == 0, то следующая строка начнётся с запятой
+				if (mod.getL() != 0) sTimeForModule += " Л - " + mod.getL() + " час";
+				if (mod.getPZ() != 0) sTimeForModule += ", ПЗ - " + mod.getPZ() + " час";
+				if (mod.getLR() != 0) sTimeForModule += ", ЛР - " + mod.getLR() + " час";
+				if (mod.getKSR() != 0) sTimeForModule += ", КСР - " + mod.getKSR() + " час";
+				if (mod.getSRS() != 0) sTimeForModule += ", СРС - " + mod.getSRS() + " час.";
+
+				tTimeForModule.setValue(sTimeForModule);
+				rTimeForModule.getContent().add(tTimeForModule);
+				pTimeForModule.getContent().add(rTimeForModule);
+				listOfParagraph.add(pTimeForModule);
+
+				for (Section sec : mod.getTreeSection()) {
+					// Раздел, номер и его описание
+					P pSection = factory.createP();
+					R rSection = factory.createR();
+					Text tSection = factory.createText();
+					tSection.setValue("Раздел " + sec.getNumber() + ". " + sec.getName()); // TODO Сделать Только "Модуль" и его номер Bold
+					rSection.getContent().add(tSection);
+					pSection.getContent().add(rSection);
+					listOfParagraph.add(pSection);
+					// Часы на раздел
+					P pTimeForSection = factory.createP();
+					R rTimeForSection = factory.createR();
+					Text tTimeForSetion = factory.createText();
+
+					String sTimeForSectoin = ""; // TODO написать функцию конкатинации строк, если сейчас Л == 0, то следующая строка начнётся с запятой
+					if (sec.getL() != 0) sTimeForSectoin += " Л - " + sec.getL() + " час";
+					if (sec.getPZ() != 0) sTimeForSectoin += ", ПЗ - " + sec.getPZ() + " час";
+					if (sec.getLR() != 0) sTimeForSectoin += ", ЛР - " + sec.getLR() + " час";
+					if (sec.getKSR() != 0) sTimeForSectoin += ", КСР - " + sec.getKSR() + " час";
+					if (sec.getSRS() != 0) sTimeForSectoin += ", СРС - " + sec.getSRS() + " час.";
+
+					tTimeForSetion.setValue(sTimeForSectoin);
+					rTimeForSection.getContent().add(tTimeForSetion);
+					pTimeForSection.getContent().add(rTimeForSection);
+					listOfParagraph.add(pTimeForSection);
+
+					for (ThematicPlan theme : sec.getTreeTheme()) {
+						// Тема, номер и её описание
+						P pTheme = factory.createP();
+						R rTheme = factory.createR();
+						Text tTheme = factory.createText();
+						tTheme.setValue("Тема " + theme.getNumber() + ".");
+						rTheme.getContent().add(tTheme);
+						pTheme.getContent().add(rTheme);
+						listOfParagraph.add(pTheme);
+
+						P pThemeDesc = factory.createP();
+						R rThemeDesc = factory.createR();
+						Text tThemeDesc = factory.createText();
+						tThemeDesc.setValue(theme.getTitle());
+						rThemeDesc.getContent().add(tThemeDesc);
+						pThemeDesc.getContent().add(rThemeDesc);
+						listOfParagraph.add(pThemeDesc);
+					}
+				}
+				// Раздел, номер и его описание
+				P pEmpty = factory.createP();
+				R rEmpty = factory.createR();
+				Text tEmpty = factory.createText();
+				tEmpty.setValue("");
+				rEmpty.getContent().add(tEmpty);
+				pEmpty.getContent().add(rEmpty);
+				listOfParagraph.add(pEmpty);
+			}
 		}
 
 		// Вставляем в указанную позицию весь массив listOfParagraph
@@ -128,7 +214,7 @@ public class GenerateDoc {
 			for (P p : listOfParagraph)
 				addTo.getContent().add(p);
 		}
-		((ContentAccessor)toReplace.getParent()).getContent().remove(toReplace); // даление шаблонной фразы
+		((ContentAccessor)toReplace.getParent()).getContent().remove(toReplace); // Удаление шаблонной фразы
 	}
 
 	private static List<Object> getAllElementFromObject(Object obj, Class<?> toSearch) {
@@ -147,7 +233,7 @@ public class GenerateDoc {
 		return result;
 	}
 
-	private void replaceParagraph(String placeholder, String textToAdd, WordprocessingMLPackage template, ContentAccessor addTo) {
+	/*private void replaceParagraph(String placeholder, String textToAdd, WordprocessingMLPackage template, ContentAccessor addTo) {
 		// 1. get the paragraph
 		List<Object> paragraphs = getAllElementFromObject(template.getMainDocumentPart(), P.class);
  
@@ -193,6 +279,6 @@ public class GenerateDoc {
 		// 4. remove the original one
 		((ContentAccessor)toReplace.getParent()).getContent().remove(toReplace);
  
-	}
+	}*/
 
 }

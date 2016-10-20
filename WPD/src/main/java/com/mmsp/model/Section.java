@@ -93,11 +93,62 @@ public class Section implements Comparable<Section> {
 		return null;
 	}
 
+	/**
+	 * @return возвращает Л вложенных тематических планов
+	 */
 	public int getL() {
 		int temp = 0;
 		for (ThematicPlan theme : this.getTreeTheme()) {
 			if (theme.getL() != null)
 				temp += theme.getL();
+		}
+		return temp;
+	}
+
+	/**
+	 * @return возвращает ПЗ вложенных тематических планов
+	 */
+	public int getPZ() {
+		int temp = 0;
+		for (ThematicPlan theme : this.getTreeTheme()) {
+			if (theme.getPZ() != null)
+				temp += theme.getPZ();
+		}
+		return temp;
+	}
+
+	/**
+	 * @return возвращает ЛР вложенных тематических планов
+	 */
+	public int getLR() {
+		int temp = 0;
+		for (ThematicPlan theme : this.getTreeTheme()) {
+			if (theme.getLR() != null)
+				temp += theme.getLR();
+		}
+		return temp;
+	}
+
+	/**
+	 * @return возвращает КСР вложенных тематических планов
+	 */
+	public int getKSR() {
+		int temp = 0;
+		for (ThematicPlan theme : this.getTreeTheme()) {
+			if (theme.getKSR() != null)
+				temp += theme.getKSR();
+		}
+		return temp;
+	}
+
+	/**
+	 * @return возвращает СРС вложенных тематических планов
+	 */
+	public int getSRS() {
+		int temp = 0;
+		for (ThematicPlan theme : this.getTreeTheme()) {
+			if (theme.getSRS() != null)
+				temp += theme.getSRS();
 		}
 		return temp;
 	}

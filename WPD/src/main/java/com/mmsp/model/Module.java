@@ -93,10 +93,57 @@ public class Module implements Comparable<Module> {
 		return null;
 	}
 
+	/**
+	 * @return возвращает Л вложенных разделов
+	 */
 	public int getL() {
 		int temp = 0;
 		for (Section sec : this.getTreeSection()) {
 			temp += sec.getL();
+		}
+		return temp;
+	}
+
+	/**
+	 * @return возвращает ПЗ вложенных разделов
+	 */
+	public int getPZ() {
+		int temp = 0;
+		for (Section sec : this.getTreeSection()) {
+			temp += sec.getPZ();
+		}
+		return temp;
+	}
+
+	/**
+	 * @return возвращает ЛР вложенных разделов
+	 */
+	public int getLR() {
+		int temp = 0;
+		for (Section sec : this.getTreeSection()) {
+			temp += sec.getLR();
+		}
+		return temp;
+	}
+
+	/**
+	 * @return возвращает КСР вложенных разделов
+	 */
+	public int getKSR() {
+		int temp = 0;
+		for (Section sec : this.getTreeSection()) {
+			temp += sec.getKSR();
+		}
+		return temp;
+	}
+
+	/**
+	 * @return возвращает СРС вложенных разделов
+	 */
+	public int getSRS() {
+		int temp = 0;
+		for (Section sec : this.getTreeSection()) {
+			temp += sec.getSRS();
 		}
 		return temp;
 	}
