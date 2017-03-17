@@ -41,6 +41,8 @@ public class FXMLCtrlAuth extends VBox {
 
 	public void init(Stage stageAuth) {
 
+		this.stage = stageAuth;
+
 		DAO_WPDData dao_WPDData = new DAO_WPDData();
 		WPDData wpdData;
 
@@ -48,10 +50,9 @@ public class FXMLCtrlAuth extends VBox {
 		if (li.isEmpty()) {
 			wpdData = new WPDData();
 			bCancel.setDisable(true); // Если это первый запуск, то придётся заполнить поля
-		} else
-			wpdData = (dao_WPDData.getAll(WPDData.class)).get(0); 
-
-		this.stage = stageAuth;
+		} else {
+			wpdData = (dao_WPDData.getAll(WPDData.class)).get(0);
+		}
 
 		/* конфигурируем окно для выхода */
 		bSave.setOnAction(new EventHandler<ActionEvent>() { // на кнопку сохранения просто сохраняем и закрываем окно

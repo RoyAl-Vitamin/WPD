@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+
 import com.mmsp.dao.impl.DAO_HandBookDiscipline;
 import com.mmsp.dao.impl.DAO_WPDData;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.model.WPDData;
 import com.mmsp.model.WPDVersion;
+import com.mmsp.util.Ctrl;
+import com.mmsp.util.ObservableCtrlArrayList;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -36,7 +40,7 @@ import javafx.stage.Stage;
 
 /**
  * @author Алексей
- * FXMLCtrlMain - класс контроллера и наследник VBox'а
+ * FXMLCtrlMain - класс контроллера главной вкладки
  */
 
 public class FXMLCtrlMain extends VBox {
@@ -49,7 +53,7 @@ public class FXMLCtrlMain extends VBox {
 
 	private final ObservableList<String> olVersion = FXCollections.observableArrayList(); // for cbVersion
 
-	private final ObservableList<Ctrl> olCtrl = FXCollections.observableArrayList(); // for TabPane // Список текущих открытых вкладок
+	private final ObservableList<Ctrl> olCtrl = new ObservableCtrlArrayList(); // for TabPane // Список текущих открытых вкладок
 
 	@FXML
 	private ChoiceBox<String> cbDiscipline;
@@ -87,43 +91,6 @@ public class FXMLCtrlMain extends VBox {
 	@FXML
 	private Label lStatus; // возможна работа из другого контроллера
 
-	private class Ctrl {
-		private FXMLCtrlNewTab ctrl; // FXMLCtrl
-		private Long id; // ID wpdVersion
-		private Tab t; // tab
-		
-		public Ctrl(FXMLCtrlNewTab ctrl, Long id, Tab t) {
-			this.ctrl = ctrl;
-			this.id = id;
-			this.t = t;
-		}
-		
-		public FXMLCtrlNewTab getFXMLCtrlNewTab() {
-			return ctrl;
-		}
-
-		public Long getId() {
-			return id;
-		}
-
-		public void setFXMLCtrlNewTab(FXMLCtrlNewTab ctrl) {
-			this.ctrl = ctrl;
-		}
-
-		public void setId(Long id) {
-			this.id = id;
-		}
-
-		public Tab getTab() {
-			return t;
-		}
-
-		public void setTab(Tab t) {
-			this.t = t;
-		}
-		
-	}
-
 	/**
 	 * Нажатие на кнопку авторизации
 	 * @param event
@@ -155,20 +122,6 @@ public class FXMLCtrlMain extends VBox {
 	@FXML
 	void clickBClose(ActionEvent event) {
 		stage.close();
-	}
-
-	/**
-	 * Находит по ID нужный Ctrl из olCtrl
-	 * @param id_Vers ID дисциплины
-	 * @return найденный Ctrl
-	 */
-	private Ctrl getCtrlById(Long id_Vers) {
-		for (Ctrl c: olCtrl) {
-			if (c.getId().equals(id_Vers)) {
-				return c;
-			}
-		}
-		return null;
 	}
 	
 	// Функция открытия существующей версии
@@ -202,7 +155,7 @@ public class FXMLCtrlMain extends VBox {
 			t.setOnClosed(new EventHandler<Event>() {
 				@Override
 				public void handle(Event event) {
-					Ctrl ctrlTemp = getCtrlById(id_Vers);
+					Ctrl ctrlTemp = ((ObservableCtrlArrayList) olCtrl).getCtrlById(id_Vers);
 					if (ctrlTemp != null)
 						olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
 					else
@@ -233,14 +186,7 @@ public class FXMLCtrlMain extends VBox {
 	 * @return существующая вкладка или null, если вкладка не найдена/не существует
 	 */
 	private Tab getTabById(Long id) {
-		Tab tab = null;
-		for (Ctrl c: olCtrl) {
-			if (c.getId().equals(id)) {
-				tab = c.getTab();
-				break;
-			}
-		}
-		return tab;
+		return ((ObservableCtrlArrayList) olCtrl).getTabById(id);
 	}
 
 	/**
@@ -319,7 +265,7 @@ public class FXMLCtrlMain extends VBox {
 		t.setOnClosed(new EventHandler<Event>() {
 			@Override
 			public void handle(Event event) {
-				Ctrl ctrlTemp = getCtrlById(wpdVers.getId());
+				Ctrl ctrlTemp = ((ObservableCtrlArrayList) olCtrl).getCtrlById(wpdVers.getId());
 				if (ctrlTemp != null)
 					olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
 				else
@@ -345,12 +291,7 @@ public class FXMLCtrlMain extends VBox {
 	 * @return открыта ли вкладка (Y/N)
 	 */
 	private boolean tabIsOpen(Long id) {
-		for (Ctrl c: olCtrl) {
-			if (c.getId().equals(id)) {
-				return true;
-			}
-		}
-		return false;
+		return ((ObservableCtrlArrayList) olCtrl).tabIsOpen(id);
 	}
 
 	/**
@@ -653,20 +594,15 @@ public class FXMLCtrlMain extends VBox {
 	 */
 	public boolean updateTabName(String oldTabName, String newVersName) {
 		boolean b = false;
-		Ctrl t = null;
-		for (Ctrl ctrlValue : olCtrl) {
-			if (ctrlValue.getTab().getText().equals(oldTabName)) {
-				t = ctrlValue;
-				break;
-			}
-		}
+
+		Ctrl t = ((ObservableCtrlArrayList) olCtrl).getCtrlByTabText(oldTabName);
 		if (t != null) {
 			int i = tpDiscipline.getTabs().indexOf(t.getTab());
 			if (i >= 0) {
 				String sTemp = oldTabName.split(":")[0] + ":" + newVersName;
 				tpDiscipline.getTabs().get(i).setText(sTemp);
 				t.getTab().setText(sTemp);
-				t.ctrl.setTabName(sTemp); // костыльно выглядит
+				t.getCtrl().setTabName(sTemp); // костыльно выглядит
 				b = true;
 			} else {
 				System.err.println("ERROR: tab with name == " + oldTabName + " not found, i == " + i);
@@ -680,10 +616,6 @@ public class FXMLCtrlMain extends VBox {
 		return b;
 	}
 
-	public void setStatus(String sValue) {
-		lStatus.setText(sValue);
-	}
-
 	/**
 	 * Закрывает вкладку, ID версии которой == idVers и удаляем из списка olVersion
 	 * @param idVers ID версии
@@ -694,7 +626,7 @@ public class FXMLCtrlMain extends VBox {
 		if (wpdVers != null) {
 			String sDisc = wpdVers.getHbD().getValue() + ":" + wpdVers.getHbD().getCode(); // Название дисциплины и её код
 
-			Ctrl t = getCtrlById(idVers); // Находим ту самую вкадку
+			Ctrl t = ((ObservableCtrlArrayList) olCtrl).getCtrlById(idVers); // Находим ту самую вкадку
 
 			if (t != null) { // А мб закрыта
 				tpDiscipline.getTabs().remove(t.getTab()); // удаляем из списка и удаляем из TabPane
@@ -714,6 +646,14 @@ public class FXMLCtrlMain extends VBox {
 		} else {
 			System.err.println("WARNING: WPDVersion с ID == " + idVers + " не был найден");
 		}
+	}
+	
+	/**
+	 * Задаёт значение Label низу справа окна
+	 * @param sValue параметр
+	 */
+	public void setStatus(String sValue) {
+		lStatus.setText(sValue);
 	}
 
 }
