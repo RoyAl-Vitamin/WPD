@@ -9,8 +9,11 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.TreeSet;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
 import org.controlsfx.control.spreadsheet.GridBase;
@@ -28,7 +31,6 @@ import com.mmsp.dao.impl.DAO_Semester;
 import com.mmsp.dao.impl.DAO_ThematicPlan;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.logic.FXMLCtrlMain;
-import com.mmsp.logic.FXMLCtrlModalSure;
 import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.model.Module;
 import com.mmsp.model.PoCM;
@@ -55,8 +57,10 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
@@ -70,7 +74,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class FXMLCtrlNewTab extends VBox {
@@ -179,6 +182,10 @@ public class FXMLCtrlNewTab extends VBox {
 			return getItem() == null ? "" : getItem().toString();
 		}
 	}
+
+	static final Logger log = LogManager.getLogger(FXMLCtrlNewTab.class);
+
+	private enum Response { SAVE, CANCEL } // Кнопки диалогового окна при закрытии вкладки WPDVersion
 
 	private Stage stage;
 
@@ -587,45 +594,52 @@ public class FXMLCtrlNewTab extends VBox {
 	 */
 	@FXML
 	void clickBGenerate(ActionEvent event) {
-
 		gDoc.generate(currWPDVersion); // генерируем
-
 	}
 
 	/**
 	 * Удаление данной версии (вызывает окно для подтверждения)
+	 * Кнопка "Удалить"
 	 * @param event
 	 */
 	@FXML
 	void clickBDelete(ActionEvent event) {
-
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("modal/ModalSure.fxml"));
-		Parent root = null;
-		try {
-			root = (Parent) fxmlLoader.load();
-		} catch (IOException e) {
-			System.err.println("Не удалось загрузить форму подтверждения");
-			e.printStackTrace();
+		log.info("Удаление WPDVersion");
+		switch (showDialogSave()) {
+		case SAVE:
+			delete();
+			break;
+		case CANCEL:
+			break;
 		}
-		Scene scene = new Scene(root);
+	}
+	
+	private Response showDialogSave() {
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        alert.setTitle("Удаление версии");
+        alert.setHeaderText(null);
+        alert.setContentText("Вы уверены, что хотите удалить данную версию?");
 
-		Stage stageModalSure = new Stage();
-		FXMLCtrlModalSure fxmlCtrlModalSure = fxmlLoader.getController();
-		fxmlCtrlModalSure.init(stageModalSure);
-		stageModalSure.setResizable(false);
-		stageModalSure.setOnCloseRequest(e -> stageModalSure.close());
-		fxmlCtrlModalSure.setController(fxmlCtrlCurrTab); // Запомним контроллер новой вкладки для перерсовки
-		stageModalSure.setScene(scene);
-		stageModalSure.setTitle("Подтверждение");
-		stageModalSure.getIcons().add(new Image("Logo.png"));
-		stageModalSure.initModality(Modality.APPLICATION_MODAL);
-		stageModalSure.showAndWait();
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image("Logo.png"));
+        
+        ButtonType buttonSave = new ButtonType("Удалить");
+        ButtonType buttonCancel = new ButtonType("Отмена");
+
+        alert.getButtonTypes().setAll(buttonSave, buttonCancel);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == buttonSave){
+            return Response.SAVE;
+        } else {
+            return Response.CANCEL;
+        }
 	}
 
 	/**
 	 * Удаляет текущую версию
 	 */
-	public void deleteWPDVerison() {
+	public void delete() {
 
 		Long id = currWPDVersion.getId();
 
@@ -1103,7 +1117,7 @@ public class FXMLCtrlNewTab extends VBox {
 	 */
 	private void load(Long id_Vers) {
 
-		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
+		DAO<WPDVersion> dao_Vers = new DAO_WPDVersion();
 		currWPDVersion = dao_Vers.getById(WPDVersion.class, id_Vers);
 
 		// TODO Уточнить: так и должно быть? Сортировка загруженного Set из Hibernate
@@ -1905,6 +1919,15 @@ public class FXMLCtrlNewTab extends VBox {
 		cbSemesters.setItems(olSemesters);
 		if (currWPDVersion.getTreeSemesters().size() != 0) bSemester.setText(currWPDVersion.getStringSemester());
 		else bSemester.setText("Добавить");
+		
+		tfPath.textProperty().addListener((observable, oldValue, newValue) -> {
+		    currWPDVersion.setTemplateName(newValue);
+		    log.info("new Path == " + currWPDVersion.getTemplateName());
+		});
+		
+		tfVersion.textProperty().addListener((observable, oldValue, newValue) -> {
+		    currWPDVersion.setName(newValue);
+		});
 	}
 
 	/**
@@ -2016,8 +2039,8 @@ public class FXMLCtrlNewTab extends VBox {
 	 // TODO организовать каскадное сохранение
     public void save() {
 
-        currWPDVersion.setName(tfVersion.getText()); // Запоминаем название версии
-        currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
+//        currWPDVersion.setName(tfVersion.getText()); // Запоминаем название версии
+//        currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
         DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
         dao_wpdVersion.update(currWPDVersion);
 

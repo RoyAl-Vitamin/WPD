@@ -49,7 +49,10 @@ import javafx.stage.Stage;
 // Переменные вкладки "Тематический план"
 public class FXMLCtrlThematicalPlan extends HBox {
 
-    private WPDVersion currWPDVersion; // @link{WPDVersion} принадлежащая этой вкладке
+	/**
+	 * {@link WPDVersion} принадлежащая этой вкладке
+	 */
+    private WPDVersion currWPDVersion;
 
     private FXMLCtrlNewTab fxmlCtrlCurrTab; // Контроллер этой вкладки
 

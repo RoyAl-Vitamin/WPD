@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.mmsp.dao.DAO;
 import com.mmsp.dao.impl.DAO_HandBookDiscipline;
 import com.mmsp.dao.impl.DAO_WPDData;
 import com.mmsp.dao.impl.DAO_WPDVersion;
@@ -102,6 +103,71 @@ public class FXMLCtrlMain extends VBox {
 
 	@FXML
 	private Label lStatus; // возможна работа из другого контроллера
+	
+	/**
+	 * Handler закрытия вкладки
+	 */
+	EventHandler<Event> ehForTabClose = new EventHandler<Event>() { // Перед закрытием спросим о сохранении
+		@Override
+		public void handle(Event event) {
+			if (!(event.getSource() instanceof Tab)) {
+				log.info("Не удлось установить вкладку, на которую нажали");
+				return;
+			}
+			Ctrl ctrlTemp = ((ObservableCtrlArrayList) olCtrl).getCtrlByTabText(((Tab) event.getSource()).getText());
+			Long id_Vers = ctrlTemp.getId();
+			DAO<WPDVersion> dao_Vers = new DAO_WPDVersion();
+		    WPDVersion wpdVersInDB = dao_Vers.getById(WPDVersion.class, ctrlTemp.getId());
+
+		    log.info("Закрытие вкладки WPDVersion ");
+		    
+		    if (wpdVersInDB != null && ctrlTemp != null && !ctrlTemp.getFXMLCtrlNewTab().getWPDVerison().equals(wpdVersInDB)) {
+
+                log.info("ID in DB == " + wpdVersInDB.getId());
+                log.info("ID in Memory == " + ctrlTemp.getId());
+
+			    switch (showDialogSave()) { // Вызов диалогового окна
+                case SAVE: // Сохраняем изменения
+                    ctrlTemp.getFXMLCtrlNewTab().save();
+                case DONTSAVE: // Не сохраняем изменения
+                    olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
+                    log.info("Вкладка [WPDVersion ID == " + id_Vers + "] закрыта");
+                    break;
+                case CANCEL: // Отменяем закрытие окна
+                    event.consume();
+                    break;
+                }
+		    } else {
+		    	olCtrl.remove(ctrlTemp);
+		    }
+		}
+
+		// http://code.makery.ch/blog/javafx-dialogs-official/
+		private Response showDialogSave() {
+	        Alert alert = new Alert(AlertType.CONFIRMATION);
+	        alert.setTitle("Закрытие вкладки");
+	        alert.setHeaderText("Все несохранённые данные будут потеряны");
+	        alert.setContentText("Сохранить перед закрытием вкладки?");
+
+	        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+	        stage.getIcons().add(new Image("Logo.png"));
+	        
+	        ButtonType buttonSave = new ButtonType("Сохранить изменения");
+	        ButtonType buttonNotSave = new ButtonType("Выйти без сохранения");
+	        ButtonType buttonCancel = new ButtonType("Отмена");
+
+	        alert.getButtonTypes().setAll(buttonSave, buttonNotSave, buttonCancel);
+	        
+	        Optional<ButtonType> result = alert.showAndWait();
+	        if (result.get() == buttonSave){
+	            return Response.SAVE;
+	        } else if (result.get() == buttonNotSave) {
+	            return Response.DONTSAVE;
+	        } else {
+	            return Response.CANCEL;
+	        }
+		}
+	};
 
 	/**
 	 * Нажатие на кнопку авторизации
@@ -168,58 +234,7 @@ public class FXMLCtrlMain extends VBox {
 			fxmlCtrlNewTab.init(id_Vers); // инициализируем
 
 			t.setContent(root);
-			t.setOnCloseRequest(new EventHandler<Event>() { // Перед закрытием спросим о сохранении
-				@Override
-				public void handle(Event event) {
-				    Ctrl ctrlTemp = ((ObservableCtrlArrayList) olCtrl).getCtrlById(id_Vers);
-				    WPDVersion wpdVersInDB = dao_Vers.getById(WPDVersion.class, ctrlTemp.getId());
-				    // TODO Переписать условие сравнения, что бы не сохранять точно такой же объект
-				    if (wpdVersInDB != null && ctrlTemp != null/* && !ctrlTemp.getFXMLCtrlNewTab().getWPDVerison().equals(wpdVersInDB)*/) {
-
-				        log.info("Закрытие вкладки WPDVersion ");
-	                    log.info("ID in DB == " + wpdVersInDB.getId());
-	                    log.info("ID in Memory == " + ctrlTemp.getId());
-
-    				    switch (showDialogSave(id_Vers)) { // Вызов диалогового окна
-                        case SAVE: // Сохраняем изменения
-                            ctrlTemp.getFXMLCtrlNewTab().save();
-                        case DONTSAVE: // Не сохраняем изменения
-                            olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
-                            log.info("Вкладка [WPDVersion ID == " + id_Vers + "] закрыта");
-                            break;
-                        case CANCEL: // Отменяем закрытие окна
-                            event.consume();
-                            break;
-                        }
-				    }
-				}
-
-				// http://code.makery.ch/blog/javafx-dialogs-official/
-				private Response showDialogSave(Long id) {
-			        Alert alert = new Alert(AlertType.CONFIRMATION);
-			        alert.setTitle("Закрытие вкладки");
-			        alert.setHeaderText("Все несохранённые данные будут потеряны");
-			        alert.setContentText("Сохранить перед закрытием вкладки?");
-
-			        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-			        stage.getIcons().add(new Image("Logo.png"));
-			        
-			        ButtonType buttonSave = new ButtonType("Сохранить изменения");
-			        ButtonType buttonNotSave = new ButtonType("Выйти без сохранения");
-			        ButtonType buttonCancel = new ButtonType("Отмена");
-
-			        alert.getButtonTypes().setAll(buttonSave, buttonNotSave, buttonCancel);
-			        
-			        Optional<ButtonType> result = alert.showAndWait();
-			        if (result.get() == buttonSave){
-			            return Response.SAVE;
-			        } else if (result.get() == buttonNotSave) {
-			            return Response.DONTSAVE;
-			        } else {
-			            return Response.CANCEL;
-			        }
-				}
-			});
+			t.setOnCloseRequest(ehForTabClose);
 			tpDiscipline.getTabs().add(t);
 			tpDiscipline.getSelectionModel().select(t);
 			
@@ -315,17 +330,7 @@ public class FXMLCtrlMain extends VBox {
 		log.info("Ctrl: " + fxmlCtrlNewTab + " version ID == " + wpdVers.getId());
 		olCtrl.add(new Ctrl(fxmlCtrlNewTab, wpdVers.getId(), t)); // Добавим контроллер и Id, саму вкладку в список
 
-		t.setOnClosed(new EventHandler<Event>() {
-			@Override
-			public void handle(Event event) {
-				Ctrl ctrlTemp = ((ObservableCtrlArrayList) olCtrl).getCtrlById(wpdVers.getId());
-				if (ctrlTemp != null)
-					olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
-				else
-					log.error("Не удалось удалить Ctrl из списка");
-				// TODO Спросить о сохранении
-			}
-		});
+		t.setOnClosed(ehForTabClose);
 		tpDiscipline.getTabs().add(t);
 		tpDiscipline.getSelectionModel().select(t);
 

@@ -22,7 +22,7 @@ public class FXMLCtrlModalSure extends VBox {
 
 	@FXML
 	void clickBOk(ActionEvent event) {
-		parentCtrl.deleteWPDVerison();
+		parentCtrl.delete();
 		this.stage.close();
 	}
 
