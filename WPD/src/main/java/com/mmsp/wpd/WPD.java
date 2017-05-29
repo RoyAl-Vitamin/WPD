@@ -37,7 +37,7 @@ public class WPD extends Application {
 	@Override
 	public void start(final Stage primaryStage) throws IOException {
 
-	    log.info("запуск приложения");
+	    log.info("Запуск приложения");
 		currStage = primaryStage;
 
 		try {
@@ -64,7 +64,7 @@ public class WPD extends Application {
 		List<WPDData> li = dao_WPDData.getAll(WPDData.class);
 
 		if (li.isEmpty()) { // Следим за тем, что бы было не больше 1 WPDData!
-		    log.debug("список WPDData пуст");
+		    log.debug("Список WPDData пуст");
 			showDlgAuth();
 		} else {
 			if (li.size() > 1)
@@ -115,7 +115,7 @@ public class WPD extends Application {
 
 	@Override
 	public void stop() {
-	    log.info("заершение работы приложения");
+	    log.info("Завершение работы приложения");
 		// TODO Можно добавить сохранение в *.property открытых вкладок, что б при старте на автомате он их открывал
 		core.closeSessionFactory(); // Закрываем сессию
 		Platform.exit();

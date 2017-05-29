@@ -49,7 +49,7 @@ public class WPDVersion implements Serializable {
 	private Date date; // дата
 
 	@Column(name = "WPD_VERSION_NUMBER")
-	private Long number; // номер (id HandbookDiscipline)
+	private Long number = 0L; // номер (id HandbookDiscipline)
 
 	@Column(name = "WPD_VERSION_TEMPLATE_NAME")
 	private String templateName; // путь до шаблона
@@ -58,7 +58,7 @@ public class WPDVersion implements Serializable {
 	private String name; // имя версии
 
 	@Column(name = "WPD_VERSION_STUDY_LOAD")
-	private Integer studyLoad; // учебная нагрузка по дисциплине по семестрам
+	private Integer studyLoad = 0; // учебная нагрузка по дисциплине по семестрам
 
 	@ManyToOne//(cascade = CascadeType.REFRESH)
 	@JoinColumn(name="WPD_VERSION_DATA")
@@ -156,6 +156,16 @@ public class WPDVersion implements Serializable {
 
 	public void setStudyLoad(Integer studyLoad) {
 		this.studyLoad = studyLoad;
+	}
+
+	public boolean equals(WPDVersion wpdVers) {
+        if (!this.id.equals(wpdVers.id)) return false;
+        if (!this.date.equals(wpdVers.date)) return false;
+        if (!this.name.equals(wpdVers.name)) return false;
+        if (!this.number.equals(wpdVers.number)) return false;
+        if (!this.studyLoad.equals(wpdVers.studyLoad)) return false;
+        if (!this.templateName.equals(wpdVers.templateName)) return false;
+        return true;
 	}
 
 	@Override

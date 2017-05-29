@@ -16,7 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-public class FXMLCtrlVersionName extends VBox {
+public class FXMLCtrlSure extends VBox {
 
 	private Stage stage;
 

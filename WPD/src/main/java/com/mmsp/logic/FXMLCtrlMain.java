@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -30,7 +31,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -48,6 +52,8 @@ import javafx.stage.Stage;
  */
 
 public class FXMLCtrlMain extends VBox {
+
+    private enum Response { SAVE, DONTSAVE, CANCEL } // Кнопки диалогового окна при закрытии вкладки WPDVersion
 
     static final Logger log = LogManager.getLogger(FXMLCtrlMain.class);
 
@@ -110,7 +116,6 @@ public class FXMLCtrlMain extends VBox {
 			root = (Parent) fxmlLoader.load();
 		} catch (IOException e) {
 			log.error("Не удалось загрузить форму авторизации");
-			e.printStackTrace();
 		}
 		Scene scene = new Scene(root);
 
@@ -130,9 +135,14 @@ public class FXMLCtrlMain extends VBox {
 		stage.close();
 	}
 	
-	// Функция открытия существующей версии
+	/**
+	 * Функция открытия существующей версии
+	 * кнопка "Открыть"
+	 * @param event
+	 * @throws IOException
+	 */
 	@FXML
-	void clickBOpenTab(ActionEvent event) throws IOException { // "Открыть" WPDVersion
+	void clickBOpenTab(ActionEvent event) throws IOException {
 
 		//DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
 		//Long id_Disc = dao_Disc.getIdByValueAndCode(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
@@ -158,22 +168,56 @@ public class FXMLCtrlMain extends VBox {
 			fxmlCtrlNewTab.init(id_Vers); // инициализируем
 
 			t.setContent(root);
-			t.setOnClosed(new EventHandler<Event>() {
+			t.setOnCloseRequest(new EventHandler<Event>() { // Перед закрытием спросим о сохранении
 				@Override
 				public void handle(Event event) {
-					Ctrl ctrlTemp = ((ObservableCtrlArrayList) olCtrl).getCtrlById(id_Vers);
-					if (ctrlTemp != null)
-						olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
-					else
-						System.err.println("Не удалось удалить Ctrl из списка");
-					showDialogSave();
+				    Ctrl ctrlTemp = ((ObservableCtrlArrayList) olCtrl).getCtrlById(id_Vers);
+				    WPDVersion wpdVersInDB = dao_Vers.getById(WPDVersion.class, ctrlTemp.getId());
+				    // TODO Переписать условие сравнения, что бы не сохранять точно такой же объект
+				    if (wpdVersInDB != null && ctrlTemp != null/* && !ctrlTemp.getFXMLCtrlNewTab().getWPDVerison().equals(wpdVersInDB)*/) {
+
+				        log.info("Закрытие вкладки WPDVersion ");
+	                    log.info("ID in DB == " + wpdVersInDB.getId());
+	                    log.info("ID in Memory == " + ctrlTemp.getId());
+
+    				    switch (showDialogSave(id_Vers)) { // Вызов диалогового окна
+                        case SAVE: // Сохраняем изменения
+                            ctrlTemp.getFXMLCtrlNewTab().save();
+                        case DONTSAVE: // Не сохраняем изменения
+                            olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
+                            log.info("Вкладка [WPDVersion ID == " + id_Vers + "] закрыта");
+                            break;
+                        case CANCEL: // Отменяем закрытие окна
+                            event.consume();
+                            break;
+                        }
+				    }
 				}
 
-				// UNDONE
-				private void showDialogSave() {
-					// TODO Спросить о сохранении
-					
-					// "Все несохранённые данные будут потеряны"
+				// http://code.makery.ch/blog/javafx-dialogs-official/
+				private Response showDialogSave(Long id) {
+			        Alert alert = new Alert(AlertType.CONFIRMATION);
+			        alert.setTitle("Закрытие вкладки");
+			        alert.setHeaderText("Все несохранённые данные будут потеряны");
+			        alert.setContentText("Сохранить перед закрытием вкладки?");
+
+			        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+			        stage.getIcons().add(new Image("Logo.png"));
+			        
+			        ButtonType buttonSave = new ButtonType("Сохранить изменения");
+			        ButtonType buttonNotSave = new ButtonType("Выйти без сохранения");
+			        ButtonType buttonCancel = new ButtonType("Отмена");
+
+			        alert.getButtonTypes().setAll(buttonSave, buttonNotSave, buttonCancel);
+			        
+			        Optional<ButtonType> result = alert.showAndWait();
+			        if (result.get() == buttonSave){
+			            return Response.SAVE;
+			        } else if (result.get() == buttonNotSave) {
+			            return Response.DONTSAVE;
+			        } else {
+			            return Response.CANCEL;
+			        }
 				}
 			});
 			tpDiscipline.getTabs().add(t);
@@ -199,11 +243,13 @@ public class FXMLCtrlMain extends VBox {
 
 	/**
 	 * Функция добавления новой версии и открытия для неё вкладки (Tab)
+	 * Кнопка "+" Добавление вкладки в вверхнй TabPane
 	 * @param event
 	 * @throws IOException
 	 */
+	// ERROR Запретить создавать вкладку с уже существующим именем (name)
 	@FXML
-	void clickBAddTab(ActionEvent event) throws IOException { // Кнопка "+" Добавление вкладки в вверхнй TabPane
+	void clickBAddTab(ActionEvent event) throws IOException {
 		Tab t = new Tab();
 
 		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
@@ -229,13 +275,12 @@ public class FXMLCtrlMain extends VBox {
 		try {
 			root = (Parent) fxmlLoader.load();
 		} catch (IOException e) {
-			System.err.println("Не удалось загрузить форму ввода имени версии");
-			e.printStackTrace();
+			log.error("Не удалось загрузить форму ввода имени версии");
 		}
 		Scene scene = new Scene(root);
 
 		Stage stageVersionName = new Stage();
-		FXMLCtrlVersionName fxmlCtrlVersionName = fxmlLoader.getController();
+		FXMLCtrlSure fxmlCtrlVersionName = fxmlLoader.getController();
 		fxmlCtrlVersionName.init(stageVersionName, wpdVers.getId(), hbD.getId());
 		stageVersionName.setScene(scene);
 		stageVersionName.setTitle("Добавление версии");
@@ -267,7 +312,7 @@ public class FXMLCtrlMain extends VBox {
 		fxmlCtrlNewTab.init(wpdVers.getId()); // инициализируем
 
 		t.setContent(root);
-		System.err.println("Ctrl: " + fxmlCtrlNewTab + " version ID == " + wpdVers.getId());
+		log.info("Ctrl: " + fxmlCtrlNewTab + " version ID == " + wpdVers.getId());
 		olCtrl.add(new Ctrl(fxmlCtrlNewTab, wpdVers.getId(), t)); // Добавим контроллер и Id, саму вкладку в список
 
 		t.setOnClosed(new EventHandler<Event>() {
@@ -277,7 +322,7 @@ public class FXMLCtrlMain extends VBox {
 				if (ctrlTemp != null)
 					olCtrl.remove(ctrlTemp); // удаление из списка olCtrl закрытой вкладки
 				else
-					System.err.println("Не удалось удалить Ctrl из списка");
+					log.error("Не удалось удалить Ctrl из списка");
 				// TODO Спросить о сохранении
 			}
 		});
@@ -287,7 +332,7 @@ public class FXMLCtrlMain extends VBox {
 		olVersion.add(wpdVers.getName());
 		
 		for (int j = 0; j < tpDiscipline.getTabs().size(); j++) {
-			System.err.println(j + ": TAB Name == " + tpDiscipline.getTabs().get(j).getText());
+			log.info(j + ": TAB Name == " + tpDiscipline.getTabs().get(j).getText());
 		}
 
 		if (olVersion.size() == 1) cbVersion.getSelectionModel().selectFirst(); // какой-то костыль
@@ -312,10 +357,9 @@ public class FXMLCtrlMain extends VBox {
 
 		DAO_HandBookDiscipline dao_HBD = new DAO_HandBookDiscipline();
 
-		HandbookDiscipline hbD = new HandbookDiscipline(); // Если открыл в первый раз
+		HandbookDiscipline hbD = new HandbookDiscipline();
 		hbD.setCode("");
 		hbD.setValue("");
-		hbD.getVersions().clear(); // почистим версии при создании
 		hbD.setId(dao_HBD.add(hbD));
 
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("modal/Discipline.fxml"));
@@ -323,8 +367,7 @@ public class FXMLCtrlMain extends VBox {
 		try {
 			root = (Parent) fxmlLoader.load();
 		} catch (IOException e) {
-			System.err.println("Не удалось загрузить форму авторизации");
-			e.printStackTrace();
+			log.error("Не удалось загрузить форму добавления дисциплины");
 		}
 		Scene scene = new Scene(root);
 
@@ -339,14 +382,16 @@ public class FXMLCtrlMain extends VBox {
 		stageDiscipline.showAndWait();
 
 		hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
-		if ("".equals(hbD.getValue()) && "".equals(hbD.getCode())) // Пользователь передумал создавать дисциплину
+		if ("".equals(hbD.getValue()) && "".equals(hbD.getCode())) {// Пользователь передумал создавать дисциплину
 			dao_HBD.remove(hbD);
-		else {
+			hbD = null;
+		} else {
 			olDiscipline.add(hbD.getValue() + ":" + hbD.getCode().toString());
 
 			lvDiscipline.getSelectionModel().selectLast(); // т.к. добавление производится в конец
 			if (olDiscipline.size() == 1) cbDiscipline.getSelectionModel().selectLast();
 			lStatus.setText("Дисциплина создана");
+			log.info("Дисциплина создана");
 		}
 	}
 
@@ -366,15 +411,14 @@ public class FXMLCtrlMain extends VBox {
 		String value = lvDiscipline.getSelectionModel().getSelectedItem().split(":")[0];
 		String code = lvDiscipline.getSelectionModel().getSelectedItem().split(":")[1];
 		HandbookDiscipline hbD = dao_HBD.getByValueAndCode(value, code);
-		if (hbD == null) System.err.println("НЕ НАЙДЕН!!!");
+		if (hbD == null) log.error("HandbookDiscipline НЕ НАЙДЕН!!!");
 		
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("modal/Discipline.fxml"));
 		Parent root = null;
 		try {
 			root = (Parent) fxmlLoader.load();
 		} catch (IOException e) {
-			System.err.println("Не удалось загрузить форму авторизации");
-			e.printStackTrace();
+			log.error("Не удалось загрузить форму изменения дисциплины");
 		}
 		Scene scene = new Scene(root);
 
@@ -388,11 +432,11 @@ public class FXMLCtrlMain extends VBox {
 		stageDiscipline.setResizable(false);
 		stageDiscipline.showAndWait();
 
-		System.out.println("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
+		log.info("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
 		hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
 		int pos = lvDiscipline.getSelectionModel().getSelectedIndex();
 		String res = olDiscipline.set(pos, hbD.getValue() + ":" + hbD.getCode());
-		System.err.println("было " + res + "\nстало " + hbD.getValue() + ":" + hbD.getCode());
+		log.info("было " + res + "\nстало " + hbD.getValue() + ":" + hbD.getCode());
 		//if ((res == null) || (res.equals(""))) System.err.println("Попытка заменить что-то не понятное на сторку");
 		if (b) cbDiscipline.getSelectionModel().select(pos); // меняет занчение в cbDisc булевая переменная
 		lStatus.setText("Изменениея сохранены");
@@ -433,7 +477,7 @@ public class FXMLCtrlMain extends VBox {
 
 		String strWasRemoved = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // Удаляем объект из списка
 
-		System.out.println("Удалённая строка = " + strWasRemoved);
+		log.info("Удалённая строка = " + strWasRemoved);
 		cbDiscipline.getSelectionModel().selectFirst();
 		//cbVersion.getSelectionModel().selectFirst();
 		lStatus.setText("Дисциплина удалена");
@@ -613,13 +657,13 @@ public class FXMLCtrlMain extends VBox {
 				t.getCtrl().setTabName(sTemp); // костыльно выглядит
 				b = true;
 			} else {
-				System.err.println("ERROR: tab with name == " + oldTabName + " not found, i == " + i);
+				log.error("tab with name == " + oldTabName + " not found, i == " + i);
 			}
 		} else {
-			System.err.println("Вкладка с таким названием не найдена");
+			log.info("Вкладка с таким названием не найдена");
 		}
 		for (int j = 0; j < tpDiscipline.getTabs().size(); j++) {
-			System.err.println(j + ": TAB Name == " + tpDiscipline.getTabs().get(j).getText());
+			log.error(j + ": TAB Name == " + tpDiscipline.getTabs().get(j).getText());
 		}
 		return b;
 	}
@@ -640,7 +684,7 @@ public class FXMLCtrlMain extends VBox {
 				tpDiscipline.getTabs().remove(t.getTab()); // удаляем из списка и удаляем из TabPane
 				olCtrl.remove(t);
 			} else {
-				System.err.println("ERROR: Кажется не смогли найти нужную вкладку");
+				log.error("Кажется не смогли найти нужную вкладку");
 			}
 
 			if (cbDiscipline.getSelectionModel().getSelectedIndex() == olDiscipline.indexOf(sDisc)) { // Если выбрана та самая дисциплина, то надо удалить из списка версию
@@ -652,7 +696,7 @@ public class FXMLCtrlMain extends VBox {
 				}
 			}
 		} else {
-			System.err.println("WARNING: WPDVersion с ID == " + idVers + " не был найден");
+			log.info("WPDVersion с ID == " + idVers + " не был найден");
 		}
 	}
 	

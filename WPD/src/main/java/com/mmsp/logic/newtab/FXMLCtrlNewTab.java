@@ -7,11 +7,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.controlsfx.control.PopOver;
@@ -19,7 +16,6 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
-import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 
@@ -32,10 +28,7 @@ import com.mmsp.dao.impl.DAO_Semester;
 import com.mmsp.dao.impl.DAO_ThematicPlan;
 import com.mmsp.dao.impl.DAO_WPDVersion;
 import com.mmsp.logic.FXMLCtrlMain;
-import com.mmsp.logic.FXMLCtrlModalModule;
-import com.mmsp.logic.FXMLCtrlModalSection;
 import com.mmsp.logic.FXMLCtrlModalSure;
-import com.mmsp.logic.FXMLCtrlModalTheme;
 import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.model.Module;
 import com.mmsp.model.PoCM;
@@ -65,20 +58,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -207,7 +194,7 @@ public class FXMLCtrlNewTab extends VBox {
 	
 	private String tabName; // здесь полное название вкладки, возможно стоило хранить только название версии, т.к. название дисциплины пока не менятся
 
-	private WPDVersion currWPDVersion; // @WPDVersion принадлежащая этой вкладке
+	private WPDVersion currWPDVersion; // WPDVersion принадлежащая этой вкладке
 
 	// шапка текущей вкладки
 
@@ -591,85 +578,7 @@ public class FXMLCtrlNewTab extends VBox {
 	// TODO first достать данные из полей и вставить их в объект PoCM
 	@FXML
 	void clickBSave(ActionEvent event) {
-
-		currWPDVersion.setName(tfVersion.getText()); // Запоминаем название версии
-		currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
-		DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
-		dao_wpdVersion.update(currWPDVersion);
-
-		/* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
-		/*LocalDate localDate = dpDateOfCreate.getValue();
-		Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault()));
-		currWPDVersion.setDate(Date.from(instant));*/ // Попробуем занести дату создания
-
-		DAO_PoCM dao_pocm = new DAO_PoCM();
-		dao_pocm.update(currWPDVersion.getPoCM());
-
-		// ОБНОВЛЕНИЕ ТЕМАТИЧЕСКОГО ПЛАНА
-		// Удалить всё WPDVerison, кроме ID, Name, TemplateName (всего того, что относится только к WPDVersion)
-		// Сохранить новые содержащиеся в currWPD темы в БД
-
-		DAO_Semester dao_semester = new DAO_Semester();
-		// Удаление всего ненужного из BD
-		WPDVersion tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
-		for (Iterator<Semester> i = tempVersion.getTreeSemesters().iterator(); i.hasNext();) {
-			Semester sem = i.next();
-			dao_semester.remove(sem); // удаляем семестры, остальное должно удалиться само
-			i.remove();
-		}
-		dao_wpdVersion.update(tempVersion);
-		
-		// TEST
-		/*tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
-		System.err.println("NEW SIZE == " + tempVersion.getTreeSemesters().size());*/
-
-		// Сохранение в БД
-		for (Semester s : currWPDVersion.getTreeSemesters()) {
-			s.setWPDVersion(currWPDVersion);
-			s.setId(dao_semester.add(s));
-			DAO<Record> dao_record = new DAO<Record>(){};
-			for (Record rec : s.getRowT71()) {
-				rec.setSemester(s);
-				rec.setId(dao_record.add(rec));
-			}
-			DAO_Module dao_module = new DAO_Module();
-			for (Module mod : s.getTreeModule()) {
-				mod.setId(dao_module.add(mod));
-				mod.setSemester(s);
-				DAO_Section dao_section = new DAO_Section();
-				for (Section sec : mod.getTreeSection()) {
-					sec.setId(dao_section.add(sec));
-					sec.setModule(mod);
-					DAO_ThematicPlan dao_theme = new DAO_ThematicPlan();
-					for (ThematicPlan theme : sec.getTreeTheme()) {
-						theme.setSection(sec);
-						theme.setId(dao_theme.add(theme));
-					}
-				}
-			}
-		}
-
-		// TEST
-		//tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
-		//System.err.println("CHO TAM? SIZE ROWT71 == " + tempVersion.getTreeSemesters().iterator().next().getRowT71().size());
-
-		// Блок обновления названия вкладки и списка Версий в cbVersion 
-		if (!tabName.split(":")[1].equals(currWPDVersion.getName()))
-		// Если сменилось название версии, то подгрузим контроллер
-		// и изменим из него значение названия вкладки и обновим список названий версий
-		{
-			parentCtrl.updateOlVersion(currWPDVersion.getHbD().getId()); // Обновляет список, содержащийся в cbVersion
-			if (!parentCtrl.updateTabName(tabName, currWPDVersion.getName())) { // обновляет название вкладки
-				System.err.println("Возникла ошибка при обновлении названия вкадки");
-			}
-		}
-
-		//System.err.println(currWPDVersion.toString());
-
-		// TEST
-		/*WPDVersion newWPDVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
-		System.err.println(newWPDVersion.toString()); // посмотрим что он там сохранил
-		*/
+	    save();
 	}
 
 	/**
@@ -2096,4 +2005,94 @@ public class FXMLCtrlNewTab extends VBox {
 	public void setTabName(String sValue) {
 		this.tabName = sValue;
 	}
+
+	public WPDVersion getWPDVerison() {
+	    return currWPDVersion;
+	}
+
+	/**
+	 * Каскадное сохранение текущей WPDVersion
+	 */
+	 // TODO организовать каскадное сохранение
+    public void save() {
+
+        currWPDVersion.setName(tfVersion.getText()); // Запоминаем название версии
+        currWPDVersion.setTemplateName(tfPath.getText()); // Занесём путь шаблона
+        DAO_WPDVersion dao_wpdVersion = new DAO_WPDVersion();
+        dao_wpdVersion.update(currWPDVersion);
+
+        /* http://stackoverflow.com/questions/20446026/get-value-from-date-picker */
+        /*LocalDate localDate = dpDateOfCreate.getValue();
+        Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault()));
+        currWPDVersion.setDate(Date.from(instant));*/ // Попробуем занести дату создания
+
+        DAO_PoCM dao_pocm = new DAO_PoCM();
+        dao_pocm.update(currWPDVersion.getPoCM());
+
+        // ОБНОВЛЕНИЕ ТЕМАТИЧЕСКОГО ПЛАНА
+        // Удалить всё WPDVerison, кроме ID, Name, TemplateName (всего того, что относится только к WPDVersion)
+        // Сохранить новые содержащиеся в currWPD темы в БД
+
+        DAO_Semester dao_semester = new DAO_Semester();
+        // Удаление всего ненужного из BD
+        WPDVersion tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
+        for (Iterator<Semester> i = tempVersion.getTreeSemesters().iterator(); i.hasNext();) {
+            Semester sem = i.next();
+            dao_semester.remove(sem); // удаляем семестры, остальное должно удалиться само
+            i.remove();
+        }
+        dao_wpdVersion.update(tempVersion);
+        
+        // TEST
+        /*tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
+        System.err.println("NEW SIZE == " + tempVersion.getTreeSemesters().size());*/
+
+        // Сохранение в БД
+        for (Semester s : currWPDVersion.getTreeSemesters()) {
+            s.setWPDVersion(currWPDVersion);
+            s.setId(dao_semester.add(s));
+            DAO<Record> dao_record = new DAO<Record>(){};
+            for (Record rec : s.getRowT71()) {
+                rec.setSemester(s);
+                rec.setId(dao_record.add(rec));
+            }
+            DAO_Module dao_module = new DAO_Module();
+            for (Module mod : s.getTreeModule()) {
+                mod.setId(dao_module.add(mod));
+                mod.setSemester(s);
+                DAO_Section dao_section = new DAO_Section();
+                for (Section sec : mod.getTreeSection()) {
+                    sec.setId(dao_section.add(sec));
+                    sec.setModule(mod);
+                    DAO_ThematicPlan dao_theme = new DAO_ThematicPlan();
+                    for (ThematicPlan theme : sec.getTreeTheme()) {
+                        theme.setSection(sec);
+                        theme.setId(dao_theme.add(theme));
+                    }
+                }
+            }
+        }
+
+        // TEST
+        //tempVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
+        //System.err.println("CHO TAM? SIZE ROWT71 == " + tempVersion.getTreeSemesters().iterator().next().getRowT71().size());
+
+        // Блок обновления названия вкладки и списка Версий в cbVersion 
+        if (!tabName.split(":")[1].equals(currWPDVersion.getName()))
+        // Если сменилось название версии, то подгрузим контроллер
+        // и изменим из него значение названия вкладки и обновим список названий версий
+        {
+            parentCtrl.updateOlVersion(currWPDVersion.getHbD().getId()); // Обновляет список, содержащийся в cbVersion
+            if (!parentCtrl.updateTabName(tabName, currWPDVersion.getName())) { // обновляет название вкладки
+                System.err.println("Возникла ошибка при обновлении названия вкадки");
+            }
+        }
+
+        //System.err.println(currWPDVersion.toString());
+
+        // TEST
+        /*WPDVersion newWPDVersion = dao_wpdVersion.getById(WPDVersion.class, currWPDVersion.getId());
+        System.err.println(newWPDVersion.toString()); // посмотрим что он там сохранил
+        */
+    }
 }

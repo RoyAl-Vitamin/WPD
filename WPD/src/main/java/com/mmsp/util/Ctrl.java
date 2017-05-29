@@ -11,9 +11,20 @@ import javafx.scene.control.Tab;
  */
 public class Ctrl {
 
-	private FXMLCtrlNewTab ctrl; // FXMLCtrl
-	private Long id; // ID wpdVersion
-	private Tab t; // tab
+    /**
+     * Контроллер вкладки
+     */
+	private FXMLCtrlNewTab ctrl;
+	
+	/**
+	 * ID WPDVerion
+	 */
+	private Long id;
+	
+	/**
+	 * Tab представляющую версию
+	 */
+	private Tab t;
 	
 	public Ctrl(FXMLCtrlNewTab ctrl, Long id, Tab t) {
 		this.setCtrl(ctrl);
