@@ -1,6 +1,6 @@
 package com.mmsp.util;
 
-import com.mmsp.logic.FXMLCtrlNewTab;
+import com.mmsp.logic.newtab.FXMLCtrlNewTab;
 
 import javafx.scene.control.Tab;
 

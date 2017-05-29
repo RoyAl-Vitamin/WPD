@@ -1,5 +1,7 @@
 package com.mmsp.logic;
 
+import com.mmsp.logic.newtab.FXMLCtrlNewTab;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

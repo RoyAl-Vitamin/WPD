@@ -17,6 +17,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 /**
  * Класс данных одного семестра является частью WPDVersion
  * @author rav
@@ -25,6 +28,8 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "SEMESTERS")
 public class Semester implements Comparable<Semester> {
+
+    static final Logger log = LogManager.getLogger(Semester.class);
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -146,5 +151,17 @@ public class Semester implements Comparable<Semester> {
 	@Override
 	public int compareTo(Semester o) {
 		return this.NUMBER_OF_SEMESTER - o.NUMBER_OF_SEMESTER;
+	}
+	
+	@Override
+	public String toString() {
+	    StringBuilder s = new StringBuilder();	    
+	    s.append("Semester:");
+	    s.append("ID = ").append(id);
+	    s.append("номер модуля = ").append(NUMBER_OF_SEMESTER);
+	    s.append("количество модулей = ").append(QUANTITY_OF_MODULE);
+	    s.append("количество разделов = ").append(QUANTITY_OF_SECTION);
+	    s.append("количество недель = ").append(QUANTITY_OF_WEEK);
+	    return s.toString();
 	}
 }

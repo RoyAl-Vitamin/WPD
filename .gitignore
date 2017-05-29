@@ -1,0 +1,5 @@
+# http://webnotes.by/docs/raznoe/pravila-sintaksisa-fayla-gitignore
+/WPD/target/
+/WPD/derby.log
+/WPD/DB/*
+*.log*

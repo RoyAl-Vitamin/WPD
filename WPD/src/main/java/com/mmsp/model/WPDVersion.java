@@ -23,6 +23,9 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 /**
  * Версия РПД
  * @author Алексей
@@ -33,6 +36,8 @@ import javax.persistence.TemporalType;
 public class WPDVersion implements Serializable {
 
 	private static final long serialVersionUID = 7149382190381953724L;
+
+	static final Logger log = LogManager.getLogger(WPDVersion.class);
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -155,36 +160,37 @@ public class WPDVersion implements Serializable {
 
 	@Override
 	public String toString() {
-		String s = "WPDVers: " + this.getClass().getName() + "@" + this.hashCode() +
-				"\nID == " + this.getId().toString() +
-				"\nname == " + this.getName() +
-				"\ntemplate name == " + this.getTemplateName() +
-				"\ndate == " + this.getDate().toString() +
-				"\nHANDBOOKDISCIPLINE == " + this.getHbD().toString();
+		StringBuilder s = new StringBuilder();
+		        s.append("WPDVers: ").append(this.getClass().getName()).append("@").append(this.hashCode())
+		        .append("\nID == ").append(this.getId().toString())
+		        .append("\nname == ").append(this.getName())
+		        .append("\ntemplate name == ").append(this.getTemplateName())
+				.append("\ndate == ").append(this.getDate().toString())
+				.append("\nHANDBOOKDISCIPLINE == ").append(this.getHbD().toString());
 		if (this.getPoCM() != null)
-				s += "\nPoCM == " + this.getPoCM().getClass().getName() + "@" + this.getPoCM().hashCode();
-		else s+= "\n PoCM == null";
+				s.append("\nPoCM == ").append(this.getPoCM().getClass().getName()).append("@").append(this.getPoCM().hashCode());
+		else s.append("\n PoCM == null");
 		// спустимся по дереву
 		if (this.getTreeSemesters().size() != 0)
 		for (Semester sem : this.getTreeSemesters()) {
-			s += "\nSemester == " + sem.getClass().getName() + "@" + this.getTreeSemesters().hashCode();
-			s += "\n + ";
-			s += "\n ++> " + "Семестр № " + sem.getNUMBER_OF_SEMESTER() + " количество недель в нём == " + sem.getQUANTITY_OF_WEEK();
+			s.append("\nSemester == ").append(sem.getClass().getName()).append("@").append(this.getTreeSemesters().hashCode());
+			s.append("\n + ");
+			s.append("\n ++> ").append("Семестр № ").append(sem.getNUMBER_OF_SEMESTER()).append(" количество недель в нём == ").append(sem.getQUANTITY_OF_WEEK());
 			for (Module mod : sem.getTreeModule()) {
-				s += "\n + ";
-				s += "\n +++> " + "Модуль № " + mod.getNumber() + " и его название " + mod.getName();
+				s.append("\n + ");
+				s.append("\n +++> ").append("Модуль № ").append(mod.getNumber()).append(" и его название ").append(mod.getName());
 				for (Section sec : mod.getTreeSection()) {
-					s += "\n + ";
-					s += "\n ++++> " + "Секция № " + sec.getNumber() + " и её название " + sec.getName();
+					s.append("\n + ");
+					s.append("\n ++++> ").append("Секция № ").append(sec.getNumber()).append(" и её название ").append(sec.getName());
 					for (ThematicPlan theme : sec.getTreeTheme()) {
-						s += "\n + ";
-						s += "\n +++++> " + " Тема № " + theme.getNumber() + " и её название " + theme.getTitle();
+						s.append("\n + ");
+						s.append("\n +++++> ").append(" Тема № ").append(theme.getNumber()).append(" и её название ").append(theme.getTitle());
 					}
 				}
 			}
 		}
-		else s += "\nSemester count == 0\n";
-		return s;
+		else s.append("\nSemester count == 0\n");
+		return s.toString();
 	}
 
 	public Set<ThematicPlan> getThematicPlans() {
@@ -200,9 +206,9 @@ public class WPDVersion implements Serializable {
 	 * Вывод через запятую семестров доступных для данной @WPDVersion
 	 */
 	public String getStringSemester() {
-		String s = "";
+		StringBuilder s = new StringBuilder();
 		for (Semester sem : semesters) {
-			s += "," + sem.getNUMBER_OF_SEMESTER();
+			s.append(",").append(sem.getNUMBER_OF_SEMESTER());
 		}
 		if (s.length() != 0) {
 			return s.substring(1);

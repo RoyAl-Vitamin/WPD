@@ -1,5 +1,6 @@
 package com.mmsp.logic;
 
+import com.mmsp.logic.newtab.FXMLCtrlNewTab;
 import com.mmsp.model.Module;
 import com.mmsp.model.Section;
 import com.mmsp.model.Semester;

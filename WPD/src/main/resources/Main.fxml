@@ -6,74 +6,92 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="449.0" prefWidth="841.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mmsp.logic.FXMLCtrlMain">
-<children><MenuBar xmlns:fx="http://javafx.com/fxml">
-  <menus>
-    <Menu mnemonicParsing="false" text="Файл">
-      <items>
-                  <MenuItem fx:id="miAuth" mnemonicParsing="false" onAction="#clickMIAuth" text="Авторизация" />
-        <MenuItem fx:id="mbClose" mnemonicParsing="false" onAction="#clickBClose" text="Close" />
-      </items>
-    </Menu>
-    <Menu mnemonicParsing="false" text="Редактировать">
-      <items>
-        <MenuItem mnemonicParsing="false" text="Delete" />
-      </items>
-    </Menu>
-    <Menu mnemonicParsing="false" text="Справка">
-      <items>
-        <MenuItem mnemonicParsing="false" text="About" />
-      </items>
-    </Menu>
-  </menus>
-</MenuBar>
-      <ToolBar prefWidth="200.0">
-<items>
-            <Label text="Дисциплина" />
-            <ChoiceBox fx:id="cbDiscipline" prefWidth="150.0" xmlns:fx="http://javafx.com/fxml" />
-            <Label text="Версия" />
-            <ChoiceBox fx:id="cbVersion" prefWidth="150.0" />
-            <Button fx:id="bOpenTab" mnemonicParsing="false" onAction="#clickBOpenTab" text="Открыть" />
-<Button fx:id="bAddTab" mnemonicParsing="false" onAction="#clickBAddTab" text="+">
-               <tooltip>
-                  <Tooltip text="Создать версию" />
-               </tooltip></Button>
-</items>
-</ToolBar>
-      <TabPane fx:id="tpDiscipline" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="30.0" prefHeight="139.0" prefWidth="841.0" tabClosingPolicy="ALL_TABS" VBox.vgrow="ALWAYS">
-<tabs>
-<Tab closable="false" text="Дисциплины">
-               <content>
-                  <HBox alignment="CENTER">
-                     <children>
-                        <ListView fx:id="lvDiscipline" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
-                           <HBox.margin>
-                              <Insets />
-                           </HBox.margin>
-                        </ListView>
-                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0">
-                           <children>
-                              <Button fx:id="bCreate" minWidth="70.0" mnemonicParsing="false" onAction="#clickBCreate" text="Создать" />
-                              <Button fx:id="bChange" disable="true" minWidth="70.0" mnemonicParsing="false" onAction="#clickBChange" text="Изменить" />
-                              <Button fx:id="bDelete" disable="true" minWidth="70.0" mnemonicParsing="false" onAction="#clickBDelete" text="Удалить" />
-                           </children>
-                        </VBox>
-                     </children>
-                     <padding>
-                        <Insets left="10.0" top="10.0" />
-                     </padding>
-                  </HBox>
-               </content></Tab>
-</tabs>
-</TabPane>
-      <HBox prefHeight="23.0" prefWidth="841.0">
-<children>
-            <Label fx:id="lStatus" minWidth="130.0" text="Операция выполнена" HBox.hgrow="NEVER">
-<padding>
-<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</padding>
-            </Label>
-</children>
-      </HBox>
-</children>
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+	prefHeight="449.0" prefWidth="841.0" xmlns="http://javafx.com/javafx/8"
+	xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mmsp.logic.FXMLCtrlMain">
+	<children>
+		<MenuBar xmlns:fx="http://javafx.com/fxml">
+			<menus>
+				<Menu mnemonicParsing="false" text="Файл">
+					<items>
+						<MenuItem fx:id="miAuth" mnemonicParsing="false"
+							onAction="#clickMIAuth" text="Авторизация" />
+						<MenuItem fx:id="mbClose" mnemonicParsing="false"
+							onAction="#clickBClose" text="Close" />
+					</items>
+				</Menu>
+				<Menu mnemonicParsing="false" text="Редактировать">
+					<items>
+						<MenuItem mnemonicParsing="false" text="Delete" />
+					</items>
+				</Menu>
+				<Menu mnemonicParsing="false" text="Справка">
+					<items>
+						<MenuItem mnemonicParsing="false" text="About" />
+					</items>
+				</Menu>
+			</menus>
+		</MenuBar>
+		<ToolBar prefWidth="200.0">
+			<items>
+				<Label text="Дисциплина" />
+				<ChoiceBox fx:id="cbDiscipline" prefWidth="150.0"
+					xmlns:fx="http://javafx.com/fxml" />
+				<Label text="Версия" />
+				<ChoiceBox fx:id="cbVersion" prefWidth="150.0" />
+				<Button fx:id="bOpenTab" mnemonicParsing="false" onAction="#clickBOpenTab"
+					text="Открыть" />
+				<Button fx:id="bAddTab" mnemonicParsing="false" onAction="#clickBAddTab"
+					text="+">
+					<tooltip>
+						<Tooltip text="Создать версию" />
+					</tooltip>
+				</Button>
+			</items>
+		</ToolBar>
+		<TabPane fx:id="tpDiscipline" maxHeight="1.7976931348623157E308"
+			maxWidth="1.7976931348623157E308" minHeight="30.0" prefHeight="139.0"
+			prefWidth="841.0" tabClosingPolicy="ALL_TABS" VBox.vgrow="ALWAYS">
+			<tabs>
+				<Tab closable="false" text="Дисциплины">
+					<content>
+						<HBox alignment="CENTER">
+							<children>
+								<ListView fx:id="lvDiscipline" prefHeight="200.0"
+									prefWidth="200.0" HBox.hgrow="ALWAYS">
+									<HBox.margin>
+										<Insets />
+									</HBox.margin>
+								</ListView>
+								<VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0"
+									spacing="10.0">
+									<children>
+										<Button fx:id="bCreate" minWidth="70.0"
+											mnemonicParsing="false" onAction="#clickBCreate" text="Создать" />
+										<Button fx:id="bChange" disable="true" minWidth="70.0"
+											mnemonicParsing="false" onAction="#clickBChange" text="Изменить" />
+										<Button fx:id="bDelete" disable="true" minWidth="70.0"
+											mnemonicParsing="false" onAction="#clickBDelete" text="Удалить" />
+									</children>
+								</VBox>
+							</children>
+							<padding>
+								<Insets left="10.0" top="10.0" />
+							</padding>
+						</HBox>
+					</content>
+				</Tab>
+			</tabs>
+		</TabPane>
+		<HBox prefHeight="23.0" prefWidth="841.0">
+			<children>
+				<Label fx:id="lStatus" minWidth="130.0" text="Операция выполнена"
+					HBox.hgrow="NEVER">
+					<padding>
+						<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+					</padding>
+				</Label>
+			</children>
+		</HBox>
+	</children>
 </VBox>

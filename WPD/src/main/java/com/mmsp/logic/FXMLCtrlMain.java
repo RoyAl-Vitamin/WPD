@@ -5,9 +5,13 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import com.mmsp.dao.impl.DAO_HandBookDiscipline;
 import com.mmsp.dao.impl.DAO_WPDData;
 import com.mmsp.dao.impl.DAO_WPDVersion;
+import com.mmsp.logic.newtab.FXMLCtrlNewTab;
 import com.mmsp.model.HandbookDiscipline;
 import com.mmsp.model.WPDData;
 import com.mmsp.model.WPDVersion;
@@ -44,6 +48,8 @@ import javafx.stage.Stage;
  */
 
 public class FXMLCtrlMain extends VBox {
+
+    static final Logger log = LogManager.getLogger(FXMLCtrlMain.class);
 
 	private Stage stage; // для FileChooser'а
 
@@ -98,12 +104,12 @@ public class FXMLCtrlMain extends VBox {
 	 */
 	@FXML
 	void clickMIAuth(ActionEvent event) throws IOException {
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Auth.fxml"));
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("modal/Auth.fxml"));
 		Parent root = null;
 		try {
 			root = (Parent) fxmlLoader.load();
 		} catch (IOException e) {
-			System.err.println("Не удалось загрузить форму авторизации");
+			log.error("Не удалось загрузить форму авторизации");
 			e.printStackTrace();
 		}
 		Scene scene = new Scene(root);
@@ -137,7 +143,7 @@ public class FXMLCtrlMain extends VBox {
 		// проверяем открыта ли вкладка
 		// Если вкладка не открыта, то откроем
 		if (!tabIsOpen(id_Vers)) {
-			FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
+			FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("newtab/NewTab.fxml"));
 			Parent root = (Parent) fxmlLoader.load();
 
 			Tab t = new Tab();
@@ -166,6 +172,8 @@ public class FXMLCtrlMain extends VBox {
 				// UNDONE
 				private void showDialogSave() {
 					// TODO Спросить о сохранении
+					
+					// "Все несохранённые данные будут потеряны"
 				}
 			});
 			tpDiscipline.getTabs().add(t);
@@ -211,12 +219,12 @@ public class FXMLCtrlMain extends VBox {
 		WPDData wpdData = (dao_WPDData.getAll()).get(0);
 		wpdVers.setWPDData(wpdData); // Соединяем WPDVersion с WPDData
 
-		wpdVers.setHbD(hbD); // кажется теперь онеи ссылаются друг на друга
+		wpdVers.setHbD(hbD); // кажется теперь они ссылаются друг на друга
 		wpdVers.setId(dao_Vers.add(wpdVers)); // Запоминаем ID, попутно сохранив в БД WPDVerison
 		hbD.addVersions(wpdVers); // Обновляем HandBookDiscipline, т.к. теперь у него зависимость с WDPVersion @OneToMany
 		dao_Disc.update(hbD);
 
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("VersionName.fxml"));
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("modal/VersionName.fxml"));
 		Parent root = null;
 		try {
 			root = (Parent) fxmlLoader.load();
@@ -247,7 +255,7 @@ public class FXMLCtrlMain extends VBox {
 
 		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + wpdVers.getName());
 
-		fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("NewTab.fxml"));
+		fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("newtab/NewTab.fxml"));
 		root = (Parent) fxmlLoader.load();
 
 		FXMLCtrlNewTab fxmlCtrlNewTab = fxmlLoader.getController();
@@ -310,7 +318,7 @@ public class FXMLCtrlMain extends VBox {
 		hbD.getVersions().clear(); // почистим версии при создании
 		hbD.setId(dao_HBD.add(hbD));
 
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Discipline.fxml"));
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("modal/Discipline.fxml"));
 		Parent root = null;
 		try {
 			root = (Parent) fxmlLoader.load();
@@ -360,7 +368,7 @@ public class FXMLCtrlMain extends VBox {
 		HandbookDiscipline hbD = dao_HBD.getByValueAndCode(value, code);
 		if (hbD == null) System.err.println("НЕ НАЙДЕН!!!");
 		
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Discipline.fxml"));
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("modal/Discipline.fxml"));
 		Parent root = null;
 		try {
 			root = (Parent) fxmlLoader.load();
@@ -649,7 +657,7 @@ public class FXMLCtrlMain extends VBox {
 	}
 	
 	/**
-	 * Задаёт значение Label низу справа окна
+	 * Задаёт значение Label cнизу слева окна
 	 * @param sValue параметр
 	 */
 	public void setStatus(String sValue) {

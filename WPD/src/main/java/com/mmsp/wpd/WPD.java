@@ -7,6 +7,9 @@ import com.mmsp.model.WPDData;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -25,6 +28,8 @@ import javafx.stage.WindowEvent;
 
 public class WPD extends Application {
 
+    static final Logger log = LogManager.getLogger(WPD.class);
+
 	private Stage currStage;
 	
 	final Logic core = new Logic();
@@ -32,6 +37,7 @@ public class WPD extends Application {
 	@Override
 	public void start(final Stage primaryStage) throws IOException {
 
+	    log.info("запуск приложения");
 		currStage = primaryStage;
 
 		try {
@@ -58,6 +64,7 @@ public class WPD extends Application {
 		List<WPDData> li = dao_WPDData.getAll(WPDData.class);
 
 		if (li.isEmpty()) { // Следим за тем, что бы было не больше 1 WPDData!
+		    log.debug("список WPDData пуст");
 			showDlgAuth();
 		} else {
 			if (li.size() > 1)
@@ -78,12 +85,12 @@ public class WPD extends Application {
 	 * Сохранение происходит в нём же
 	 */
 	private void showDlgAuth() {
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("Auth.fxml"));
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("modal/Auth.fxml"));
 		Parent root = null;
 		try {
 			root = (Parent) fxmlLoader.load();
 		} catch (IOException e) {
-			System.err.println("Не удалось загрузить форму авторизации");
+			log.error("Не удалось загрузить форму авторизации");
 			e.printStackTrace();
 		}
 		Scene scene = new Scene(root);
@@ -107,7 +114,8 @@ public class WPD extends Application {
 	}
 
 	@Override
-	public void stop() { // адекватное закрытие окна
+	public void stop() {
+	    log.info("заершение работы приложения");
 		// TODO Можно добавить сохранение в *.property открытых вкладок, что б при старте на автомате он их открывал
 		core.closeSessionFactory(); // Закрываем сессию
 		Platform.exit();

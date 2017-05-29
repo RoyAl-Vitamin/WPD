@@ -15,6 +15,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 /**
  * Класс данных одного модуля является частью Semester
  * @author rav
@@ -23,6 +26,8 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "MODULE")
 public class Module implements Comparable<Module> {
+
+    static final Logger log = LogManager.getLogger(Module.class);
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -151,5 +156,15 @@ public class Module implements Comparable<Module> {
 	@Override
 	public int compareTo(Module o) {
 		return this.getNumber() - o.getNumber();
+	}
+	
+	@Override
+	public String toString() {
+	    StringBuilder s = new StringBuilder();
+	    s.append("MODULE");
+	    s.append("ID = ").append(id);
+	    s.append("номер модуля = ").append(number);
+	    s.append("Название модуля = ").append(name);
+	    return s.toString();
 	}
 }

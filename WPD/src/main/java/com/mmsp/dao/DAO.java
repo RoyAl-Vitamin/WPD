@@ -2,6 +2,8 @@ package com.mmsp.dao;
 
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -12,7 +14,9 @@ import com.mmsp.util.HibernateUtil;
 
 @SuppressWarnings("unchecked")
 public interface DAO<T> {
-	
+
+    static final Logger log = LogManager.getLogger(DAO.class);
+
 	default public Long add(T obj) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();  
 		//getting session object from session factory  
@@ -20,7 +24,7 @@ public interface DAO<T> {
 		//getting transaction object from session object  
 		session.beginTransaction();  
 		Long iValue = (Long) session.save(obj);
-		System.out.println("Inserted Successfully");
+		log.debug("Inserted Successfully");
 		session.getTransaction().commit();
 		session.flush();
 		session.close();
@@ -33,7 +37,7 @@ public interface DAO<T> {
 		session.beginTransaction();
 		// Subject subject = (Subject)session.load(Subject.class, SUBJECT_ID);
 		session.delete(obj);
-		System.out.println("Deleted Successfully");
+		log.debug("Deleted Successfully");
 		session.getTransaction().commit();
 		session.flush();
 		session.close();
@@ -44,7 +48,7 @@ public interface DAO<T> {
 		Session session = sessionFactory.openSession();
 		session.beginTransaction();
 		session.saveOrUpdate(obj);
-		System.out.println("Save or Update Successfully");
+		log.debug("Save or Update Successfully");
 		session.getTransaction().commit();
 		session.flush();
 		session.close();
@@ -57,7 +61,7 @@ public interface DAO<T> {
 		//return sessionFactory.getCurrentSession().createQuery("from UserEntity").list();
 		Query query = session.createQuery("from " + obj.getName());
 		List<T> objects = query.list();
-		System.out.println("Found ALL Successfully");
+		log.debug("Found ALL Successfully");
 		for(T obj_out : objects)
 		{
 			System.out.println(obj_out.toString());
@@ -75,9 +79,9 @@ public interface DAO<T> {
 		session.beginTransaction();
 		value = (T) session.get(obj, id);
 		if (value != null)
-			System.out.println("Found by ID Successfully");
+		    log.debug("Found by ID Successfully");
 		else
-			System.err.println("NOT FOUND by ID");
+		    log.debug("NOT FOUND by ID");
 		session.getTransaction().commit();
 		session.flush();
 		session.close();
@@ -92,7 +96,7 @@ public interface DAO<T> {
 		List<T> objects = query.list();
 		for(T obj_out : objects)
 		{
-			System.out.println(obj_out.toString());
+		    log.debug(obj_out.toString());
 		}
 		session.getTransaction().commit();
 		session.flush();
