@@ -78,54 +78,6 @@
                   </HBox>
                </content>
             </Tab>
-            <Tab closable="false" text="Таблица 7.1">
-               <content>
-                  <HBox>
-                     <children>
-                        <VBox alignment="TOP_CENTER" spacing="15.0" HBox.hgrow="NEVER">
-                           <children>
-                              <Button fx:id="bAddRowT71" disable="true" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBAddRowT71" prefHeight="25.0" prefWidth="25.0" text="+">
-                                 <tooltip>
-                                    <Tooltip text="Добавить строчку" />
-                                 </tooltip>
-                              </Button>
-                              <Button fx:id="bDelRowT71" disable="true" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#clickBDelRowT71" prefHeight="25.0" prefWidth="25.0" text="-">
-                                 <tooltip>
-                                    <Tooltip text="Удалить строчку" />
-                                 </tooltip>
-                              </Button>
-                           </children>
-                           <padding>
-                              <Insets bottom="15.0" left="10.0" right="10.0" top="60.0" />
-                           </padding>
-                           <HBox.margin>
-                              <Insets />
-                           </HBox.margin>
-                        </VBox>
-                        <VBox fx:id="vbT71" alignment="TOP_CENTER" spacing="5.0" HBox.hgrow="ALWAYS">
-                           <padding>
-                              <Insets bottom="5.0" top="5.0" />
-                           </padding>
-                           <children>
-                              <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                 <children>
-                                    <Label alignment="CENTER" contentDisplay="RIGHT" text="Семестр №:" HBox.hgrow="NEVER" />
-                                    <ChoiceBox fx:id="cbSemesters" disable="true" minHeight="25.0" prefWidth="150.0">
-                                       <tooltip>
-                                          <Tooltip text="Номер текущего семестра" />
-                                       </tooltip>
-                                    </ChoiceBox>
-                                 </children>
-                                 <VBox.margin>
-                                    <Insets bottom="10.0" top="10.0" />
-                                 </VBox.margin>
-                              </HBox>
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-               </content>
-            </Tab>
          </tabs>
       </TabPane>
    </children>

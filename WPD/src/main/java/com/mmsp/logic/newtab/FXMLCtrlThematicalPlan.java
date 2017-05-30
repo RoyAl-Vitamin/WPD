@@ -77,6 +77,8 @@ public class FXMLCtrlThematicalPlan extends HBox {
 
     private Stage stage;
 
+    private WPDVersion wpdVersion;
+
     /**
      * отрисовка дерева в tvRoot
      */
@@ -707,7 +709,12 @@ public class FXMLCtrlThematicalPlan extends HBox {
     }
 
     // UNDONE Инициализация компонента номером версии
-    public void init(Long id_Vers) {
-        
+    public void init(WPDVersion wpdVers) {
+        wpdVersion = wpdVers;
+    }
+
+    public void refresh() {
+        repaintSSVTableTP();
+        loadTabThematicalPlan();
     }
 }

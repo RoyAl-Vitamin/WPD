@@ -158,24 +158,23 @@ public class WPDVersion implements Serializable {
 		this.studyLoad = studyLoad;
 	}
 
-	// TODO Переписать условие сравнения, что бы не сохранять точно такой же объект
 	public boolean equals(WPDVersion wpdVers) {
-		log.info("WPDVersions is equals?");
+//		log.info("WPDVersions is equals?");
         if (!this.id.equals(wpdVers.id)) return false;
-        log.info("id is equals");
+//        log.info("id is equals");
         if (!this.date.equals(wpdVers.date)) return false;
-        log.info("date is equals");
+//        log.info("date is equals");
         if ((this.name != null && wpdVers.name == null) || (this.name == null && wpdVers.name != null)) return false;
         if (!this.name.equals(wpdVers.name)) return false;
-        log.info("name is equals");
+//        log.info("name is equals");
         if (!this.number.equals(wpdVers.number)) return false;
-        log.info("number is equals");
+//        log.info("number is equals");
         if (!this.studyLoad.equals(wpdVers.studyLoad)) return false;
-        log.info("studyLoad is equals");
+//        log.info("studyLoad is equals");
         if ((this.templateName != null && wpdVers.templateName == null) || (this.templateName == null && wpdVers.templateName != null)) return false;
-        if (!this.templateName.equals(wpdVers.templateName)) return false;
-        log.info("templateName is equals");
-        log.info("WPDVersion is equals!");
+        if (this.templateName != null && wpdVers.templateName != null && !this.templateName.equals(wpdVers.templateName)) return false;
+//        log.info("templateName is equals");
+//        log.info("WPDVersion is equals!");
         return true; // Одинаковые
 	}
 
