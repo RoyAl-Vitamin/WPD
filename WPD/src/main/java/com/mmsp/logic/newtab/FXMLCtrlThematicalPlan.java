@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
@@ -46,8 +48,17 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-// Переменные вкладки "Тематический план"
+// *************************************************************************************************************************
+// *************************************************************************************************************************
+// **
+// ** Вкладка "Тематический план"
+// **
+// *************************************************************************************************************************
+// *************************************************************************************************************************
+
 public class FXMLCtrlThematicalPlan extends HBox {
+
+    static final Logger log = LogManager.getLogger(FXMLCtrlThematicalPlan.class);
 
 	/**
 	 * {@link WPDVersion} принадлежащая этой вкладке
@@ -294,10 +305,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 FXMLCtrlModalSection fxmlCtrlModalSection = fxmlLoader.getController();
                 fxmlCtrlModalSection.init(stageModalSection);
                 stageModalSection.setResizable(false);
-                fxmlCtrlModalSection.setController(fxmlCtrlCurrTab); // Запомним
-                                                                     // контроллер
-                                                                     // новой
-                                                                     // вкладки
+                fxmlCtrlModalSection.setController(fxmlCtrlCurrTab); // Запомним контроллер новой вкладки
                                                                      // для
                                                                      // перерсовки
 
@@ -600,7 +608,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
         liValueOftheme.add(String.valueOf(theme.getKSR()));
         liValueOftheme.add(String.valueOf(theme.getSRS()));
 
-        //liValueOftheme.forEach(System.err::println);
+//        liValueOftheme.forEach(log::info);
 
         final ObservableList<SpreadsheetCell> olNew = createRowForTTP(newRowPos, liValueOftheme); // Добавление на место последней строки пустой строки
         newRows.add(olNew);
@@ -615,6 +623,8 @@ public class FXMLCtrlThematicalPlan extends HBox {
      * Создаёт каркас таблицы ssvTableTP
      */
     private void createSSVTableTP() {
+
+        initSSVTableTP();
 
         int rowCount = 1;
         int columnCount = 11;

@@ -3,6 +3,8 @@ package com.mmsp.logic.newtab;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
@@ -41,8 +43,9 @@ import javafx.stage.Stage;
 // *************************************************************************************************************************
 // *************************************************************************************************************************
 
-// Переменные вкладки "Таблица 7.1"
 public class FXMLCtrlTable71 extends HBox {
+
+    static final Logger log = LogManager.getLogger(FXMLCtrlTable71.class);
 
     @FXML
     private VBox vbT71;
@@ -113,9 +116,8 @@ public class FXMLCtrlTable71 extends HBox {
                 e.printStackTrace();
             }
 
-        olRow.get(olRow.size() - 1).setEditable(false); // Последняя строка не
-                                                        // доступна для
-                                                        // редактирования
+        // Последняя строка не доступна для редактирования
+        olRow.get(olRow.size() - 1).setEditable(false);
         return olRow;
     }
 
@@ -141,12 +143,12 @@ public class FXMLCtrlTable71 extends HBox {
      */
     @FXML
     void clickBDelRowT71(ActionEvent event) {
-        int col = ssvTable71.getSelectionModel().getFocusedCell().getColumn(); // получение
-                                                                               // фокуса
+        // получение фокуса
+        int col = ssvTable71.getSelectionModel().getFocusedCell().getColumn();
         int row = ssvTable71.getSelectionModel().getFocusedCell().getRow();
 
-        for (Record rec : currSemester.getRowT71()) { // удаление из массива
-                                                      // записей
+        // удаление из массива записей
+        for (Record rec : currSemester.getRowT71()) {
             if (rec.getPos() == row) {
                 currSemester.getRowT71().remove(rec);
                 break;
@@ -155,16 +157,14 @@ public class FXMLCtrlTable71 extends HBox {
 
         if (!(row > 3 && row < ssvTable71.getGrid().getRowCount()))
             return;
-        // ssvTable71.getSelectionModel().clearSelection(); // убрать фокус
-        // совсем
-        GridBase newGrid = new GridBase(ssvTable71.getGrid().getRowCount() - 1, ssvTable71.getGrid().getColumnCount()); // Создадим
-                                                                                                                        // сетку
-                                                                                                                        // с
-                                                                                                                        // -1
-                                                                                                                        // строкой
+        // убрать фокус совсем
+        // ssvTable71.getSelectionModel().clearSelection();
+        
+        // Создадим сетку с -1 строкой
+        GridBase newGrid = new GridBase(ssvTable71.getGrid().getRowCount() - 1, ssvTable71.getGrid().getColumnCount());
         ObservableList<ObservableList<SpreadsheetCell>> newRows = setHeaderForT71(newGrid,
-                currSemester.getQUANTITY_OF_WEEK()); // по новой инициализируем
-                                                     // хедер таблицы
+                // по новой инициализируем хедер таблицы
+                currSemester.getQUANTITY_OF_WEEK());
 
         for (int i = 4; i < ssvTable71.getGrid().getRowCount(); i++) {
             if (i == row)
@@ -181,40 +181,26 @@ public class FXMLCtrlTable71 extends HBox {
         }
         newGrid.getColumnHeaders().addAll(ssvTable71.getGrid().getColumnHeaders());
         // newGrid.setRows(newRows);
-        newGrid.spanColumn(newGrid.getColumnCount() - 2, 0, 1); // объединение
-                                                                // "Распределение
-                                                                // по учебным
-                                                                // неделям"
-        newGrid.spanRow(2, 0, 0); // объединение "Виды работ"
-        newGrid.spanRow(2, 0, newGrid.getColumnCount() - 1); // объединение
-                                                             // "Итого"
-        newGrid.spanColumn(currSemester.getQUANTITY_OF_WEEK(), 2, 1); // объединение
-                                                                      // "M1"
-        newGrid.spanColumn(currSemester.getQUANTITY_OF_WEEK(), 3, 1); // объединение
-                                                                      // "P1"
+        // объединение "Распределение по учебным неделям"
+        newGrid.spanColumn(newGrid.getColumnCount() - 2, 0, 1);
+        // объединение "Виды работ"
+        newGrid.spanRow(2, 0, 0);
+        // объединение "Итого"
+        newGrid.spanRow(2, 0, newGrid.getColumnCount() - 1);
+        // объединение "M1"
+        newGrid.spanColumn(currSemester.getQUANTITY_OF_WEEK(), 2, 1);
+        // объединение "P1"
+        newGrid.spanColumn(currSemester.getQUANTITY_OF_WEEK(), 3, 1);
 
         ssvTable71.setGrid(newGrid);
         newGrid.addEventHandler(GridChange.GRID_CHANGE_EVENT, ehT71);
 
         if (row == ssvTable71.getGrid().getRowCount()) { // переставим фокус
-            ssvTable71.getSelectionModel().focus(row - 1, ssvTable71.getColumns().get(col)); // фокус
-                                                                                             // на
-                                                                                             // предыдущую
-                                                                                             // строку,
-                                                                                             // но
-                                                                                             // ту
-                                                                                             // же
-                                                                                             // колонку
+            // фокус на предыдущую строку, но ту же колонку
+            ssvTable71.getSelectionModel().focus(row - 1, ssvTable71.getColumns().get(col));
         } else {
-            ssvTable71.getSelectionModel().focus(row, ssvTable71.getColumns().get(col)); // фокус
-                                                                                         // на
-                                                                                         // ту
-                                                                                         // же
-                                                                                         // строку
-                                                                                         // и
-                                                                                         // ту
-                                                                                         // же
-                                                                                         // колонку
+            // фокус на ту же строку и ту же колонку
+            ssvTable71.getSelectionModel().focus(row, ssvTable71.getColumns().get(col));
         }
         if (ssvTable71.getSelectionModel().getFocusedCell().getRow() < 4)
             bDelRowT71.setDisable(true);
@@ -300,6 +286,7 @@ public class FXMLCtrlTable71 extends HBox {
 
     // UNDONE Инициализация компонента
     public void init(WPDVersion wpdVers) {
+        log.info("wpdVersion == null? " + wpdVers);
         wpdVersion = wpdVers;
 
         olSemesters.addListener(new ListChangeListener<String>() {
@@ -349,9 +336,8 @@ public class FXMLCtrlTable71 extends HBox {
             createTvT71(currSemester); // Создание каркаса
             pasteIntoTvT71(currSemester); // Подгрузка в ячейки данных
 
-            if (!vbT71.getChildren().contains(ssvTable71)) { // отображение,
-                                                             // если ещё не
-                                                             // отображено
+            // отображение, если ещё не отображено
+            if (!vbT71.getChildren().contains(ssvTable71)) {
                 vbT71.getChildren().add(ssvTable71);
                 VBox.setVgrow(ssvTable71, Priority.ALWAYS);
                 VBox.setMargin(ssvTable71, new Insets(0, 15, 0, 0));
@@ -362,8 +348,12 @@ public class FXMLCtrlTable71 extends HBox {
     /**
      * Обновляет данные в компоненте
      */
+    // ERROR wpdVersion is null
     public void refresh() {
         olSemesters.clear();
+        if (wpdVersion == null) {
+            log.error("wpdVersion is null");
+        }
         for (Semester sem : wpdVersion.getTreeSemesters()) {
             olSemesters.add(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
         }
@@ -419,18 +409,9 @@ public class FXMLCtrlTable71 extends HBox {
 
                 // Пока только разделы
                 int pos = 0; // номер строки, в которой нашли "Лекции"
-                for (int i = 0; i < ssvTable71.getGrid().getRowCount(); i++) // Смотрим,
-                                                                             // есть
-                                                                             // ли
-                                                                             // в
-                                                                             // первом
-                                                                             // столбце
-                                                                             // "лекции"
-                                                                             // и
-                                                                             // запоминаем
-                                                                             // эту
-                                                                             // позицию
-                                                                             // строки
+                for (int i = 0; i < ssvTable71.getGrid().getRowCount(); i++)
+                    // Смотрим, есть ли в первом столбце "лекции" и запоминаем
+                    // эту позицию строки
                     if (ssvTable71.getGrid().getRows().get(i).get(0).getText().equalsIgnoreCase("лекции"))
                         pos = i;
                 if (pos > 1) {
@@ -446,18 +427,10 @@ public class FXMLCtrlTable71 extends HBox {
                     // же, но последние элементы будут заполнены 0-ми
 
                     // FIXME слишком сложно, лучше переписать
-                    List<Section> liSec = new ArrayList<Section>(); // хранится
-                                                                    // список
-                                                                    // секций,
-                                                                    // который
-                                                                    // надо
-                                                                    // отобразить
-                    List<Integer> liColSec = new ArrayList<Integer>(); // количесвто
-                                                                       // колонок,
-                                                                       // которое
-                                                                       // занимет
-                                                                       // каждая
-                                                                       // секция
+                    List<Section> liSec = new ArrayList<Section>();
+                    // хранится список секций, который надо отобразить
+                    List<Integer> liColSec = new ArrayList<Integer>();
+                    // количесвто колонок, которое занимет каждая секция
                     for (Module mod : wpdVersion
                             .getSemester(Integer.parseInt(cbSemesters.getSelectionModel().getSelectedItem()))
                             .getTreeModule())
@@ -483,18 +456,10 @@ public class FXMLCtrlTable71 extends HBox {
 
                     setHeaderSection(liSec, liColSec);
 
-                    List<Module> liMod = new ArrayList<Module>(); // хранится
-                                                                  // список
-                                                                  // секций,
-                                                                  // который
-                                                                  // надо
-                                                                  // отобразить
-                    List<Integer> liColMod = new ArrayList<Integer>(); // количесвто
-                                                                       // колонок,
-                                                                       // которое
-                                                                       // занимет
-                                                                       // каждая
-                                                                       // секция
+                    // хранится список секций, который надо отобразить
+                    List<Module> liMod = new ArrayList<Module>();
+                    // количество колонок, которое занимет каждая секция
+                    List<Integer> liColMod = new ArrayList<Integer>();
                     liMod.addAll(
                             wpdVersion.getSemester(Integer.parseInt(cbSemesters.getSelectionModel().getSelectedItem()))
                                     .getTreeModule());
@@ -554,16 +519,12 @@ public class FXMLCtrlTable71 extends HBox {
                             // ячейки + 1
                 for (int i = 0; i < liMod.size(); i++) {
                     if (i < liMod.size() - 1) {
-                        ssvTable71.getGrid().spanColumn(liColMod.get(i), 2, posSec); // объединяем
-                                                                                     // все
-                                                                                     // кроме
-                                                                                     // последних
+                        // объединяем все кроме последних
+                        ssvTable71.getGrid().spanColumn(liColMod.get(i), 2, posSec);
                         posSec += liColMod.get(i);
                     } else {
-                        ssvTable71.getGrid().spanColumn(ssvTable71.getGrid().getColumnCount() - 1 - posSec, 2, posSec); // объединяем
-                                                                                                                        // все
-                                                                                                                        // остальные
-                                                                                                                        // клетки
+                        // объединяем все остальные клетки
+                        ssvTable71.getGrid().spanColumn(ssvTable71.getGrid().getColumnCount() - 1 - posSec, 2, posSec);
                     }
                 }
             }
@@ -602,16 +563,12 @@ public class FXMLCtrlTable71 extends HBox {
                             // ячейки + 1
                 for (int i = 0; i < liSec.size(); i++) {
                     if (i < liSec.size() - 1) {
-                        ssvTable71.getGrid().spanColumn(liColSec.get(i), 3, posSec); // объединяем
-                                                                                     // все
-                                                                                     // кроме
-                                                                                     // последних
+                        // объединяем все кроме последних
+                        ssvTable71.getGrid().spanColumn(liColSec.get(i), 3, posSec);
                         posSec += liColSec.get(i);
                     } else {
-                        ssvTable71.getGrid().spanColumn(ssvTable71.getGrid().getColumnCount() - 1 - posSec, 3, posSec); // объединяем
-                                                                                                                        // все
-                                                                                                                        // остальные
-                                                                                                                        // клетки
+                        // объединяем все остальные клетки
+                        ssvTable71.getGrid().spanColumn(ssvTable71.getGrid().getColumnCount() - 1 - posSec, 3, posSec);
                     }
                 }
             }
@@ -624,9 +581,8 @@ public class FXMLCtrlTable71 extends HBox {
         ObservableList<ObservableList<SpreadsheetCell>> rows = setHeaderForT71(grid, length);
 
         grid.setRows(rows);
-        grid.spanColumn(grid.getColumnCount() - 2, 0, 1); // объединение
-                                                          // "Распределение по
-                                                          // учебным неделям"
+        // объединение "Распределение по учебным неделям"
+        grid.spanColumn(grid.getColumnCount() - 2, 0, 1);
         grid.spanRow(2, 0, 0); // объединение "Виды работ"
         grid.spanRow(2, 0, grid.getColumnCount() - 1); // объединение "Итого"
         grid.spanColumn(length, 3, 1); // объединение "P1"

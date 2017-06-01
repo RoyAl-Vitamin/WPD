@@ -267,10 +267,10 @@ public class FXMLCtrlMain extends VBox {
 	void clickBAddTab(ActionEvent event) throws IOException {
 		Tab t = new Tab();
 
-		DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
-		HandbookDiscipline hbD = dao_Disc.getByValueAndCode(cbDiscipline.getValue().split(":")[0], cbDiscipline.getValue().split(":")[1]);
+		DAO<HandbookDiscipline> dao_Disc = new DAO_HandBookDiscipline();
+		HandbookDiscipline hbD = ((DAO_HandBookDiscipline) dao_Disc).getByValueAndCode(cbDiscipline.getValue().split(":")[0], cbDiscipline.getValue().split(":")[1]);
 
-		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
+		DAO<WPDVersion> dao_Vers = new DAO_WPDVersion();
 		WPDVersion wpdVers = new WPDVersion();
 
 		wpdVers.setNumber(hbD.getId()); // Номер версии есть ID Дисциплины
@@ -327,7 +327,7 @@ public class FXMLCtrlMain extends VBox {
 		fxmlCtrlNewTab.init(wpdVers.getId()); // инициализируем
 
 		t.setContent(root);
-		log.info("Ctrl: " + fxmlCtrlNewTab + " version ID == " + wpdVers.getId());
+		log.debug("Ctrl: " + fxmlCtrlNewTab + " version ID == " + wpdVers.getId());
 		olCtrl.add(new Ctrl(fxmlCtrlNewTab, wpdVers.getId(), t)); // Добавим контроллер и Id, саму вкладку в список
 
 		t.setOnClosed(ehForTabClose);
@@ -337,7 +337,7 @@ public class FXMLCtrlMain extends VBox {
 		olVersion.add(wpdVers.getName());
 		
 		for (int j = 0; j < tpDiscipline.getTabs().size(); j++) {
-			log.info(j + ": TAB Name == " + tpDiscipline.getTabs().get(j).getText());
+			log.debug(j + ": TAB Name == " + tpDiscipline.getTabs().get(j).getText());
 		}
 
 		if (olVersion.size() == 1) cbVersion.getSelectionModel().selectFirst(); // какой-то костыль
