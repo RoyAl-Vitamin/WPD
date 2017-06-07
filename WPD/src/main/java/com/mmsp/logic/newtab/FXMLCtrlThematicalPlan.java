@@ -618,9 +618,11 @@ public class FXMLCtrlThematicalPlan extends HBox {
      * Создаёт каркас таблицы ssvTableTP
      */
     private void createSSVTableTP() {
-
         initSSVTableTP();
-
+        clearSSVTAbleTP();
+    }
+    
+    private void clearSSVTAbleTP() {
         int rowCount = 1;
         int columnCount = 11;
         GridBase grid = new GridBase(rowCount, columnCount);
@@ -644,9 +646,8 @@ public class FXMLCtrlThematicalPlan extends HBox {
         ssvTableTP.setGrid(grid);
         ssvTableTP.setShowRowHeader(true);
         ssvTableTP.setShowColumnHeader(true);
-
     }
-    
+
     /**
      * перерисовывает содержимое ssvTableTP для выбранного в tvRoot элемента, будь то модуль или раздел, или тема (тематический план)
      * @param temp массив int, первое число определяет № модуля, 2-ое - № раздела, 3-е № темы
@@ -656,7 +657,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
         if (ssvTableTP == null || !hbReplacementThematicalPlan.getChildren().contains(ssvTableTP)) {
             createSSVTableTP();
         }
-//        ssvTableTP.getGrid().getRows().clear();
+        clearSSVTAbleTP();
 
         List<ThematicPlan> liTheme = new ArrayList<>();
         try {

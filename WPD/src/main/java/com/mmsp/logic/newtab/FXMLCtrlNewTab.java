@@ -64,10 +64,12 @@ public class FXMLCtrlNewTab extends VBox {
 
     // класс строки
     public static class RowSL { // RowStudyLoad
-        private final SimpleStringProperty viewOfStudyLoad; // Вид учебной
-                                                            // нагрузки
-        private final SimpleStringProperty numberOfHours; // Количество часов
-        private final SimpleStringProperty ladderpointsUnit; // ЗЕ
+        // Вид учебной нагрузки
+        private final SimpleStringProperty viewOfStudyLoad;
+        // Количество часов
+        private final SimpleStringProperty numberOfHours;
+        // ЗЕ
+        private final SimpleStringProperty ladderpointsUnit;
 
         private RowSL(String fName, String lName, String email) {
             this.viewOfStudyLoad = new SimpleStringProperty(fName);
@@ -117,9 +119,8 @@ public class FXMLCtrlNewTab extends VBox {
 
     private FXMLCtrlGeneral fxmlCtrlGeneral; // Вкладка "Общие"
 
-    private FXMLCtrlThematicalPlan fxmlCtrlThematicalPlan; // Вкладка
-                                                           // "Тематический
-                                                           // план"
+    // Вкладка "Тематический план"
+    private FXMLCtrlThematicalPlan fxmlCtrlThematicalPlan;
 
     private FXMLCtrlTable71 fxmlCtrlTable71; // Вкладка "Таблица 7.1"
 
@@ -135,9 +136,6 @@ public class FXMLCtrlNewTab extends VBox {
 
     @FXML
     private TextField tfVersion;
-
-    @FXML
-    private ListView<String> lvTypeOfControlMeasures;
 
     @FXML
     private DatePicker dpDateOfCreate;
@@ -757,9 +755,10 @@ public class FXMLCtrlNewTab extends VBox {
         t.setText("Общие");
         fxmlCtrlGeneral = fxmlLoader.getController();
 
-        fxmlCtrlGeneral.setStage(stage); // Запомним Stage главного окна
-        fxmlCtrlGeneral.setController(fxmlCtrlGeneral); // Запомним контроллер
-                                                        // главного окна
+        // Запомним Stage главного окна
+        fxmlCtrlGeneral.setStage(stage);
+        // Запомним контроллер главного окна
+        fxmlCtrlGeneral.setController(fxmlCtrlGeneral);
         fxmlCtrlGeneral.setParentCtrl(fxmlCtrlCurrTab);
         fxmlCtrlGeneral.init(currWPDVersion); // инициализируем
 
