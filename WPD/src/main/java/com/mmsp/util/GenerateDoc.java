@@ -6,14 +6,18 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.ObjectFactory;
 
@@ -28,6 +32,8 @@ import com.mmsp.model.WPDVersion;
  * @author rav
  */
 public class GenerateDoc {
+    
+    static final Logger log = LogManager.getLogger(GenerateDoc.class);
 
 	private WPDVersion version = null;
 
@@ -40,16 +46,16 @@ public class GenerateDoc {
 	public void generate(WPDVersion currWPDVersion) {
 		version = currWPDVersion;
 
-		System.out.println("Начинаю генерацию");
+		log.debug("Начинаю генерацию");
 		String pathToTemplateFile = version.getTemplateName(); // путь до шаблона
 		File fInput = new File(pathToTemplateFile);
-		System.err.println("File exist == " + fInput.exists() + "\nand this path " + fInput.getAbsolutePath());
+		log.debug("File exist == " + fInput.exists() + "\nand this path " + fInput.getAbsolutePath());
 		WordprocessingMLPackage wordMLPackage = null;
 		try {
 			wordMLPackage = WordprocessingMLPackage.load(fInput);
 		} catch (Docx4JException e) {
-			System.err.println("Не удалось найти шаблон");
-			e.printStackTrace();
+			log.info("Не удалось найти шаблон");
+			return;
 		}
 
 		factory = Context.getWmlObjectFactory();
@@ -65,10 +71,10 @@ public class GenerateDoc {
 		try {
 			wordMLPackage.save(fOutput);
 		} catch (Docx4JException e) {
-			System.err.println("Не удалось сохранить сгенирированый файл");
+			log.info("Не удалось сохранить сгенирированый файл");
 			e.printStackTrace();
 		}
-		System.out.println("Заканчиваю генерацию");
+		log.debug("Заканчиваю генерацию");
 	}
 
 	/**
@@ -104,7 +110,7 @@ public class GenerateDoc {
 				if (content.getValue().equals(tokenThematicalPlan)) {
 					toReplace = (P) p;
 					pos = addTo.getContent().indexOf(p); // запоминаем позицию
-					System.out.println("Позиция параграфа, который содержит tokenThematicalPlan " + tokenThematicalPlan + ", == "+ pos);
+					log.debug("Позиция параграфа, который содержит tokenThematicalPlan " + tokenThematicalPlan + ", == " + pos);
 					break;
 				}
 			}
@@ -115,7 +121,7 @@ public class GenerateDoc {
 
 		for (Semester sem: version.getTreeSemesters()) {
 			// Семестр и его номер
-			P pSemester = factory.createP(); // вставка инорамации про семестр
+			P pSemester = factory.createP(); // вставка инфорамации про семестр
 			R rSemester = factory.createR();
 			Text tSemester = factory.createText();
 			tSemester.setValue("Семестр " + sem.getNUMBER_OF_SEMESTER() + "."); // TODO Сделать эту строку Bold
@@ -128,7 +134,14 @@ public class GenerateDoc {
 				P pModule = factory.createP(); // вставка ифнорамации про семестр
 				R rModule = factory.createR();
 				Text tModule = factory.createText();
-				tModule.setValue("Модуль " + mod.getNumber() + ". " + mod.getName()); // TODO Сделать эту строку Bold
+				
+				RPr rpr = factory.createRPr();
+		        BooleanDefaultTrue b = new BooleanDefaultTrue();
+		        b.setVal(true);
+		        rpr.setB(b);
+		        rModule.setRPr(rpr);
+				
+				tModule.setValue("Модуль " + mod.getNumber() + ". " + mod.getName());
 				rModule.getContent().add(tModule);
 				pModule.getContent().add(rModule);
 				listOfParagraph.add(pModule);
@@ -137,40 +150,60 @@ public class GenerateDoc {
 				R rTimeForModule = factory.createR();
 				Text tTimeForModule = factory.createText();
 
-				String sTimeForModule = ""; // TODO написать функцию конкатинации строк, если сейчас Л == 0, то следующая строка начнётся с запятой
-				if (mod.getL() != 0) sTimeForModule += " Л - " + mod.getL() + " час";
-				if (mod.getPZ() != 0) sTimeForModule += ", ПЗ - " + mod.getPZ() + " час";
-				if (mod.getLR() != 0) sTimeForModule += ", ЛР - " + mod.getLR() + " час";
-				if (mod.getKSR() != 0) sTimeForModule += ", КСР - " + mod.getKSR() + " час";
-				if (mod.getSRS() != 0) sTimeForModule += ", СРС - " + mod.getSRS() + " час.";
+				StringBuilder sbTimeForModule = new StringBuilder();
+				if (mod.getL() != 0) sbTimeForModule.append(" Л - ").append(mod.getL()).append(" ч.,");
+				if (mod.getPZ() != 0) sbTimeForModule.append(" ПЗ - ").append(mod.getPZ()).append(" ч.,");
+				if (mod.getLR() != 0) sbTimeForModule.append(" ЛР - ").append(mod.getLR()).append(" ч.,");
+				if (mod.getKSR() != 0) sbTimeForModule.append(" КСР - ").append(mod.getKSR()).append(" ч.,");
+				if (mod.getSRS() != 0) sbTimeForModule.append(" СРС - ").append(mod.getSRS()).append(" ч.,");
+				if (sbTimeForModule.length() > 1 && ',' == sbTimeForModule.charAt(sbTimeForModule.length() - 1)) {
+				    sbTimeForModule.deleteCharAt(sbTimeForModule.length() - 1);
+				}
 
-				tTimeForModule.setValue(sTimeForModule);
+				tTimeForModule.setValue(sbTimeForModule.toString());
 				rTimeForModule.getContent().add(tTimeForModule);
+				rTimeForModule.getContent().add(factory.createBr());
 				pTimeForModule.getContent().add(rTimeForModule);
 				listOfParagraph.add(pTimeForModule);
 
+                // Раздел, номер и его описание
 				for (Section sec : mod.getTreeSection()) {
 					// Раздел, номер и его описание
 					P pSection = factory.createP();
-					R rSection = factory.createR();
-					Text tSection = factory.createText();
-					tSection.setValue("Раздел " + sec.getNumber() + ". " + sec.getName()); // TODO Сделать Только "Модуль" и его номер Bold
-					rSection.getContent().add(tSection);
-					pSection.getContent().add(rSection);
+					R rSectionNumber = factory.createR();
+					R rSectionDescription = factory.createR();
+					Text tSectionNumber = factory.createText();
+					Text tSectionDescription = factory.createText();
+					tSectionNumber.setValue("Раздел " + sec.getNumber() + ". ");
+					tSectionDescription.setValue(" " + sec.getName());
+					rSectionNumber.getContent().add(tSectionNumber);
+					rSectionDescription.getContent().add(tSectionDescription);
+
+//					RPr rpr = factory.createRPr();
+//	                BooleanDefaultTrue b = new BooleanDefaultTrue();
+//	                b.setVal(true);
+	                rpr.setB(b);
+	                rSectionNumber.setRPr(rpr);
+
+					pSection.getContent().add(rSectionNumber);
+					pSection.getContent().add(rSectionDescription);
 					listOfParagraph.add(pSection);
 					// Часы на раздел
 					P pTimeForSection = factory.createP();
 					R rTimeForSection = factory.createR();
 					Text tTimeForSetion = factory.createText();
 
-					String sTimeForSectoin = ""; // TODO написать функцию конкатинации строк, если сейчас Л == 0, то следующая строка начнётся с запятой
-					if (sec.getL() != 0) sTimeForSectoin += " Л - " + sec.getL() + " час";
-					if (sec.getPZ() != 0) sTimeForSectoin += ", ПЗ - " + sec.getPZ() + " час";
-					if (sec.getLR() != 0) sTimeForSectoin += ", ЛР - " + sec.getLR() + " час";
-					if (sec.getKSR() != 0) sTimeForSectoin += ", КСР - " + sec.getKSR() + " час";
-					if (sec.getSRS() != 0) sTimeForSectoin += ", СРС - " + sec.getSRS() + " час.";
+					StringBuilder sbTimeForSectoin = new StringBuilder();
+					if (sec.getL() != 0) sbTimeForSectoin.append(" Л - ").append(sec.getL()).append(" ч.,");
+					if (sec.getPZ() != 0) sbTimeForSectoin.append(" ПЗ - ").append(sec.getPZ()).append(" ч.,");
+					if (sec.getLR() != 0) sbTimeForSectoin.append(" ЛР - ").append(sec.getLR()).append(" ч.,");
+					if (sec.getKSR() != 0) sbTimeForSectoin.append(" КСР - ").append(sec.getKSR()).append(" ч.,");
+    				if (sec.getSRS() != 0) sbTimeForSectoin.append(" СРС - ").append(sec.getSRS()).append(" ч.,");
+	                if (sbTimeForSectoin.length() > 1 && ',' == sbTimeForSectoin.charAt(sbTimeForSectoin.length() - 1)) {
+	                    sbTimeForSectoin.deleteCharAt(sbTimeForSectoin.length() - 1);
+	                }
 
-					tTimeForSetion.setValue(sTimeForSectoin);
+					tTimeForSetion.setValue(sbTimeForSectoin.toString());
 					rTimeForSection.getContent().add(tTimeForSetion);
 					pTimeForSection.getContent().add(rTimeForSection);
 					listOfParagraph.add(pTimeForSection);
@@ -194,12 +227,10 @@ public class GenerateDoc {
 						listOfParagraph.add(pThemeDesc);
 					}
 				}
-				// Раздел, номер и его описание
+
 				P pEmpty = factory.createP();
 				R rEmpty = factory.createR();
-				Text tEmpty = factory.createText();
-				tEmpty.setValue("");
-				rEmpty.getContent().add(tEmpty);
+				rEmpty.getContent().add(factory.createBr());
 				pEmpty.getContent().add(rEmpty);
 				listOfParagraph.add(pEmpty);
 			}
