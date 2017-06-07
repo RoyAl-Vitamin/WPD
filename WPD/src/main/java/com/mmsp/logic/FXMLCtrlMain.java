@@ -212,9 +212,9 @@ public class FXMLCtrlMain extends VBox {
 
 		//DAO_HandBookDiscipline dao_Disc = new DAO_HandBookDiscipline();
 		//Long id_Disc = dao_Disc.getIdByValueAndCode(cbDiscipline.getValue().split(":")[0], Integer.valueOf(cbDiscipline.getValue().split(":")[1]));
-		DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
+		DAO<WPDVersion> dao_Vers = new DAO_WPDVersion();
 
-		Long id_Vers = dao_Vers.getIdByName(cbVersion.getValue()); // TODO Проверить то ли возвращает
+		Long id_Vers = ((DAO_WPDVersion) dao_Vers).getIdByName(cbVersion.getValue()); // TODO Проверить то ли возвращает
 
 		// проверяем открыта ли вкладка
 		// Если вкладка не открыта, то откроем
@@ -276,8 +276,8 @@ public class FXMLCtrlMain extends VBox {
 		wpdVers.setNumber(hbD.getId()); // Номер версии есть ID Дисциплины
 		wpdVers.setDate(Calendar.getInstance().getTime()); // Используем сегодняшнюю дату при создании WPDVerison
 
-		DAO_WPDData dao_WPDData = new DAO_WPDData();
-		WPDData wpdData = (dao_WPDData.getAll()).get(0);
+		DAO<WPDData> dao_WPDData = new DAO_WPDData();
+		WPDData wpdData = (((DAO_WPDData) dao_WPDData).getAll()).get(0);
 		wpdVers.setWPDData(wpdData); // Соединяем WPDVersion с WPDData
 
 		wpdVers.setHbD(hbD); // кажется теперь они ссылаются друг на друга
@@ -304,10 +304,13 @@ public class FXMLCtrlMain extends VBox {
 		stageVersionName.setResizable(false);
 		stageVersionName.showAndWait();
 
-		wpdVers.setName(dao_Vers.getById(WPDVersion.class, wpdVers.getId()).getName()); // подгрузим изменнённую в FXMLCtrlDiscipline
+		// подгрузим изменнённую в FXMLCtrlDiscipline
+		wpdVers.setName(dao_Vers.getById(WPDVersion.class, wpdVers.getId()).getName());
 		// TODO выше наверное нужна ленивая подгрузка?
 
-		if (wpdVers.getName() == null || wpdVers.getName().equals("")) { // Пользователь передумал вводить/изменять имя версии
+		if (wpdVers.getName() == null || wpdVers.getName().equals(""))
+		// Пользователь передумал вводить/изменять имя версии
+		{
 			hbD.remVersion(wpdVers); // Удаляем версию из множества версий в HandBookDiscipline
 			dao_Vers.remove(wpdVers); // Удаляем версию из БД
 			return;
@@ -328,7 +331,9 @@ public class FXMLCtrlMain extends VBox {
 
 		t.setContent(root);
 		log.debug("Ctrl: " + fxmlCtrlNewTab + " version ID == " + wpdVers.getId());
-		olCtrl.add(new Ctrl(fxmlCtrlNewTab, wpdVers.getId(), t)); // Добавим контроллер и Id, саму вкладку в список
+
+		// Добавим контроллер и Id, саму вкладку в список
+		olCtrl.add(new Ctrl(fxmlCtrlNewTab, wpdVers.getId(), t));
 
 		t.setOnClosed(ehForTabClose);
 		tpDiscipline.getTabs().add(t);
@@ -387,7 +392,9 @@ public class FXMLCtrlMain extends VBox {
 		stageDiscipline.showAndWait();
 
 		hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
-		if ("".equals(hbD.getValue()) && "".equals(hbD.getCode())) {// Пользователь передумал создавать дисциплину
+		if ("".equals(hbD.getValue()) && "".equals(hbD.getCode()))
+        // Пользователь передумал создавать дисциплину
+		{
 			dao_HBD.remove(hbD);
 			hbD = null;
 		} else {
@@ -437,11 +444,11 @@ public class FXMLCtrlMain extends VBox {
 		stageDiscipline.setResizable(false);
 		stageDiscipline.showAndWait();
 
-		log.info("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
+		log.debug("Select index = " + lvDiscipline.getSelectionModel().getSelectedIndex());
 		hbD = dao_HBD.getById(HandbookDiscipline.class, hbD.getId());
 		int pos = lvDiscipline.getSelectionModel().getSelectedIndex();
 		String res = olDiscipline.set(pos, hbD.getValue() + ":" + hbD.getCode());
-		log.info("было " + res + "\nстало " + hbD.getValue() + ":" + hbD.getCode());
+		log.debug("было " + res + "\nстало " + hbD.getValue() + ":" + hbD.getCode());
 		//if ((res == null) || (res.equals(""))) System.err.println("Попытка заменить что-то не понятное на сторку");
 		if (b) cbDiscipline.getSelectionModel().select(pos); // меняет занчение в cbDisc булевая переменная
 		lStatus.setText("Изменениея сохранены");
@@ -457,8 +464,8 @@ public class FXMLCtrlMain extends VBox {
 		// UPD: Отловить Exception
 		String value = lvDiscipline.getSelectionModel().getSelectedItem().split(":")[0];
 		String code = lvDiscipline.getSelectionModel().getSelectedItem().split(":")[1];
-		DAO_HandBookDiscipline dao_hbd = new DAO_HandBookDiscipline();
-		HandbookDiscipline hbD = dao_hbd.getByValueAndCode(value, code); // Обновим содержимое hbD
+		DAO<HandbookDiscipline> dao_hbd = new DAO_HandBookDiscipline();
+		HandbookDiscipline hbD = ((DAO_HandBookDiscipline) dao_hbd).getByValueAndCode(value, code); // Обновим содержимое hbD
 
 		/*DAO_WPDVersion dao_Vers = new DAO_WPDVersion();
 
@@ -482,7 +489,7 @@ public class FXMLCtrlMain extends VBox {
 
 		String strWasRemoved = olDiscipline.remove(lvDiscipline.getSelectionModel().getSelectedIndex()); // Удаляем объект из списка
 
-		log.info("Удалённая строка = " + strWasRemoved);
+		log.debug("Удалённая строка = " + strWasRemoved);
 		cbDiscipline.getSelectionModel().selectFirst();
 		//cbVersion.getSelectionModel().selectFirst();
 		lStatus.setText("Дисциплина удалена");
@@ -511,7 +518,7 @@ public class FXMLCtrlMain extends VBox {
 		assert lStatus != null : "fx:id=\"lStatus\" was not injected: check your FXML file 'Main.fxml'.";
 		assert cbVersion != null : "fx:id=\"cbVersion\" was not injected: check your FXML file 'Main.fxml'.";
 
-		DAO_HandBookDiscipline dao_disc = new DAO_HandBookDiscipline();
+		DAO<HandbookDiscipline> dao_disc = new DAO_HandBookDiscipline();
 		List<HandbookDiscipline> li = dao_disc.getAll(HandbookDiscipline.class);
 		for (int i = 0; i < li.size(); i++) {
 			olDiscipline.add(li.get(i).getValue() + ":" + li.get(i).getCode());
@@ -584,7 +591,7 @@ public class FXMLCtrlMain extends VBox {
 						bAddTab.setDisable(false);
 						olVersion.clear();
 						String temp_disc = olDiscipline.get(new_value.intValue());
-						Long id = dao_disc.getIdByValueAndCode(temp_disc.split(":")[0], temp_disc.split(":")[1]);
+						Long id = ((DAO_HandBookDiscipline) dao_disc).getIdByValueAndCode(temp_disc.split(":")[0], temp_disc.split(":")[1]);
 						cbDiscipline.getSelectionModel().select(new_value.intValue());
 						updateOlVersion(id);
 					} else { // если пустое поле

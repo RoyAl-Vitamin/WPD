@@ -148,8 +148,8 @@ public class FXMLCtrlNewTab extends VBox {
     @FXML
     private Button bCallFileChooser;
 
-    private PopOver popOver; // Окно добавления/изменения № семестров и их
-                             // недель
+    // Окно добавления/изменения № семестров и их недель
+    private PopOver popOver;
 
     @FXML
     private Button bSemester;
@@ -188,7 +188,8 @@ public class FXMLCtrlNewTab extends VBox {
         vbForSemester.setAlignment(Pos.CENTER);
         Button bSaveSemester = new Button("Сохранить");
 
-        ChangeListener<String> cl2 = new ChangeListener<String>() { // http://stackoverflow.com/questions/12956061/javafx-oninputmethodtextchanged-not-called-after-focus-is-lost
+        // http://stackoverflow.com/questions/12956061/javafx-oninputmethodtextchanged-not-called-after-focus-is-lost
+        ChangeListener<String> cl2 = new ChangeListener<String>() {
 
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -198,8 +199,8 @@ public class FXMLCtrlNewTab extends VBox {
                     bSaveSemester.setDisable(true);
             }
 
-            private boolean isInteger(String sValue) { // проверка на ввод и что
-                                                       // б в Integer помещалось
+            // проверка на ввод и что б в Integer помещалось
+            private boolean isInteger(String sValue) {
                 try {
                     Integer.parseInt(sValue);
                     return true;
@@ -662,12 +663,13 @@ public class FXMLCtrlNewTab extends VBox {
             // TODO Выгрузить в список RowPoCM and Загрузка полей во вкладку
         }
 
-        tfVersion.setText(currWPDVersion.getName()); // Name должен всегда
-                                                     // существовать
-        if (currWPDVersion.getTemplateName() != null) // Грузим шаблон при
-                                                      // открытии, но не при
-                                                      // создании
+        // Name должен всегда существовать
+        tfVersion.setText(currWPDVersion.getName());
+        if (currWPDVersion.getTemplateName() != null)
+        // Грузим шаблон при открытии, но не при создании
+        {
             tfPath.setText(currWPDVersion.getTemplateName());
+        }
 
         /*
          * http://stackoverflow.com/questions/21242110/convert-java-util-date-to
@@ -780,6 +782,8 @@ public class FXMLCtrlNewTab extends VBox {
         fxmlCtrlThematicalPlan.setStage(stage);
         fxmlCtrlThematicalPlan.setController(fxmlCtrlThematicalPlan);
         fxmlCtrlThematicalPlan.setParentCtrl(fxmlCtrlCurrTab);
+        
+        log.info("send CURRWPDVers is nul? == " + currWPDVersion);
         fxmlCtrlThematicalPlan.init(currWPDVersion);
 
         t.setContent(root);

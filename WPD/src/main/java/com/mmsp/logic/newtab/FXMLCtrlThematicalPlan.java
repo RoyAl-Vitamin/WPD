@@ -63,9 +63,13 @@ public class FXMLCtrlThematicalPlan extends HBox {
 	/**
 	 * {@link WPDVersion} принадлежащая этой вкладке
 	 */
-    private WPDVersion currWPDVersion;
+    private WPDVersion wpdVersion;
 
-    private FXMLCtrlNewTab fxmlCtrlCurrTab; // Контроллер этой вкладки
+    private FXMLCtrlNewTab parentCtrl; // Контроллер родительской вкладки
+
+    private FXMLCtrlThematicalPlan fxmlCtrlThematicalPlan; // Контроллер этой вклядки
+
+    private Stage stage;
 
     private final TreeItem<String> rootElement = new TreeItem<String>("Создать модуль");
 
@@ -82,21 +86,13 @@ public class FXMLCtrlThematicalPlan extends HBox {
     @FXML
     private TreeView<String> tvRoot;
 
-    private FXMLCtrlNewTab parentCtrl;
-
-    private FXMLCtrlThematicalPlan fxmlCtrlThematicalPlan;
-
-    private Stage stage;
-
-    private WPDVersion wpdVersion;
-
     /**
      * отрисовка дерева в tvRoot
      */
     public void createTree() {
         tvRoot.getSelectionModel().clearSelection();
         rootElement.getChildren().clear();
-        for (Semester semester : currWPDVersion.getTreeSemesters()) {
+        for (Semester semester : wpdVersion.getTreeSemesters()) {
             TreeItem<String> nodeSemester = new TreeItem<String>("Семестр " + semester.getNUMBER_OF_SEMESTER());
             nodeSemester.setExpanded(true);
             rootElement.getChildren().add(nodeSemester);
@@ -110,7 +106,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
                     nodeModule.getChildren().add(nodeSection);
                     for (ThematicPlan theme : section.getTreeTheme()) {
 
-                        // theme.setWPDVerion(currWPDVersion);
+                        // theme.setWPDVerion(wpdVersion);
 
                         TreeItem<String> nodeTheme = new TreeItem<String>("Тема " + theme.getNumber());
                         nodeTheme.setExpanded(false);
@@ -172,12 +168,12 @@ public class FXMLCtrlThematicalPlan extends HBox {
                         int numOfSem = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
                         int numOfMod = Integer.parseInt(item.getValue().split(" ")[1]);
 
-                        currWPDVersion.getSemester(numOfSem).getTreeModule()
-                                .remove(currWPDVersion.getSemester(numOfSem).getModule(numOfMod));
+                        wpdVersion.getSemester(numOfSem).getTreeModule()
+                                .remove(wpdVersion.getSemester(numOfSem).getModule(numOfMod));
                         createTree();
 
                         // TEST
-                        System.err.println(currWPDVersion.toString());
+                        System.err.println(wpdVersion.toString());
                     });
                     liMI.add(mI);
                 }
@@ -198,12 +194,11 @@ public class FXMLCtrlThematicalPlan extends HBox {
                         int numOfMod = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
                         int numOfSec = Integer.parseInt(item.getValue().split(" ")[1]);
 
-                        currWPDVersion.getSemester(numOfSem).getModule(numOfMod).getTreeSection()
-                                .remove(currWPDVersion.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec));
+                        wpdVersion.getSemester(numOfSem).getModule(numOfMod).getTreeSection()
+                                .remove(wpdVersion.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec));
                         createTree();
 
-                        // TEST
-                        System.err.println(currWPDVersion.toString());
+                        log.debug(wpdVersion.toString());
                     });
                     liMI.add(mI);
                 }
@@ -221,13 +216,12 @@ public class FXMLCtrlThematicalPlan extends HBox {
                         int numOfSec = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
                         int numOfTheme = Integer.parseInt(item.getValue().split(" ")[1]);
 
-                        currWPDVersion.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec).getTreeTheme()
-                                .remove(currWPDVersion.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec)
+                        wpdVersion.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec).getTreeTheme()
+                                .remove(wpdVersion.getSemester(numOfSem).getModule(numOfMod).getSection(numOfSec)
                                         .getTheme(numOfTheme));
                         createTree();
 
-                        // TEST
-                        System.err.println(currWPDVersion.toString());
+                        log.debug(wpdVersion.toString());
                     });
                     liMI.add(mI);
                 }
@@ -251,7 +245,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 try {
                     root = (Parent) fxmlLoader.load();
                 } catch (IOException e) {
-                    System.err.println("Не удалось загрузить форму настройки таблицы тематического плана");
+                    log.error("Не удалось загрузить форму настройки таблицы тематического плана");
                     e.printStackTrace();
                 }
                 Scene scene = new Scene(root);
@@ -261,18 +255,18 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 fxmlCtrlModalModule.init(stageModalModule);
                 stageModalModule.setResizable(false);
                 // Запомним контроллер новой вкладки для перерсовки
-                fxmlCtrlModalModule.setController(fxmlCtrlCurrTab);
+                fxmlCtrlModalModule.setController(parentCtrl);
 
                 // установка корневого элемента
                 if (item.getValue().contains("Модуль")) {
                     // Изменение выбранного модуля
                     int numOfSem = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
                     int numOfMod = Integer.parseInt(item.getValue().split(" ")[1]);
-                    fxmlCtrlModalModule.setRoot(currWPDVersion.getSemester(numOfSem), numOfMod);
+                    fxmlCtrlModalModule.setRoot(wpdVersion.getSemester(numOfSem), numOfMod);
                 } else if (item.getValue().contains("Семестр")) {
                     // Добавление нового модуля
                     int numOfSem = Integer.parseInt(item.getValue().split(" ")[1]);
-                    fxmlCtrlModalModule.setRoot(currWPDVersion.getSemester(numOfSem));
+                    fxmlCtrlModalModule.setRoot(wpdVersion.getSemester(numOfSem));
                 } else
                     return;
 
@@ -305,7 +299,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 FXMLCtrlModalSection fxmlCtrlModalSection = fxmlLoader.getController();
                 fxmlCtrlModalSection.init(stageModalSection);
                 stageModalSection.setResizable(false);
-                fxmlCtrlModalSection.setController(fxmlCtrlCurrTab); // Запомним контроллер новой вкладки
+                fxmlCtrlModalSection.setController(parentCtrl); // Запомним контроллер новой вкладки
                                                                      // для
                                                                      // перерсовки
 
@@ -315,12 +309,12 @@ public class FXMLCtrlThematicalPlan extends HBox {
                     int numOfSem = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
                     int numOfMod = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
                     int numOfSec = Integer.parseInt(item.getValue().split(" ")[1]);
-                    fxmlCtrlModalSection.setRoot(currWPDVersion.getSemester(numOfSem), numOfMod, numOfSec);
+                    fxmlCtrlModalSection.setRoot(wpdVersion.getSemester(numOfSem), numOfMod, numOfSec);
                 } else if (item.getValue().contains("Модуль")) {
                     // Добавление нового модуля
                     int numOfSem = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
                     int numOfMod = Integer.parseInt(item.getValue().split(" ")[1]);
-                    fxmlCtrlModalSection.setRoot(currWPDVersion.getSemester(numOfSem), numOfMod);
+                    fxmlCtrlModalSection.setRoot(wpdVersion.getSemester(numOfSem), numOfMod);
                 } else
                     return;
 
@@ -353,7 +347,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 FXMLCtrlModalTheme fxmlCtrlModalTheme = fxmlLoader.getController();
                 fxmlCtrlModalTheme.init(stageModalTheme);
                 stageModalTheme.setResizable(false);
-                fxmlCtrlModalTheme.setController(fxmlCtrlCurrTab); // Запомним
+                fxmlCtrlModalTheme.setController(parentCtrl); // Запомним
                                                                    // контроллер
                                                                    // новой
                                                                    // вкладки
@@ -367,13 +361,13 @@ public class FXMLCtrlThematicalPlan extends HBox {
                     int numOfMod = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
                     int numOfSec = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
                     int numOfTheme = Integer.parseInt(item.getValue().split(" ")[1]);
-                    fxmlCtrlModalTheme.setRoot(currWPDVersion.getSemester(numOfSem), numOfMod, numOfSec, numOfTheme);
+                    fxmlCtrlModalTheme.setRoot(wpdVersion.getSemester(numOfSem), numOfMod, numOfSec, numOfTheme);
                 } else if (item.getValue().contains("Раздел")) {
                     // Добавление новой темы
                     int numOfSem = Integer.parseInt(item.getParent().getParent().getValue().split(" ")[1]);
                     int numOfMod = Integer.parseInt(item.getParent().getValue().split(" ")[1]);
                     int numOfSec = Integer.parseInt(item.getValue().split(" ")[1]);
-                    fxmlCtrlModalTheme.setRoot(currWPDVersion.getSemester(numOfSem), numOfMod, numOfSec);
+                    fxmlCtrlModalTheme.setRoot(wpdVersion.getSemester(numOfSem), numOfMod, numOfSec);
                 } else
                     return;
 
@@ -445,7 +439,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
     {
         ehTP = new EventHandler<GridChange>() {
             public void handle(GridChange change) {
-                System.err.println("TEST");
+                log.debug("TEST");
             }
         };
         int rowCount = 1;
@@ -463,7 +457,8 @@ public class FXMLCtrlThematicalPlan extends HBox {
         ssvTableTP.setShowRowHeader(true);
         ssvTableTP.setShowColumnHeader(true);
 
-        hbReplacementThematicalPlan.getChildren().add(ssvTableTP); // FIXME USE MasterDetailPane
+        // FIXME USE MasterDetailPane
+        hbReplacementThematicalPlan.getChildren().add(ssvTableTP);
         HBox.setHgrow(ssvTableTP, Priority.ALWAYS);
         HBox.setMargin(ssvTableTP, new Insets(15, 0, 15, 0));
 
@@ -565,10 +560,10 @@ public class FXMLCtrlThematicalPlan extends HBox {
             int belongingToTheSection = (int) ssvTableTP.getGrid().getRows().get(i).get(2).getItem();
             int numberOfTheme = (int) ssvTableTP.getGrid().getRows().get(i).get(3).getItem();
 
-            ThematicPlan theme = currWPDVersion.getSemester(belongingToTheSemester).getModule(belongingToTheModule).getSection(belongingToTheSection).getTheme(numberOfTheme);
+            ThematicPlan theme = wpdVersion.getSemester(belongingToTheSemester).getModule(belongingToTheModule).getSection(belongingToTheSection).getTheme(numberOfTheme);
 
             if (theme != null) {
-                //theme.setWPDVerion(currWPDVersion);
+                //theme.setWPDVerion(wpdVersion);
                 theme.setTitle((String) ssvTableTP.getGrid().getRows().get(i).get(4).getItem());
                 theme.setDescription((String) ssvTableTP.getGrid().getRows().get(i).get(5).getItem());
                 theme.setL((Integer) ssvTableTP.getGrid().getRows().get(i).get(6).getItem());
@@ -576,7 +571,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 theme.setLR((Integer) ssvTableTP.getGrid().getRows().get(i).get(8).getItem());
                 theme.setKSR((Integer) ssvTableTP.getGrid().getRows().get(i).get(9).getItem());
                 theme.setSRS((Integer) ssvTableTP.getGrid().getRows().get(i).get(10).getItem());
-                System.out.println("Theme save\n" + theme.toString());
+                log.debug("Theme save\n" + theme.toString());
             }
         }
     }
@@ -658,14 +653,17 @@ public class FXMLCtrlThematicalPlan extends HBox {
      */
     private void repaintSSVTableTP(int... temp) {
 
-        createSSVTableTP();
+        if (ssvTableTP == null || !hbReplacementThematicalPlan.getChildren().contains(ssvTableTP)) {
+            createSSVTableTP();
+        }
+//        ssvTableTP.getGrid().getRows().clear();
 
         List<ThematicPlan> liTheme = new ArrayList<>();
         try {
             switch (temp.length) {
             case 0: break;
             case 1:
-                for (Module module : currWPDVersion.getSemester(temp[0]).getTreeModule()) {
+                for (Module module : wpdVersion.getSemester(temp[0]).getTreeModule()) {
                     Set<Section> setSection = module.getTreeSection();
                     for (Section section : setSection) {
                         liTheme.addAll(section.getTreeTheme());
@@ -673,21 +671,22 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 }
                 break;
             case 2:
-                Set<Section> setSection = currWPDVersion.getSemester(temp[0]).getModule(temp[1]).getTreeSection();
+                Set<Section> setSection = wpdVersion.getSemester(temp[0]).getModule(temp[1]).getTreeSection();
                 for (Section section : setSection) {
                     liTheme.addAll(section.getTreeTheme()); // скопируем у каждой секции
                 }
                 break;
             case 3:
-                liTheme.addAll(currWPDVersion.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTreeTheme());
+                liTheme.addAll(wpdVersion.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTreeTheme());
                 break;
             case 4:
-                liTheme.add(currWPDVersion.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTheme(temp[3]));
+                liTheme.add(wpdVersion.getSemester(temp[0]).getModule(temp[1]).getSection(temp[2]).getTheme(temp[3]));
                 break;
             default:
                 throw new Exception("не правильное количество аргументов у массива тематического плана");
             }
         } catch (Exception e) {
+            log.error("не правильное количество аргументов у массива тематического плана");
             e.printStackTrace();
         }
         pasteIntoSSVTableTP(liTheme);
