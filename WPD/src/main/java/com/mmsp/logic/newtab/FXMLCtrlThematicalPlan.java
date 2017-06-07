@@ -656,8 +656,9 @@ public class FXMLCtrlThematicalPlan extends HBox {
 
         if (ssvTableTP == null || !hbReplacementThematicalPlan.getChildren().contains(ssvTableTP)) {
             createSSVTableTP();
+        } else {
+            clearSSVTAbleTP();
         }
-        clearSSVTAbleTP();
 
         List<ThematicPlan> liTheme = new ArrayList<>();
         try {
@@ -703,6 +704,9 @@ public class FXMLCtrlThematicalPlan extends HBox {
     }
 
     public void addTheme(ThematicPlan theme) {
+        if (ssvTableTP == null || !hbReplacementThematicalPlan.getChildren().contains(ssvTableTP)) {
+            createSSVTableTP();
+        }
         addRowSSVTableTP(theme);
     }
 
@@ -721,6 +725,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
     // UNDONE Инициализация компонента номером версии
     public void init(WPDVersion wpdVers) {
         wpdVersion = wpdVers;
+        refresh();
     }
 
     public void refresh() {

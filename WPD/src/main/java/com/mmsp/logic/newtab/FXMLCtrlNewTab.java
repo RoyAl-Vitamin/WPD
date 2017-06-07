@@ -645,16 +645,16 @@ public class FXMLCtrlNewTab extends VBox {
         currWPDVersion.setTreeSemesters(setSem);
         // Конец сортировки
 
-        if (currWPDVersion.getThematicPlans() != null) {
-            for (ThematicPlan theme : currWPDVersion.getThematicPlans())
-                fxmlCtrlThematicalPlan.addTheme(theme);
-        }
+        // Загрузка вкладки "Тематический план"
+        //fxmlCtrlThematicalPlan.refresh();
+        /*for (ThematicPlan theme : currWPDVersion.getThematicPlans())
+            fxmlCtrlThematicalPlan.addTheme(theme); // ERROR fxmlCtrlThematicalPlan == null при загрузке из БД*/ 
 
         if (currWPDVersion.getPoCM() == null) {
             PoCM newPoCM = new PoCM();
             currWPDVersion.setPoCM(newPoCM);
             newPoCM.setWpdVersion(currWPDVersion);
-            DAO_PoCM dao_PoCM = new DAO_PoCM();
+            DAO<PoCM> dao_PoCM = new DAO_PoCM();
             newPoCM.setId(dao_PoCM.add(newPoCM));
             currWPDVersion.setPoCM(newPoCM);
         } else {
@@ -716,8 +716,7 @@ public class FXMLCtrlNewTab extends VBox {
     public void init(Long id_Vers) {
 
         load(id_Vers); // Загрузка из БД
-        
-        createTab();
+        createTab(); // Создание вкладок
 
         bSemester.setText(currWPDVersion.getTreeSemesters().size() != 0 ? currWPDVersion.getStringSemester() : "");
 
