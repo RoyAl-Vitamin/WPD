@@ -286,7 +286,7 @@ public class FXMLCtrlTable71 extends HBox {
 
     // UNDONE Инициализация компонента
     public void init(WPDVersion wpdVers) {
-        log.info("wpdVersion == null? " + wpdVers);
+        log.debug("wpdVersion == null? " + wpdVers);
         wpdVersion = wpdVers;
 
         olSemesters.addListener(new ListChangeListener<String>() {
@@ -299,6 +299,10 @@ public class FXMLCtrlTable71 extends HBox {
                 }
             }
         });
+
+        for (Semester sem : wpdVersion.getTreeSemesters()) {
+            olSemesters.add(String.valueOf(sem.getNUMBER_OF_SEMESTER()));
+        }
 
         cbSemesters.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov, Number value, Number new_value) {
@@ -321,6 +325,7 @@ public class FXMLCtrlTable71 extends HBox {
             }
         });
         cbSemesters.setItems(olSemesters);
+        cbSemesters.getSelectionModel().selectFirst();
     }
 
     /**

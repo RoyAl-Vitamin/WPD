@@ -645,11 +645,6 @@ public class FXMLCtrlNewTab extends VBox {
         currWPDVersion.setTreeSemesters(setSem);
         // Конец сортировки
 
-        // Загрузка вкладки "Тематический план"
-        //fxmlCtrlThematicalPlan.refresh();
-        /*for (ThematicPlan theme : currWPDVersion.getThematicPlans())
-            fxmlCtrlThematicalPlan.addTheme(theme); // ERROR fxmlCtrlThematicalPlan == null при загрузке из БД*/ 
-
         if (currWPDVersion.getPoCM() == null) {
             PoCM newPoCM = new PoCM();
             currWPDVersion.setPoCM(newPoCM);
