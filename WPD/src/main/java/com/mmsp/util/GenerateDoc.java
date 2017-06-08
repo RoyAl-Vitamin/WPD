@@ -1,6 +1,7 @@
 package com.mmsp.util;
 
 import java.io.File;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,18 +9,21 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.ContentAccessor;
-import org.docx4j.wml.P;
-import org.docx4j.wml.R;
-import org.docx4j.wml.RPr;
-import org.docx4j.wml.Text;
+import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.ObjectFactory;
+import org.docx4j.wml.P;
+import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.Spacing;
+import org.docx4j.wml.R;
+import org.docx4j.wml.RFonts;
+import org.docx4j.wml.RPr;
+import org.docx4j.wml.STLineSpacingRule;
+import org.docx4j.wml.Text;
 
 import com.mmsp.model.Module;
 import com.mmsp.model.Section;
@@ -47,14 +51,15 @@ public class GenerateDoc {
 		version = currWPDVersion;
 
 		log.debug("Начинаю генерацию");
-		String pathToTemplateFile = version.getTemplateName(); // путь до шаблона
+		// путь до шаблона
+		String pathToTemplateFile = version.getTemplateName();
 		File fInput = new File(pathToTemplateFile);
 		log.debug("File exist == " + fInput.exists() + "\nand this path " + fInput.getAbsolutePath());
 		WordprocessingMLPackage wordMLPackage = null;
 		try {
 			wordMLPackage = WordprocessingMLPackage.load(fInput);
 		} catch (Docx4JException e) {
-			log.info("Не удалось найти шаблон");
+			log.error("Не удалось найти шаблон");
 			return;
 		}
 
@@ -66,19 +71,59 @@ public class GenerateDoc {
 		//replaceParagraph(placeholder, toAdd, wordMLPackage, wordMLPackage.getMainDocumentPart());
 		addThematicalPlan(wordMLPackage, wordMLPackage.getMainDocumentPart());
 
-		String pathToGenFile = pathToTemplateFile.substring(0, pathToTemplateFile.lastIndexOf(".")) + "_gen" + pathToTemplateFile.substring(pathToTemplateFile.lastIndexOf(".")); // путь до сгенерированного файла
+		// путь до сгенерированного файла
+		String pathToGenFile = pathToTemplateFile.substring(0, pathToTemplateFile.lastIndexOf(".")) + "_gen" + pathToTemplateFile.substring(pathToTemplateFile.lastIndexOf("."));
 		File fOutput = new File(pathToGenFile);
 		try {
 			wordMLPackage.save(fOutput);
 		} catch (Docx4JException e) {
-			log.info("Не удалось сохранить сгенирированый файл");
+			log.error("Не удалось сохранить сгенирированый файл");
 			e.printStackTrace();
 		}
 		log.debug("Заканчиваю генерацию");
 	}
 
 	/**
-	 * Находит Thematical_Plan и заменяет её на Тематический план
+	 * Задаёт
+	 * @param fontSize размер шрифта
+	 * @param fontName название шрифта
+	 * @param fontBold жирность шрифта
+	 * @return {@link RPr}
+	 */
+	private RPr getRPr(int fontSize, String fontName, boolean fontBold) {
+	    RPr rpr = factory.createRPr();
+	    
+        // Установка шрифта
+        RFonts rf = factory.createRFonts();
+        rf.setAscii(fontName);
+        // Установка размера шрифта
+        HpsMeasure size = new HpsMeasure();
+        size.setVal(BigInteger.valueOf(fontSize * 2));
+        // Установка жирности шрифта
+        BooleanDefaultTrue b = new BooleanDefaultTrue();
+        b.setVal(fontBold);
+
+        rpr.setRFonts(rf);
+        rpr.setSz(size);
+        rpr.setB(b);
+
+	    return rpr;
+	}
+	
+	/**
+	 * Задаёт межстрочный интервал
+	 * @param spac
+	 * @return {@link Spacing}
+	 */
+	private Spacing getSpacing(float spac) {
+	    Spacing spacing = factory.createPPrBaseSpacing();
+        spacing.setLine(BigInteger.valueOf((long) (spac * 240)));
+        spacing.setLineRule(STLineSpacingRule.AUTO);
+        return spacing;
+	}
+	
+	/**
+	 * Находит tokenThematicalPlan и заменяет её на Тематический план
 	 * @param document
 	 * @param addTo
 	 * 
@@ -93,9 +138,7 @@ public class GenerateDoc {
 	 * 
 	 * TODO Возможно стоит сделать "Введение"? В отдельном окне или в "Таблице 7.1"?
 	 * TODO Нужен ли "Семестр"?
-	 * FIXME Необходим BOLD в некторых местах, а так же межстрочный интервал и между разделами просто перенос строки
 	 * FIXME Перевести в отдельный поток, а то тормозит весь процесс
-	 * FIXME Сделать конкатенацию для часов
 	 */
 	private void addThematicalPlan(WordprocessingMLPackage document, ContentAccessor addTo) {
 		List<Object> paragraphs = getAllElementFromObject(document.getMainDocumentPart(), P.class);
@@ -110,7 +153,7 @@ public class GenerateDoc {
 				if (content.getValue().equals(tokenThematicalPlan)) {
 					toReplace = (P) p;
 					pos = addTo.getContent().indexOf(p); // запоминаем позицию
-					log.debug("Позиция параграфа, который содержит tokenThematicalPlan " + tokenThematicalPlan + ", == " + pos);
+					log.debug("Позиция параграфа, который содержит [tokenThematicalPlan == " + tokenThematicalPlan + "], == " + pos);
 					break;
 				}
 			}
@@ -121,27 +164,30 @@ public class GenerateDoc {
 
 		for (Semester sem: version.getTreeSemesters()) {
 			// Семестр и его номер
-			P pSemester = factory.createP(); // вставка инфорамации про семестр
+			P pSemester = factory.createP();
+			PPr ppr = factory.createPPr();
+		    ppr.setSpacing(getSpacing(1.5f));
+			pSemester.setPPr(ppr);
+			
 			R rSemester = factory.createR();
 			Text tSemester = factory.createText();
-			tSemester.setValue("Семестр " + sem.getNUMBER_OF_SEMESTER() + "."); // TODO Сделать эту строку Bold
+
+			tSemester.setValue("Семестр " + sem.getNUMBER_OF_SEMESTER() + ".");
+			rSemester.setRPr(getRPr(14, "Times New Roman", true));
 			rSemester.getContent().add(tSemester);
 			pSemester.getContent().add(rSemester);
+			
 			listOfParagraph.add(pSemester);
 
 			for (Module mod : sem.getTreeModule()) {
 				// Модуль, номер и его описание
-				P pModule = factory.createP(); // вставка ифнорамации про семестр
+				P pModule = factory.createP(); // вставка ифорамации про семестр
 				R rModule = factory.createR();
 				Text tModule = factory.createText();
-				
-				RPr rpr = factory.createRPr();
-		        BooleanDefaultTrue b = new BooleanDefaultTrue();
-		        b.setVal(true);
-		        rpr.setB(b);
-		        rModule.setRPr(rpr);
-				
+	            pModule.setPPr(ppr);
+
 				tModule.setValue("Модуль " + mod.getNumber() + ". " + mod.getName());
+				rModule.setRPr(getRPr(14, "Times New Roman", true));
 				rModule.getContent().add(tModule);
 				pModule.getContent().add(rModule);
 				listOfParagraph.add(pModule);
@@ -160,7 +206,9 @@ public class GenerateDoc {
 				    sbTimeForModule.deleteCharAt(sbTimeForModule.length() - 1);
 				}
 
+				pTimeForModule.setPPr(ppr);
 				tTimeForModule.setValue(sbTimeForModule.toString());
+				rTimeForModule.setRPr(getRPr(14, "Times New Roman", false));
 				rTimeForModule.getContent().add(tTimeForModule);
 				rTimeForModule.getContent().add(factory.createBr());
 				pTimeForModule.getContent().add(rTimeForModule);
@@ -174,16 +222,15 @@ public class GenerateDoc {
 					R rSectionDescription = factory.createR();
 					Text tSectionNumber = factory.createText();
 					Text tSectionDescription = factory.createText();
+					pSection.setPPr(ppr);
+                    rSectionNumber.setRPr(getRPr(14, "Times New Roman", true));
+                    rSectionDescription.setRPr(getRPr(14, "Times New Roman", false));
+					
+
 					tSectionNumber.setValue("Раздел " + sec.getNumber() + ". ");
 					tSectionDescription.setValue(" " + sec.getName());
 					rSectionNumber.getContent().add(tSectionNumber);
 					rSectionDescription.getContent().add(tSectionDescription);
-
-//					RPr rpr = factory.createRPr();
-//	                BooleanDefaultTrue b = new BooleanDefaultTrue();
-//	                b.setVal(true);
-	                rpr.setB(b);
-	                rSectionNumber.setRPr(rpr);
 
 					pSection.getContent().add(rSectionNumber);
 					pSection.getContent().add(rSectionDescription);
@@ -192,6 +239,9 @@ public class GenerateDoc {
 					P pTimeForSection = factory.createP();
 					R rTimeForSection = factory.createR();
 					Text tTimeForSetion = factory.createText();
+
+					pTimeForSection.setPPr(ppr);
+                    rTimeForSection.setRPr(getRPr(14, "Times New Roman", false));
 
 					StringBuilder sbTimeForSectoin = new StringBuilder();
 					if (sec.getL() != 0) sbTimeForSectoin.append(" Л - ").append(sec.getL()).append(" ч.,");
@@ -213,26 +263,33 @@ public class GenerateDoc {
 						P pTheme = factory.createP();
 						R rTheme = factory.createR();
 						Text tTheme = factory.createText();
+	                    rTheme.setRPr(getRPr(14, "Times New Roman", false));
+
 						tTheme.setValue("Тема " + theme.getNumber() + ".");
 						rTheme.getContent().add(tTheme);
 						pTheme.getContent().add(rTheme);
+						pTheme.setPPr(ppr);
 						listOfParagraph.add(pTheme);
 
 						P pThemeDesc = factory.createP();
 						R rThemeDesc = factory.createR();
 						Text tThemeDesc = factory.createText();
+						
+                        rThemeDesc.setRPr(getRPr(12, "Times New Roman", false));
 						tThemeDesc.setValue(theme.getTitle());
 						rThemeDesc.getContent().add(tThemeDesc);
 						pThemeDesc.getContent().add(rThemeDesc);
+						pThemeDesc.setPPr(ppr);
 						listOfParagraph.add(pThemeDesc);
 					}
+					
+					P pEmpty = factory.createP();
+	                R rEmpty = factory.createR();
+//	                rEmpty.getContent().add(factory.createBr());
+	                pEmpty.getContent().add(rEmpty);
+	                pEmpty.setPPr(ppr);
+	                listOfParagraph.add(pEmpty);
 				}
-
-				P pEmpty = factory.createP();
-				R rEmpty = factory.createR();
-				rEmpty.getContent().add(factory.createBr());
-				pEmpty.getContent().add(rEmpty);
-				listOfParagraph.add(pEmpty);
 			}
 		}
 
