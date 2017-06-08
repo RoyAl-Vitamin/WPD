@@ -20,6 +20,7 @@ import com.mmsp.model.WPDVersion;
 import com.mmsp.util.Ctrl;
 import com.mmsp.util.ObservableCtrlArrayList;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -30,22 +31,29 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 /**
  * @author Алексей
@@ -270,7 +278,6 @@ public class FXMLCtrlMain extends VBox {
 		DAO<HandbookDiscipline> dao_Disc = new DAO_HandBookDiscipline();
 		HandbookDiscipline hbD = ((DAO_HandBookDiscipline) dao_Disc).getByValueAndCode(cbDiscipline.getValue().split(":")[0], cbDiscipline.getValue().split(":")[1]);
 
-		DAO<WPDVersion> dao_Vers = new DAO_WPDVersion();
 		WPDVersion wpdVers = new WPDVersion();
 
 		wpdVers.setNumber(hbD.getId()); // Номер версии есть ID Дисциплины
@@ -281,45 +288,26 @@ public class FXMLCtrlMain extends VBox {
 		wpdVers.setWPDData(wpdData); // Соединяем WPDVersion с WPDData
 
 		wpdVers.setHbD(hbD); // кажется теперь они ссылаются друг на друга
-		wpdVers.setId(dao_Vers.add(wpdVers)); // Запоминаем ID, попутно сохранив в БД WPDVerison
 		hbD.addVersions(wpdVers); // Обновляем HandBookDiscipline, т.к. теперь у него зависимость с WDPVersion @OneToMany
+
+		String resultName = showDialogSetVersionName(null, hbD);
+		if (resultName != null) {
+		    log.info("res vers name == " + resultName);
+		    wpdVers.setName(resultName);
+		} else {
+            hbD.remVersion(wpdVers); // Удаляем версию из множества версий в HandBookDiscipline
+            wpdVers = null;
+		    return;
+		}
+		
+		DAO<WPDVersion> dao_Vers = new DAO_WPDVersion();
+		wpdVers.setId(dao_Vers.add(wpdVers)); // Запоминаем ID, попутно сохранив в БД WPDVerison
 		dao_Disc.update(hbD);
-
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("modal/VersionName.fxml"));
-		Parent root = null;
-		try {
-			root = (Parent) fxmlLoader.load();
-		} catch (IOException e) {
-			log.error("Не удалось загрузить форму ввода имени версии");
-		}
-		Scene scene = new Scene(root);
-
-		Stage stageVersionName = new Stage();
-		FXMLCtrlSure fxmlCtrlVersionName = fxmlLoader.getController();
-		fxmlCtrlVersionName.init(stageVersionName, wpdVers.getId(), hbD.getId());
-		stageVersionName.setScene(scene);
-		stageVersionName.setTitle("Добавление версии");
-		stageVersionName.getIcons().add(new Image("Logo.png"));
-		stageVersionName.initModality(Modality.APPLICATION_MODAL);
-		stageVersionName.setResizable(false);
-		stageVersionName.showAndWait();
-
-		// подгрузим изменнённую в FXMLCtrlDiscipline
-		wpdVers.setName(dao_Vers.getById(WPDVersion.class, wpdVers.getId()).getName());
-		// TODO выше наверное нужна ленивая подгрузка?
-
-		if (wpdVers.getName() == null || wpdVers.getName().equals(""))
-		// Пользователь передумал вводить/изменять имя версии
-		{
-			hbD.remVersion(wpdVers); // Удаляем версию из множества версий в HandBookDiscipline
-			dao_Vers.remove(wpdVers); // Удаляем версию из БД
-			return;
-		}
 
 		t.setText(cbDiscipline.getValue().split(":")[0] + ":" + wpdVers.getName());
 
-		fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("newtab/NewTab.fxml"));
-		root = (Parent) fxmlLoader.load();
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("newtab/NewTab.fxml"));
+		Parent root = (Parent) fxmlLoader.load();
 
 		FXMLCtrlNewTab fxmlCtrlNewTab = fxmlLoader.getController();
 
@@ -349,6 +337,91 @@ public class FXMLCtrlMain extends VBox {
 	}
 
 	/**
+	 * Показывает диалог задания имени версии
+	 * @return имя версии или null
+	 */
+	private String showDialogSetVersionName(String oldName, HandbookDiscipline hbD) {
+
+	 // Create the custom dialog.
+	    Dialog<Pair<String, String>> dialog = new Dialog<>();
+	    dialog.setTitle("Добавление версии");
+	    dialog.setHeaderText("Введите название весии");
+
+	    // Set the icon (must be included in the project).
+	    Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image("Logo.png"));
+        
+//        dialog.setGraphic(new ImageView(new Image("Logo.png")));
+
+	    ButtonType SaveButtonType = new ButtonType("Сохранить", ButtonData.OK_DONE);
+//	    ButtonType CancelButtonType = new ButtonType("Отменить", ButtonData.CANCEL_CLOSE);
+	    dialog.getDialogPane().getButtonTypes().addAll(SaveButtonType, ButtonType.CANCEL);
+
+	    VBox vBox = new VBox();
+
+	    TextField versionName = new TextField();
+	    if (oldName != null) {
+	        versionName.setText(oldName);
+	    }
+	    vBox.getChildren().add(versionName);
+
+	    // Enable/Disable login button depending on whether a username was entered.
+	    Node saveButton = dialog.getDialogPane().lookupButton(SaveButtonType);
+	    saveButton.setDisable(true);
+
+	    /* данный листенер следит за наличием текста в поле и делает доступной/недоступной кнопку сохранить */
+	    // http://stackoverflow.com/questions/12956061/javafx-oninputmethodtextchanged-not-called-after-focus-is-lost
+        ChangeListener<String> cl2 = new ChangeListener<String>() {
+
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (isSatisfies(versionName.getText()) && isNotExist()) saveButton.setDisable(false); else saveButton.setDisable(true);
+            }
+
+            private boolean isSatisfies(String sValue) {
+                if (sValue.equals("") || sValue.length() > 256)
+                    return false;
+                return true;
+            }
+
+            private boolean isNotExist() {
+                
+                for (WPDVersion vers : hbD.getVersions()) {
+                    if (vers.getName() != null && vers.getName().equals(versionName.getText())) return false;
+                }
+                return true;
+            }
+        };
+
+	    // Do some validation (using the Java 8 lambda syntax).
+	    versionName.textProperty().addListener(cl2);
+
+	    dialog.getDialogPane().setContent(vBox);
+
+	    // Request focus on the username field by default.
+	    Platform.runLater(() -> versionName.requestFocus());
+
+	    // Convert the result to a username-password-pair when the login button is clicked.
+	    dialog.setResultConverter(dialogButton -> {
+	        if (dialogButton == SaveButtonType) {
+	            return new Pair<>(versionName.getText(), null);
+	        }
+	        return null;
+	    });
+
+	    Optional<Pair<String, String>> result = dialog.showAndWait();
+
+//	    result.ifPresent(pair -> {
+//	        log.debug("versionName == " + pair.getKey());
+//	    });
+
+	    if (result.isPresent()){
+	        return result.get().getKey();
+	    }
+	    return null;
+    }
+
+    /**
 	 * Находит открытую вкладку (для того что бы не пытались открыть ещё одну такую же)
 	 * @param id id версии
 	 * @return открыта ли вкладка (Y/N)
