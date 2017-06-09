@@ -47,9 +47,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -270,7 +268,6 @@ public class FXMLCtrlMain extends VBox {
 	 * @param event
 	 * @throws IOException
 	 */
-	// ERROR Запретить создавать вкладку с уже существующим именем (name)
 	@FXML
 	void clickBAddTab(ActionEvent event) throws IOException {
 		Tab t = new Tab();
@@ -354,7 +351,6 @@ public class FXMLCtrlMain extends VBox {
 //        dialog.setGraphic(new ImageView(new Image("Logo.png")));
 
 	    ButtonType SaveButtonType = new ButtonType("Сохранить", ButtonData.OK_DONE);
-//	    ButtonType CancelButtonType = new ButtonType("Отменить", ButtonData.CANCEL_CLOSE);
 	    dialog.getDialogPane().getButtonTypes().addAll(SaveButtonType, ButtonType.CANCEL);
 
 	    VBox vBox = new VBox();
@@ -365,7 +361,6 @@ public class FXMLCtrlMain extends VBox {
 	    }
 	    vBox.getChildren().add(versionName);
 
-	    // Enable/Disable login button depending on whether a username was entered.
 	    Node saveButton = dialog.getDialogPane().lookupButton(SaveButtonType);
 	    saveButton.setDisable(true);
 
@@ -393,7 +388,6 @@ public class FXMLCtrlMain extends VBox {
             }
         };
 
-	    // Do some validation (using the Java 8 lambda syntax).
 	    versionName.textProperty().addListener(cl2);
 
 	    dialog.getDialogPane().setContent(vBox);
@@ -410,10 +404,6 @@ public class FXMLCtrlMain extends VBox {
 	    });
 
 	    Optional<Pair<String, String>> result = dialog.showAndWait();
-
-//	    result.ifPresent(pair -> {
-//	        log.debug("versionName == " + pair.getKey());
-//	    });
 
 	    if (result.isPresent()){
 	        return result.get().getKey();

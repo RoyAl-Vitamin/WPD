@@ -41,7 +41,9 @@ public class GenerateDoc {
 
 	private WPDVersion version = null;
 
-	private String tokenThematicalPlan = "Thematical_Plan";
+	private final String tokenGeneral = "General";
+	
+	private final String tokenThematicalPlan = "Thematical_Plan";
 
 	private ObjectFactory factory = null;
 
@@ -59,17 +61,17 @@ public class GenerateDoc {
 		try {
 			wordMLPackage = WordprocessingMLPackage.load(fInput);
 		} catch (Docx4JException e) {
+		    log.debug("Заканчиваю генерацию");
 			log.error("Не удалось найти шаблон");
 			return;
 		}
 
 		factory = Context.getWmlObjectFactory();
-		// Замена параграфа
-		//String placeholder = "I_SEARCH"; // Что ищем
-		//String toAdd = "THIS_PHRASE"; // на что заменяем
  
-		//replaceParagraph(placeholder, toAdd, wordMLPackage, wordMLPackage.getMainDocumentPart());
-		addThematicalPlan(wordMLPackage, wordMLPackage.getMainDocumentPart());
+		addThematicalPlan(wordMLPackage);
+		
+		// UNDONE : сначала необходимо переписать таблицы вкладки "Общее"
+		// addGeneral(wordMLPackage);
 
 		// путь до сгенерированного файла
 		String pathToGenFile = pathToTemplateFile.substring(0, pathToTemplateFile.lastIndexOf(".")) + "_gen" + pathToTemplateFile.substring(pathToTemplateFile.lastIndexOf("."));
@@ -83,7 +85,7 @@ public class GenerateDoc {
 		log.debug("Заканчиваю генерацию");
 	}
 
-	/**
+    /**
 	 * Задаёт
 	 * @param fontSize размер шрифта
 	 * @param fontName название шрифта
@@ -124,8 +126,8 @@ public class GenerateDoc {
 	
 	/**
 	 * Находит tokenThematicalPlan и заменяет её на Тематический план
-	 * @param document
-	 * @param addTo
+	 * @param document Шаблон
+	 * <p>
 	 * 
 	 * Структура следующая (2 пробела - возможно несколько объектов):
 	 * <p><b>Семестр #.</b></p>
@@ -140,7 +142,10 @@ public class GenerateDoc {
 	 * TODO Нужен ли "Семестр"?
 	 * FIXME Перевести в отдельный поток, а то тормозит весь процесс
 	 */
-	private void addThematicalPlan(WordprocessingMLPackage document, ContentAccessor addTo) {
+	private void addThematicalPlan(WordprocessingMLPackage document) {
+
+	    ContentAccessor addTo = document.getMainDocumentPart();
+
 		List<Object> paragraphs = getAllElementFromObject(document.getMainDocumentPart(), P.class);
 
 		// Находим позицию для вставки
@@ -157,6 +162,10 @@ public class GenerateDoc {
 					break;
 				}
 			}
+		}
+		if (pos == -1) {
+		    log.error("Позиция параграфа, содержащего [tokenThematicalPlan == " + tokenThematicalPlan + "], не найдена");
+		    return;
 		}
 
 		// Создаём граф семестров
@@ -181,7 +190,7 @@ public class GenerateDoc {
 
 			for (Module mod : sem.getTreeModule()) {
 				// Модуль, номер и его описание
-				P pModule = factory.createP(); // вставка ифорамации про семестр
+				P pModule = factory.createP(); // вставка инфорамации про семестр
 				R rModule = factory.createR();
 				Text tModule = factory.createText();
 	            pModule.setPPr(ppr);
@@ -298,12 +307,60 @@ public class GenerateDoc {
 			int i_pos = pos;
 			for (P p : listOfParagraph)
 				addTo.getContent().add(i_pos++, p);
-		} else {
+		}/* else { // Или в конец
 			for (P p : listOfParagraph)
 				addTo.getContent().add(p);
-		}
+		}*/
 		((ContentAccessor)toReplace.getParent()).getContent().remove(toReplace); // Удаление шаблонной фразы
 	}
+
+	/**
+     * Находит tokenGeneral и заменяет её на Общие
+     * @param document Шаблон
+     * 
+     * <p>
+     * Структура следующая: таблица в 4 колонки 
+     * Вид КМ: <b>{#семестра или "-"}</b>
+     * 
+     */
+    private void addGeneral(WordprocessingMLPackage document) {
+
+	    ContentAccessor addTo = document.getMainDocumentPart();
+
+	    List<Object> paragraphs = getAllElementFromObject(document.getMainDocumentPart(), P.class);
+
+        // Находим позицию для вставки
+        P toReplace = null;
+        int pos = -1;
+        for (Object p : paragraphs) {
+            List<Object> texts = getAllElementFromObject(p, Text.class);
+            for (Object t : texts) {
+                Text content = (Text) t;
+                if (content.getValue().equals(tokenGeneral)) {
+                    toReplace = (P) p;
+                    pos = addTo.getContent().indexOf(p); // запоминаем позицию
+                    log.debug("Позиция параграфа, который содержит [tokenGeneral == " + tokenGeneral + "], == " + pos);
+                    break;
+                }
+            }
+            if (pos > -1) { break; }
+        }
+        if (pos == -1) {
+            log.error("Позиция параграфа, содержащего [tokenGeneral == " + tokenGeneral + "], не найдена");
+            return;
+        }
+
+        // Создаём граф семестров
+        List<P> listOfParagraph = new ArrayList<P>();
+
+        // Вставляем в указанную позицию весь массив listOfParagraph
+        if (pos > -1) {
+            int i_pos = pos;
+            for (P p : listOfParagraph)
+                addTo.getContent().add(i_pos++, p);
+        }
+        ((ContentAccessor)toReplace.getParent()).getContent().remove(toReplace); // Удаление шаблонной фразы
+    }
 
 	private static List<Object> getAllElementFromObject(Object obj, Class<?> toSearch) {
 		List<Object> result = new ArrayList<Object>();
@@ -320,53 +377,5 @@ public class GenerateDoc {
 		}
 		return result;
 	}
-
-	/*private void replaceParagraph(String placeholder, String textToAdd, WordprocessingMLPackage template, ContentAccessor addTo) {
-		// 1. get the paragraph
-		List<Object> paragraphs = getAllElementFromObject(template.getMainDocumentPart(), P.class);
- 
-		P toReplace = null;
-		int pos = -1; // position replacement
-		for (Object p : paragraphs) {
-			List<Object> texts = getAllElementFromObject(p, Text.class);
-			for (Object t : texts) {
-				Text content = (Text) t;
-				if (content.getValue().equals(placeholder)) {
-					toReplace = (P) p;
-					pos = addTo.getContent().indexOf(p);
-					System.out.println("Позиция параграфа, который ищу == " + pos);
-					break;
-				}
-			}
-		}
- 
-		// we now have the paragraph that contains our placeholder: toReplace
-		// 2. split into seperate lines
-		String as[] = StringUtils.splitPreserveAllTokens(textToAdd, '\n');
- 
-		for (int i = 0; i < as.length; i++) {
-			String ptext = as[i];
- 
-			// 3. copy the found paragraph to keep styling correct
-			P copy = (P) XmlUtils.deepCopy(toReplace);
- 
-			// replace the text elements from the copy
-			List<?> texts = getAllElementFromObject(copy, Text.class);
-			if (texts.size() > 0) {
-				Text textToReplace = (Text) texts.get(0);
-				textToReplace.setValue(ptext);
-			}
- 
-			// add the paragraph to the document
-			if (pos > -1)
-				addTo.getContent().add(pos, copy);
-			else
-				addTo.getContent().add(copy);
-		}
- 
-		// 4. remove the original one
-		((ContentAccessor)toReplace.getParent()).getContent().remove(toReplace);
- 
-	}*/
 
 }

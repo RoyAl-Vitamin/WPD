@@ -177,10 +177,10 @@ public class FXMLCtrlTable71 extends HBox {
                 lValueOfOldCell.add(ssvTable71.getGrid().getRows().get(i).get(j).getText());
             }
             ObservableList<SpreadsheetCell> oldRow = createStringRow(k, lValueOfOldCell);
-            // newRows.add(oldRow);
+            newRows.add(oldRow);
         }
         newGrid.getColumnHeaders().addAll(ssvTable71.getGrid().getColumnHeaders());
-        // newGrid.setRows(newRows);
+        newGrid.setRows(newRows);
         // объединение "Распределение по учебным неделям"
         newGrid.spanColumn(newGrid.getColumnCount() - 2, 0, 1);
         // объединение "Виды работ"
