@@ -37,7 +37,10 @@ public class PoCM implements Serializable { // Plan of Control Measures
     @Column(name = "POCM_TYPE")
     private Integer type; // тип контрольного мероприятия
     
-    @OneToOne(mappedBy = "planOfConMes")
+    @Column(name = "POCM_NAME", length = 256)
+    private String name; // Вид КМ
+    
+    @OneToOne(mappedBy = "planOfConMes") // ERROR Связь ManyToOne
     private WPDVersion wpdVersion; // связь с дисциплиной, к которой это тематический план принаделжит
     
     public PoCM() {
@@ -59,7 +62,15 @@ public class PoCM implements Serializable { // Plan of Control Measures
 		return number;
 	}
 
-	public WPDVersion getWpdVersion() {
+	public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public WPDVersion getWpdVersion() {
 		return wpdVersion;
 	}
 

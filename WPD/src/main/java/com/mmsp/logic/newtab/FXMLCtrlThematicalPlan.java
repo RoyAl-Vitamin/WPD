@@ -173,7 +173,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
                         createTree();
 
                         // TEST
-                        System.err.println(wpdVersion.toString());
+                        log.error(wpdVersion.toString());
                     });
                     liMI.add(mI);
                 }
@@ -290,7 +290,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 try {
                     root = (Parent) fxmlLoader.load();
                 } catch (IOException e) {
-                    System.err.println("Не удалось загрузить форму настройки таблицы тематического плана");
+                    log.error("Не удалось загрузить форму настройки таблицы тематического плана");
                     e.printStackTrace();
                 }
                 Scene scene = new Scene(root);
@@ -299,9 +299,8 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 FXMLCtrlModalSection fxmlCtrlModalSection = fxmlLoader.getController();
                 fxmlCtrlModalSection.init(stageModalSection);
                 stageModalSection.setResizable(false);
-                fxmlCtrlModalSection.setController(parentCtrl); // Запомним контроллер новой вкладки
-                                                                     // для
-                                                                     // перерсовки
+                // Запомним контроллер новой вкладки для перерсовки
+                fxmlCtrlModalSection.setController(parentCtrl);
 
                 // установка корневого элемента
                 if (item.getValue().contains("Раздел")) {
@@ -338,7 +337,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 try {
                     root = (Parent) fxmlLoader.load();
                 } catch (IOException e) {
-                    System.err.println("Не удалось загрузить форму настройки таблицы тематического плана");
+                    log.error("Не удалось загрузить форму настройки таблицы тематического плана");
                     e.printStackTrace();
                 }
                 Scene scene = new Scene(root);
@@ -347,12 +346,8 @@ public class FXMLCtrlThematicalPlan extends HBox {
                 FXMLCtrlModalTheme fxmlCtrlModalTheme = fxmlLoader.getController();
                 fxmlCtrlModalTheme.init(stageModalTheme);
                 stageModalTheme.setResizable(false);
-                fxmlCtrlModalTheme.setController(parentCtrl); // Запомним
-                                                                   // контроллер
-                                                                   // новой
-                                                                   // вкладки
-                                                                   // для
-                                                                   // перерсовки
+                // Запомним контроллер новой вкладки для перерсовки
+                fxmlCtrlModalTheme.setController(parentCtrl);
 
                 // установка корневого элемента
                 if (item.getValue().contains("Тема")) {
@@ -434,9 +429,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
     /**
      * Инициализация компонента ssvTableTP
      */
-    private void initSSVTableTP()
-    // FIXME СРС должна быть String?
-    {
+    private void initSSVTableTP() {
         ehTP = new EventHandler<GridChange>() {
             public void handle(GridChange change) {
                 log.debug("TEST");
@@ -619,10 +612,10 @@ public class FXMLCtrlThematicalPlan extends HBox {
      */
     private void createSSVTableTP() {
         initSSVTableTP();
-        clearSSVTAbleTP();
+        clearSSVTableTP();
     }
     
-    private void clearSSVTAbleTP() {
+    private void clearSSVTableTP() {
         int rowCount = 1;
         int columnCount = 11;
         GridBase grid = new GridBase(rowCount, columnCount);
@@ -657,7 +650,7 @@ public class FXMLCtrlThematicalPlan extends HBox {
         if (ssvTableTP == null || !hbReplacementThematicalPlan.getChildren().contains(ssvTableTP)) {
             createSSVTableTP();
         } else {
-            clearSSVTAbleTP();
+            clearSSVTableTP();
         }
 
         List<ThematicPlan> liTheme = new ArrayList<>();

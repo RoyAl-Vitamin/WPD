@@ -34,7 +34,6 @@ import com.mmsp.model.ThematicPlan;
 import com.mmsp.model.WPDVersion;
 import com.mmsp.util.GenerateDoc;
 
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -49,7 +48,6 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
@@ -61,51 +59,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class FXMLCtrlNewTab extends VBox {
-
-    // класс строки
-    public static class RowSL { // RowStudyLoad
-        // Вид учебной нагрузки
-        private final SimpleStringProperty viewOfStudyLoad;
-        // Количество часов
-        private final SimpleStringProperty numberOfHours;
-        // ЗЕ
-        private final SimpleStringProperty ladderpointsUnit;
-
-        private RowSL(String fName, String lName, String email) {
-            this.viewOfStudyLoad = new SimpleStringProperty(fName);
-            this.numberOfHours = new SimpleStringProperty(lName);
-            this.ladderpointsUnit = new SimpleStringProperty(email);
-        }
-
-        public String getViewOfStudyLoad() {
-            return viewOfStudyLoad.get();
-        }
-
-        public void setViewOfStudyLoad(String fName) {
-            viewOfStudyLoad.set(fName);
-        }
-
-        public String getNumberOfHours() {
-            return numberOfHours.get();
-        }
-
-        public void setNumberOfHours(String fName) {
-            numberOfHours.set(fName);
-        }
-
-        public String getLadderpointsUnit() {
-            return ladderpointsUnit.get();
-        }
-
-        public void setLadderpointsUnit(String fName) {
-            ladderpointsUnit.set(fName);
-        }
-
-        @Override
-        public String toString() {
-            return "view Of Study Load " + viewOfStudyLoad.toString() + ", number Of Hours " + numberOfHours;
-        }
-    }
 
     static final Logger log = LogManager.getLogger(FXMLCtrlNewTab.class);
 
