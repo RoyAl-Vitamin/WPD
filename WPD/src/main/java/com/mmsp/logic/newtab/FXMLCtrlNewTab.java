@@ -498,69 +498,6 @@ public class FXMLCtrlNewTab extends VBox {
     // *************************************************************************************************************************
     // *************************************************************************************************************************
 
-    // /**
-    // * Создаёт строку для указанной позиции
-    // * @param posRow позиция для новой строки
-    // * @param lValueOfOldCell список значений ячеек.
-    // * @return строку
-    // */
-    // private ObservableList<SpreadsheetCell> createRowForTTP(int posRow,
-    // List<String> lValueOfOldCell) {
-    // ObservableList<SpreadsheetCell> olRow =
-    // FXCollections.observableArrayList();
-    // if (lValueOfOldCell == null) { // Используется для создания новой строки
-    // for (int column = 0; column < 4; column++) {
-    // SpreadsheetCell ssC = SpreadsheetCellType.INTEGER.createCell(posRow,
-    // column, 1, 1, 0);
-    // ssC.setEditable(false);
-    // olRow.add(ssC);
-    // }
-    // for (int column = 4; column < 6; column++) {
-    // olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1,
-    // ""));
-    // }
-    // for (int column = 6; column < ssvTableTP.getGrid().getColumnCount();
-    // column++) {
-    // olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1,
-    // 0));
-    // }
-    // } else { // Используется при удалении строки и переносе значений на
-    // строку выше, и вставки строки
-    // for (int column = 0; column < 4; column++) {
-    // int temp = 0;
-    // try {
-    // temp = Integer.parseInt(lValueOfOldCell.get(column));
-    // } catch (NumberFormatException | NullPointerException e) {
-    // temp = 0;
-    // }
-    //
-    // SpreadsheetCell ssC = SpreadsheetCellType.INTEGER.createCell(posRow,
-    // column, 1, 1, temp);
-    // ssC.setEditable(false);
-    // olRow.add(ssC);
-    // }
-    // for (int column = 4; column < 6; column++) {
-    // SpreadsheetCell cell = SpreadsheetCellType.STRING.createCell(posRow,
-    // column, 1, 1, lValueOfOldCell.get(column));
-    // ((SpreadsheetCellBase) cell).setTooltip(lValueOfOldCell.get(column)); //
-    // add tooltip
-    // olRow.add(cell);
-    // }
-    // for (int column = 6; column < ssvTableTP.getGrid().getColumnCount();
-    // column++) {
-    // int temp = 0;
-    // try {
-    // temp = Integer.parseInt(lValueOfOldCell.get(column));
-    // } catch (NumberFormatException | NullPointerException e) {
-    // temp = 0;
-    // }
-    // olRow.add(SpreadsheetCellType.INTEGER.createCell(posRow, column, 1, 1,
-    // temp));
-    // }
-    // }
-    // return olRow;
-    // }
-
     /**
      * Загрузка по ID версии полей в этой вкладке
      * 

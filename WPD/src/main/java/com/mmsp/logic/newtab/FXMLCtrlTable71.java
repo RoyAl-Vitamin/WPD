@@ -104,7 +104,7 @@ public class FXMLCtrlTable71 extends HBox {
             for (int column = 0; column < ssvTable71.getGrid().getColumnCount(); column++) {
                 olRow.add(SpreadsheetCellType.STRING.createCell(posRow, column, 1, 1, ""));
             }
-        } else
+        } else {
             try {
                 if (ssvTable71.getGrid().getColumnCount() != lValueOfOldCell.size())
                     throw new Exception("Количество столбцов не совпадает с размером переданного списка");
@@ -115,6 +115,7 @@ public class FXMLCtrlTable71 extends HBox {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
 
         // Последняя строка не доступна для редактирования
         olRow.get(olRow.size() - 1).setEditable(false);
