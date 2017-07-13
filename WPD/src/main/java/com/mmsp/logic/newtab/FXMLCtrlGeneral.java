@@ -10,12 +10,10 @@ import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.GridChange;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
-import org.controlsfx.control.spreadsheet.SpreadsheetCellBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 
 import com.mmsp.model.PoCM;
-import com.mmsp.model.Record;
 import com.mmsp.model.WPDVersion;
 
 import javafx.beans.InvalidationListener;
@@ -90,7 +88,13 @@ public class FXMLCtrlGeneral extends HBox {
      * @param event
      */
     void clickBAddRowStudyLoad(ActionEvent event) {
-        
+        addRowSSVTableStudyLoad(null);
+    }
+
+    /**
+     * Создать сущность PlanOfStudyLoad (PoSL) ссылающуюсю на {@link com.mmsp.model.HandBookTypeOfLoad.java}
+     */
+    private void addRowSSVTableStudyLoad(Object posl) {
     }
 
     @FXML
@@ -99,8 +103,12 @@ public class FXMLCtrlGeneral extends HBox {
      * @param event
      */
     void clickBDeleteRowStudyLoad(ActionEvent event) {
+        delRowSSVTableStudyLoad();
     }
     
+    private void delRowSSVTableStudyLoad() {
+    }
+
     @FXML
     /**
      * Добавить строку контрольного мероприятия
@@ -358,8 +366,27 @@ public class FXMLCtrlGeneral extends HBox {
         wpdVersion = wpdVers;
         // Инициализация таблицы Учебной нагрузки. Столбцы: Вид учебной нагрузки, Часов, ЗЕ
         initTvStudyLoad();
+        if (ssvTStudyLoad.getSelectionModel().getSelectedCells().size() != 0) {
+            if (ssvTStudyLoad.getSelectionModel().getSelectedCells()
+                    .get(ssvTStudyLoad.getSelectionModel().getSelectedCells().size() - 1).getRow() > 0)
+                bDeleteRowStudyLoad.setDisable(false);
+            else
+                bDeleteRowStudyLoad.setDisable(true);
+        } else {
+            bDeleteRowStudyLoad.setDisable(true);
+        }
+        
         // Инициализация таблицы Контрольных мероприятий. Столбцы: Вид КМ, Семестр
         initTvMeasures();
+        if (ssvTMeasures.getSelectionModel().getSelectedCells().size() != 0) {
+            if (ssvTMeasures.getSelectionModel().getSelectedCells()
+                    .get(ssvTMeasures.getSelectionModel().getSelectedCells().size() - 1).getRow() > 0)
+                bDeleteRowControlMesaures.setDisable(false);
+            else
+                bDeleteRowControlMesaures.setDisable(true);
+        } else {
+            bDeleteRowControlMesaures.setDisable(true);
+        }
     }
 
 }
